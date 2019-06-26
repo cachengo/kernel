@@ -655,6 +655,9 @@
 
 &pcie0 {
 	ep-gpios = <&gpio2 28 GPIO_ACTIVE_HIGH>;
+	pedet-sel-gpios = <&gpio4 22 GPIO_ACTIVE_HIGH>;
+	pedet-gpios = <&gpio0 10 GPIO_ACTIVE_HIGH>;
+	gms561-rst-gpios = <&gpio4 24 GPIO_ACTIVE_HIGH>;
 	num-lanes = <4>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pcie_clkreqn_cpm>;
@@ -662,15 +665,6 @@
 };
 
 &pinctrl {
-	pinctrl-names = "default";
-	pinctrl-0 = <&gms561_rst>;
-
-	jms561-rst {
-		gms561_rst: jms561-rst {
-			rockchip,pins = <4 24 RK_FUNC_GPIO &pcfg_pull_up>;
-		};
-	};
-	
 	sdio0 {
 		sdio0_bus1: sdio0-bus1 {
 			rockchip,pins =

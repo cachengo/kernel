@@ -218,6 +218,12 @@ struct rockchip_pcie {
 	struct	regulator *vpcie1v8; /* 1.8V power supply */
 	struct	regulator *vpcie0v9; /* 0.9V power supply */
 	struct	gpio_desc *ep_gpio;
+
+	/*for switch between sata and pcie*/
+	struct	gpio_desc *pedet_sel_gpio;
+	struct	gpio_desc *pedet_gpio;
+	struct	gpio_desc *gms561_rst_gpio;
+	/*********************************/
 	u32	lanes;
 	u8	root_bus_nr;
 	int	link_gen;
@@ -908,6 +914,26 @@ static int rockchip_pcie_parse_dt(struct rockchip_pcie *rockchip)
 		return PTR_ERR(rockchip->ep_gpio);
 	}
 
+	/*****switch between sata and pcie*****/
+	rockchip->pedet_gpio = devm_gpiod_get(dev, "pedet", GPIOD_IN);
+	if (IS_ERR(rockchip->pedet_gpio)) {
+		dev_err(dev, "missing pedet-gpios property in node\n");
+		return PTR_ERR(rockchip->pedet_gpio);
+	}
+
+	rockchip->gms561_rst_gpio = devm_gpiod_get(dev, "gms561-rst", GPIOD_OUT_LOW);
+	if (IS_ERR(rockchip->gms561_rst_gpio)) {
+		dev_err(dev, "missing gms561-rst-gpios property in node\n");
+		return PTR_ERR(rockchip->gms561_rst_gpio);
+	}
+
+	rockchip->pedet_sel_gpio = devm_gpiod_get(dev, "pedet-sel", GPIOD_OUT_HIGH);
+	if (IS_ERR(rockchip->pedet_sel_gpio)) {
+		dev_err(dev, "missing pedet-sel-gpios property in node\n");
+		return PTR_ERR(rockchip->pedet_sel_gpio);
+	}
+	/*************************/
+
 	rockchip->aclk_pcie = devm_clk_get(dev, "aclk");
 	if (IS_ERR(rockchip->aclk_pcie)) {
 		dev_err(dev, "aclk clock not found\n");
@@ -988,6 +1014,15 @@ static int rockchip_pcie_parse_dt(struct rockchip_pcie *rockchip)
 			return -EPROBE_DEFER;
 		dev_info(dev, "no vpcie0v9 regulator found\n");
 	}
+
+	/*****switch between sata and pcie*****/
+	if(gpiod_get_value(rockchip->pedet_gpio)){
+		gpiod_set_value(rockchip->pedet_sel_gpio,0);
+	} else {
+		gpiod_set_value(rockchip->pedet_sel_gpio,1);
+	}
+	gpiod_set_value(rockchip->gms561_rst_gpio,1);
+	/*************************/
 
 	return 0;
 }
