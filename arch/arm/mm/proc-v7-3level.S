@@ -42,6 +42,11 @@
  * Set the translation table base pointer to be pgd_phys (physical address of
  * the new TTB).
  */
+ENTRY(cpu_v7_btbinv_switch_mm)
+#ifdef CONFIG_MMU
+	mov	r2, #0
+	mcr	p15, 0, r2, c7, c5, 6			@ flush BTAC/BTB
+#endif
 ENTRY(cpu_v7_switch_mm)
 #ifdef CONFIG_MMU
 	mmid	r2, r2
@@ -52,6 +57,7 @@ ENTRY(cpu_v7_switch_mm)
 #endif
 	ret	lr
 ENDPROC(cpu_v7_switch_mm)
+ENDPROC(cpu_v7_btbinv_switch_mm)
 
 #ifdef __ARMEB__
 #define rl r3

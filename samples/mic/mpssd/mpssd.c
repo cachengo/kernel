@@ -1,8 +1,19 @@
-// SPDX-License-Identifier: GPL-2.0-only
 /*
  * Intel MIC Platform Software Stack (MPSS)
  *
  * Copyright(c) 2013 Intel Corporation.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License, version 2, as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * The full GNU General Public License is included in this distribution in
+ * the file called "COPYING".
  *
  * Intel MIC User Space Tools.
  */
@@ -54,7 +65,7 @@ static struct mic_info mic_list;
 /* to align the pointer to the (next) page boundary */
 #define PAGE_ALIGN(addr)        _ALIGN(addr, PAGE_SIZE)
 
-#define READ_ONCE(x) (*(volatile typeof(x) *)&(x))
+#define ACCESS_ONCE(x) (*(volatile typeof(x) *)&(x))
 
 #define GSO_ENABLED		1
 #define MAX_GSO_SIZE		(64 * 1024)
@@ -338,7 +349,7 @@ static ssize_t
 sum_iovec_len(struct mic_copy_desc *copy)
 {
 	ssize_t sum = 0;
-	unsigned int i;
+	int i;
 
 	for (i = 0; i < copy->iovcnt; i++)
 		sum += copy->iov[i].iov_len;
@@ -361,7 +372,7 @@ static void
 disp_iovec(struct mic_info *mic, struct mic_copy_desc *copy,
 	   const char *s, int line)
 {
-	unsigned int i;
+	int i;
 
 	for (i = 0; i < copy->iovcnt; i++)
 		mpsslog("%s %s %d copy->iov[%d] addr %p len 0x%zx\n",
@@ -371,7 +382,7 @@ disp_iovec(struct mic_info *mic, struct mic_copy_desc *copy,
 
 static inline __u16 read_avail_idx(struct mic_vring *vr)
 {
-	return READ_ONCE(vr->info->avail_idx);
+	return ACCESS_ONCE(vr->info->avail_idx);
 }
 
 static inline void txrx_prepare(int type, bool tx, struct mic_vring *vr,
@@ -512,7 +523,7 @@ spin_for_descriptors(struct mic_info *mic, struct mic_vring *vr)
 {
 	__u16 avail_idx = read_avail_idx(vr);
 
-	while (avail_idx == le16toh(READ_ONCE(vr->vr.avail->idx))) {
+	while (avail_idx == le16toh(ACCESS_ONCE(vr->vr.avail->idx))) {
 #ifdef DEBUG
 		mpsslog("%s %s waiting for desc avail %d info_avail %d\n",
 			mic->name, __func__,
@@ -915,7 +926,7 @@ add_virtio_device(struct mic_info *mic, struct mic_device_desc *dd)
 	char path[PATH_MAX];
 	int fd, err;
 
-	snprintf(path, PATH_MAX, "/dev/vop_virtio%d", mic->id);
+	snprintf(path, PATH_MAX, "/dev/mic%d", mic->id);
 	fd = open(path, O_RDWR);
 	if (fd < 0) {
 		mpsslog("Could not open %s %s\n", path, strerror(errno));

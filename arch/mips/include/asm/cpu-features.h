@@ -418,6 +418,10 @@
 #define cpu_has_vp		__isa_ge_and_opt(6, MIPS_CPU_VP)
 #endif
 
+#ifndef cpu_has_vp
+#define cpu_has_vp		(cpu_data[0].options & MIPS_CPU_VP)
+#endif
+
 #ifndef cpu_has_userlocal
 #define cpu_has_userlocal	__isa_ge_or_opt(6, MIPS_CPU_ULRI)
 #endif
@@ -703,6 +707,13 @@
 #endif
 #ifndef cpu_guest_has_dyn_maar
 #define cpu_guest_has_dyn_maar	(cpu_data[0].guest.options_dyn & MIPS_CPU_MAAR)
+#endif
+
+#ifndef cpu_has_nan_legacy
+#define cpu_has_nan_legacy	(cpu_data[0].options & MIPS_CPU_NAN_LEGACY)
+#endif
+#ifndef cpu_has_nan_2008
+#define cpu_has_nan_2008	(cpu_data[0].options & MIPS_CPU_NAN_2008)
 #endif
 
 #endif /* __ASM_CPU_FEATURES_H */

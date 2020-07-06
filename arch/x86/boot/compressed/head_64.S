@@ -43,6 +43,14 @@
 	.hidden _got
 	.hidden _egot
 
+/*
+ * Locally defined symbols should be marked hidden:
+ */
+	.hidden _bss
+	.hidden _ebss
+	.hidden _got
+	.hidden _egot
+
 	__HEAD
 	.code32
 SYM_FUNC_START(startup_32)

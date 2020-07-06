@@ -4,6 +4,7 @@
 
 #ifdef CONFIG_ARM_CPU_TOPOLOGY
 
+#include <linux/cpufreq.h>
 #include <linux/cpumask.h>
 #include <linux/arch_topology.h>
 
@@ -15,6 +16,12 @@
 
 /* Enable topology flag updates */
 #define arch_update_cpu_topology topology_update_cpu_topology
+
+#ifdef CONFIG_CPU_FREQ
+#define arch_scale_freq_capacity cpufreq_scale_freq_capacity
+#endif
+#define arch_scale_cpu_capacity scale_cpu_capacity
+extern unsigned long scale_cpu_capacity(struct sched_domain *sd, int cpu);
 
 #else
 

@@ -35,4 +35,11 @@ extern struct list_head leds_list;
 extern struct list_head trigger_list;
 extern const char * const led_colors[LED_COLOR_ID_MAX];
 
+#ifdef CONFIG_LEDS_TRIGGER_MULTI_CTRL
+void led_trigger_set_by_name(struct led_classdev *led_cdev, char *trig_name);
+#else
+static inline void led_trigger_set_by_name(struct led_classdev *led_cdev,
+					   char *trig_name) {}
+#endif
+
 #endif	/* __LEDS_H_INCLUDED */

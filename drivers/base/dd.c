@@ -380,6 +380,8 @@ static void driver_bound(struct device *dev)
 
 	device_pm_check_callbacks(dev);
 
+	device_pm_check_callbacks(dev);
+
 	/*
 	 * Make sure the device is no longer in one of the deferred lists and
 	 * kick off retrying all pending devices

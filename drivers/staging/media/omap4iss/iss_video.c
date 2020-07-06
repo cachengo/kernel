@@ -21,6 +21,8 @@
 
 #include <asm/cacheflush.h>
 
+#include <asm/cacheflush.h>
+
 #include "iss_video.h"
 #include "iss.h"
 

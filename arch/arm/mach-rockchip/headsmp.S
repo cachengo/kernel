@@ -6,6 +6,8 @@
 #include <linux/linkage.h>
 #include <linux/init.h>
 
+	.arm
+
 ENTRY(rockchip_secondary_trampoline)
 	ldr	pc, 1f
 ENDPROC(rockchip_secondary_trampoline)

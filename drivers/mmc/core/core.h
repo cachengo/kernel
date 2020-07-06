@@ -58,6 +58,8 @@ void mmc_power_cycle(struct mmc_host *host, u32 ocr);
 void mmc_set_initial_state(struct mmc_host *host);
 u32 mmc_vddrange_to_ocrmask(int vdd_min, int vdd_max);
 
+static const unsigned int freqs[] = { 400000, 300000, 200000, 100000 };
+
 static inline void mmc_delay(unsigned int ms)
 {
 	if (ms <= 20)

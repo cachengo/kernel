@@ -35,6 +35,7 @@
 #define FBIOPUT_MODEINFO        0x4617
 #define FBIOGET_DISPINFO        0x4618
 #define FBIO_WAITFORVSYNC	_IOW('F', 0x20, __u32)
+#define FBIOGET_DMABUF		_IOR('F', 0x21, struct fb_dmabuf_export)
 
 #define FB_TYPE_PACKED_PIXELS		0	/* Packed Pixels	*/
 #define FB_TYPE_PLANES			1	/* Non interleaved planes */
@@ -397,5 +398,9 @@ struct fb_cursor {
 #define FB_BACKLIGHT_LEVELS	128
 #define FB_BACKLIGHT_MAX	0xFF
 
+struct fb_dmabuf_export {
+	__u32 fd;
+	__u32 flags;
+};
 
 #endif /* _UAPI_LINUX_FB_H */
