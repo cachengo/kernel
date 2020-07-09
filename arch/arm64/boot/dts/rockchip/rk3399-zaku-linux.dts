@@ -54,6 +54,26 @@
 	model = "ROCK960 - 96boards based on Rockchip RK3399";
 	compatible = "rockchip,rock960","rockchip,rk3399";
 
+	chosen {
+                bootargs = "dom0_mem=512M console=dtuart dtuart=serial0 dom0_max_vcpus=2 bootscrub=0 flask_enforcing=1 gnttab_max_frames=64";
+                xen,dom0-bootargs = "console=hvc0 /dev/mmcblk0p2 rw rootwait rootfstype=ext2 ignore_loglevel";
+                modules {
+                        #address-cells = <2>;
+                        #size-cells = <2>;
+
+                        module@1 {
+                                compatible = "xen,linux-zimage", "xen,multiboot-module";
+                                reg = <0x0 0x03F80000 0x0 0x02000000>;
+                        };
+                };
+
+		aliases {
+			serial0 = &uart2;
+		};
+
+
+        };
+
 	fiq_debugger: fiq-debugger {
 		compatible = "rockchip,fiq-debugger";
 		rockchip,serial-id = <2>;
