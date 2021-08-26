@@ -501,8 +501,8 @@ static int bluetooth_platdata_parse_dt(struct device *dev,
         }
     } else {
         data->pinctrl = NULL;
-        LOG("%s: uart_rts_gpios is unvalid.\n", __func__);
-        return -EINVAL;
+        data->rts_gpio.io = -EINVAL;
+        LOG("%s: uart_rts_gpios is no-in-use.\n", __func__);
     }
 
     gpio = of_get_named_gpio_flags(node, "BT,power_gpio", 0, &flags);
@@ -705,11 +705,13 @@ static int rfkill_rk_remove(struct platform_device *pdev)
         gpio_free(rfkill->pdata->wake_gpio.io);
 #endif
     
-    if (gpio_is_valid(rfkill->pdata->reset_gpio.io))
+    if (gpio_is_valid(rfkill->pdata->reset_gpio.io)) {
         gpio_free(rfkill->pdata->reset_gpio.io);
+    }
     
-    if (gpio_is_valid(rfkill->pdata->poweron_gpio.io))
+    if (gpio_is_valid(rfkill->pdata->poweron_gpio.io)) {
 		gpio_free(rfkill->pdata->poweron_gpio.io);
+    }
 	clk_disable_unprepare(rfkill->pdata->ext_clk);
     g_rfkill = NULL;
 

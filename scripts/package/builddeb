@@ -50,16 +50,16 @@ set_debarch() {
 	mips*)
 		debarch=mips$(grep -q CPU_LITTLE_ENDIAN=y $KCONFIG_CONFIG && echo el || true) ;;
 	arm64)
-		debarch=arm64 ;;
+		debarch=all ;;
 	arm*)
 		if grep -q CONFIG_AEABI=y $KCONFIG_CONFIG; then
 		    if grep -q CONFIG_VFP=y $KCONFIG_CONFIG; then
-			debarch=armhf
+			debarch=all
 		    else
-			debarch=armel
+			debarch=all
 		    fi
 		else
-		    debarch=arm
+		    debarch=all
 		fi
 		;;
 	*)
@@ -322,7 +322,8 @@ fi
 
 # Build kernel header package
 (cd $srctree; find . -name Makefile\* -o -name Kconfig\* -o -name \*.pl) > "$objtree/debian/hdrsrcfiles"
-(cd $srctree; find arch/$SRCARCH/include include scripts -type f) >> "$objtree/debian/hdrsrcfiles"
+(cd $srctree; find arch/*/include tools/include include scripts -type f) >> "$objtree/debian/hdrsrcfiles"
+(cd $srctree; find security/selinux/include tools/include include scripts -type f) >> "$objtree/debian/hdrsrcfiles"
 (cd $srctree; find arch/$SRCARCH -name module.lds -o -name Kbuild.platforms -o -name Platform) >> "$objtree/debian/hdrsrcfiles"
 (cd $srctree; find $(find arch/$SRCARCH -name include -o -name scripts -type d) -type f) >> "$objtree/debian/hdrsrcfiles"
 (cd $objtree; find arch/$SRCARCH/include Module.symvers include scripts -type f) >> "$objtree/debian/hdrobjfiles"
