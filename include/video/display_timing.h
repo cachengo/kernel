@@ -1,9 +1,8 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
  *
  * description of display timings
- *
- * This file is released under the GPLv2
  */
 
 #ifndef __LINUX_DISPLAY_TIMING_H
@@ -28,11 +27,10 @@ enum display_flags {
 	DISPLAY_FLAGS_INTERLACED	= BIT(8),
 	DISPLAY_FLAGS_DOUBLESCAN	= BIT(9),
 	DISPLAY_FLAGS_DOUBLECLK		= BIT(10),
-#if defined(CONFIG_FB_ROCKCHIP)
-	DISPLAY_FLAGS_SWAP_GB		= BIT(16),
-	DISPLAY_FLAGS_SWAP_RG		= BIT(17),
-	DISPLAY_FLAGS_SWAP_RB		= BIT(18),
-#endif
+	/* drive sync on pos. edge */
+	DISPLAY_FLAGS_SYNC_POSEDGE	= BIT(11),
+	/* drive sync on neg. edge */
+	DISPLAY_FLAGS_SYNC_NEGEDGE	= BIT(12),
 };
 
 /*
@@ -76,18 +74,6 @@ struct display_timing {
 	struct timing_entry vsync_len;		/* ver. sync len */
 
 	enum display_flags flags;		/* display flags */
-#if defined(CONFIG_FB_ROCKCHIP)
-	u16 screen_type;			/*screen type*/
-	u16 refresh_mode;			/* 0: video mode 1: cmd mode */
-	u16 screen_widt;			/* screen physical size */
-	u16 screen_hight;
-	u16 lvds_format;			/*lvds data format for lvds screen*/
-	u16 face;				/*display output  interface format:24bit 18bit 16bit*/
-	u16 color_mode;				/* input color mode: RGB or YUV */
-	u32 *dsp_lut;
-	u32 *cabc_lut;
-	u32 *cabc_gamma_base;
-#endif
 };
 
 /*

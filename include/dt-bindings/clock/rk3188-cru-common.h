@@ -1,16 +1,7 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
  * Copyright (c) 2014 MundoReader S.L.
  * Author: Heiko Stuebner <heiko@sntech.de>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
  */
 
 #ifndef _DT_BINDINGS_CLK_ROCKCHIP_RK3188_COMMON_H
@@ -55,6 +46,7 @@
 #define SCLK_TIMER6		90
 #define SCLK_JTAG		91
 #define SCLK_SMC		92
+#define SCLK_TSADC		93
 
 #define DCLK_LCDC0		190
 #define DCLK_LCDC1		191
@@ -67,15 +59,14 @@
 #define ACLK_LCDC1		196
 #define ACLK_GPU		197
 #define ACLK_SMC		198
-#define ACLK_CIF		199
+#define ACLK_CIF1		199
 #define ACLK_IPP		200
 #define ACLK_RGA		201
 #define ACLK_CIF0		202
-#define ACLK_VEPU		203
-#define ACLK_VDPU		204
-#define ACLK_CPU		205
-#define ACLK_PERI		206
-#define ACLK_CIF1		207
+#define ACLK_CPU		203
+#define ACLK_PERI		204
+#define ACLK_VEPU		205
+#define ACLK_VDPU		206
 
 /* pclk gates */
 #define PCLK_GRF		320
@@ -110,8 +101,8 @@
 #define PCLK_TSADC		349
 #define PCLK_CPU		350
 #define PCLK_PERI		351
-#define PCLK_CIF0		352
-#define PCLK_CIF1		353
+#define PCLK_DDRUPCTL		352
+#define PCLK_PUBL		353
 
 /* hclk gates */
 #define HCLK_SDMMC		448
@@ -120,9 +111,9 @@
 #define HCLK_OTG0		451
 #define HCLK_EMAC		452
 #define HCLK_SPDIF		453
-#define HCLK_I2S0_2CH		454
-#define HCLK_I2S1_2CH		455
-#define HCLK_I2S_8CH		456
+#define HCLK_I2S0		454
+#define HCLK_I2S1		455
+#define HCLK_I2S2		456
 #define HCLK_OTG1		457
 #define HCLK_HSIC		458
 #define HCLK_HSADC		459
@@ -134,11 +125,11 @@
 #define HCLK_IPP		465
 #define HCLK_RGA		466
 #define HCLK_NANDC0		467
-#define HCLK_VEPU		468
-#define HCLK_VDPU		469
-#define HCLK_CPU		470
-#define HCLK_PERI		471
-#define HCLK_CIF1		472
+#define HCLK_CPU		468
+#define HCLK_PERI		469
+#define HCLK_CIF1		470
+#define HCLK_VEPU		471
+#define HCLK_VDPU		472
 #define HCLK_HDMI		473
 
 #define CLK_NR_CLKS		(HCLK_HDMI + 1)

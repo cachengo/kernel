@@ -575,7 +575,7 @@ static inline int t3_mdio_write(struct cphy *phy, int mmd, int reg,
 
 /* Convenience initializer */
 static inline void cphy_init(struct cphy *phy, struct adapter *adapter,
-			     int phy_addr, struct cphy_ops *phy_ops,
+			     int phy_addr, const struct cphy_ops *phy_ops,
 			     const struct mdio_ops *mdio_ops,
 			      unsigned int caps, const char *desc)
 {
@@ -770,4 +770,6 @@ int t3_xaui_direct_phy_prep(struct cphy *phy, struct adapter *adapter,
 			    int phy_addr, const struct mdio_ops *mdio_ops);
 int t3_aq100x_phy_prep(struct cphy *phy, struct adapter *adapter,
 			    int phy_addr, const struct mdio_ops *mdio_ops);
+
+extern struct workqueue_struct *cxgb3_wq;
 #endif				/* __CHELSIO_COMMON_H */

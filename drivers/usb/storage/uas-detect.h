@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #include <linux/usb.h>
 #include <linux/usb/hcd.h>
 #include "usb.h"
@@ -111,11 +112,15 @@ static int uas_use_uas_driver(struct usb_interface *intf,
 		}
 	}
 
+	/* All Seagate disk enclosures have broken ATA pass-through support */
+	if (le16_to_cpu(udev->descriptor.idVendor) == 0x0bc2)
+		flags |= US_FL_NO_ATA_1X;
+
 	usb_stor_adjust_quirks(udev, &flags);
 
 	if (flags & US_FL_IGNORE_UAS) {
 		dev_warn(&udev->dev,
-			"UAS is blacklisted for this device, using usb-storage instead\n");
+			"UAS is ignored for this device, using usb-storage instead\n");
 		return 0;
 	}
 

@@ -1,36 +1,26 @@
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (C) Fuzhou Rockchip Electronics Co.Ltd
  * Author: Chris Zhong <zyw@rock-chips.com>
- *
- * This software is licensed under the terms of the GNU General Public
- * License version 2, as published by the Free Software Foundation, and
- * may be copied, distributed, and modified under those terms.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
  */
-
-#include <drm/drmP.h>
-#include <drm/drm_atomic_helper.h>
-#include <drm/drm_crtc_helper.h>
-#include <drm/drm_dp_helper.h>
-#include <drm/drm_edid.h>
-#include <drm/drm_of.h>
 
 #include <linux/clk.h>
 #include <linux/component.h>
 #include <linux/extcon.h>
 #include <linux/firmware.h>
-#include <linux/hdmi-notifier.h>
-#include <linux/regmap.h>
-#include <linux/reset.h>
 #include <linux/mfd/syscon.h>
 #include <linux/phy/phy.h>
-#include <uapi/linux/videodev2.h>
+#include <linux/regmap.h>
+#include <linux/reset.h>
 
 #include <sound/hdmi-codec.h>
+
+#include <drm/drm_atomic_helper.h>
+#include <drm/drm_dp_helper.h>
+#include <drm/drm_edid.h>
+#include <drm/drm_of.h>
+#include <drm/drm_probe_helper.h>
+#include <drm/drm_simple_kms_helper.h>
 
 #include "cdn-dp-core.h"
 #include "cdn-dp-reg.h"
@@ -52,6 +42,7 @@
 #define CDN_FW_TIMEOUT_MS	(64 * 1000)
 #define CDN_DPCD_TIMEOUT_MS	5000
 #define CDN_DP_FIRMWARE		"rockchip/dptx.bin"
+MODULE_FIRMWARE(CDN_DP_FIRMWARE);
 
 struct cdn_dp_data {
 	u8 max_phy;
@@ -83,6 +74,7 @@ static int cdn_dp_grf_write(struct cdn_dp_device *dp,
 	ret = regmap_write(dp->grf, reg, val);
 	if (ret) {
 		DRM_DEV_ERROR(dp->dev, "Could not write to GRF: %d\n", ret);
+		clk_disable_unprepare(dp->grf_clk);
 		return ret;
 	}
 
@@ -94,7 +86,7 @@ static int cdn_dp_grf_write(struct cdn_dp_device *dp,
 static int cdn_dp_clk_enable(struct cdn_dp_device *dp)
 {
 	int ret;
-	u32 rate;
+	unsigned long rate;
 
 	ret = clk_prepare_enable(dp->pclk);
 	if (ret < 0) {
@@ -111,7 +103,7 @@ static int cdn_dp_clk_enable(struct cdn_dp_device *dp)
 	ret = pm_runtime_get_sync(dp->dev);
 	if (ret < 0) {
 		DRM_DEV_ERROR(dp->dev, "cannot get pm runtime %d\n", ret);
-		goto err_pclk;
+		goto err_pm_runtime_get;
 	}
 
 	reset_control_assert(dp->core_rst);
@@ -123,7 +115,8 @@ static int cdn_dp_clk_enable(struct cdn_dp_device *dp)
 
 	rate = clk_get_rate(dp->core_clk);
 	if (!rate) {
-		DRM_DEV_ERROR(dp->dev, "get clk rate failed: %d\n", rate);
+		DRM_DEV_ERROR(dp->dev, "get clk rate failed\n");
+		ret = -EINVAL;
 		goto err_set_rate;
 	}
 
@@ -133,6 +126,8 @@ static int cdn_dp_clk_enable(struct cdn_dp_device *dp)
 	return 0;
 
 err_set_rate:
+	pm_runtime_put(dp->dev);
+err_pm_runtime_get:
 	clk_disable_unprepare(dp->core_clk);
 err_core_clk:
 	clk_disable_unprepare(dp->pclk);
@@ -197,6 +192,39 @@ static struct cdn_dp_port *cdn_dp_connected_port(struct cdn_dp_device *dp)
 	return NULL;
 }
 
+static bool cdn_dp_check_sink_connection(struct cdn_dp_device *dp)
+{
+	unsigned long timeout = jiffies + msecs_to_jiffies(CDN_DPCD_TIMEOUT_MS);
+	struct cdn_dp_port *port;
+	u8 sink_count = 0;
+
+	if (dp->active_port < 0 || dp->active_port >= dp->ports) {
+		DRM_DEV_ERROR(dp->dev, "active_port is wrong!\n");
+		return false;
+	}
+
+	port = dp->port[dp->active_port];
+
+	/*
+	 * Attempt to read sink count, retry in case the sink may not be ready.
+	 *
+	 * Sinks are *supposed* to come up within 1ms from an off state, but
+	 * some docks need more time to power up.
+	 */
+	while (time_before(jiffies, timeout)) {
+		if (!extcon_get_state(port->extcon, EXTCON_DISP_DP))
+			return false;
+
+		if (!cdn_dp_get_sink_count(dp, &sink_count))
+			return sink_count ? true : false;
+
+		usleep_range(5000, 10000);
+	}
+
+	DRM_DEV_ERROR(dp->dev, "Get sink capability timed out\n");
+	return false;
+}
+
 static enum drm_connector_status
 cdn_dp_connector_detect(struct drm_connector *connector, bool force)
 {
@@ -218,7 +246,6 @@ static void cdn_dp_connector_destroy(struct drm_connector *connector)
 }
 
 static const struct drm_connector_funcs cdn_dp_atomic_connector_funcs = {
-	.dpms = drm_atomic_helper_connector_dpms,
 	.detect = cdn_dp_connector_detect,
 	.destroy = cdn_dp_connector_destroy,
 	.fill_modes = drm_helper_probe_single_connector_modes,
@@ -241,23 +268,13 @@ static int cdn_dp_connector_get_modes(struct drm_connector *connector)
 
 		dp->sink_has_audio = drm_detect_monitor_audio(edid);
 		ret = drm_add_edid_modes(connector, edid);
-		if (ret) {
-			drm_mode_connector_update_edid_property(connector,
+		if (ret)
+			drm_connector_update_edid_property(connector,
 								edid);
-			drm_edid_to_eld(connector, edid);
-		}
 	}
 	mutex_unlock(&dp->lock);
 
 	return ret;
-}
-
-static struct drm_encoder *
-cdn_dp_connector_best_encoder(struct drm_connector *connector)
-{
-	struct cdn_dp_device *dp = connector_to_dp(connector);
-
-	return &dp->encoder;
 }
 
 static int cdn_dp_connector_mode_valid(struct drm_connector *connector,
@@ -266,11 +283,6 @@ static int cdn_dp_connector_mode_valid(struct drm_connector *connector,
 	struct cdn_dp_device *dp = connector_to_dp(connector);
 	struct drm_display_info *display_info = &dp->connector.display_info;
 	u32 requested, actual, rate, sink_max, source_max = 0;
-	struct drm_encoder *encoder = connector->encoder;
-	enum drm_mode_status status = MODE_OK;
-	struct drm_device *dev = connector->dev;
-	struct rockchip_drm_private *priv = dev->dev_private;
-	struct drm_crtc *crtc;
 	u8 lanes, bpc;
 
 	/* If DP is disconnected, every mode is invalid */
@@ -311,46 +323,11 @@ static int cdn_dp_connector_mode_valid(struct drm_connector *connector,
 		return MODE_CLOCK_HIGH;
 	}
 
-	if (!encoder) {
-		const struct drm_connector_helper_funcs *funcs;
-
-		funcs = connector->helper_private;
-		if (funcs->atomic_best_encoder)
-			encoder = funcs->atomic_best_encoder(connector,
-							     connector->state);
-		else
-			encoder = funcs->best_encoder(connector);
-	}
-
-	if (!encoder || !encoder->possible_crtcs)
-		return MODE_BAD;
-	/*
-	 * ensure all drm display mode can work, if someone want support more
-	 * resolutions, please limit the possible_crtc, only connect to
-	 * needed crtc.
-	 */
-	drm_for_each_crtc(crtc, connector->dev) {
-		int pipe = drm_crtc_index(crtc);
-		const struct rockchip_crtc_funcs *funcs =
-						priv->crtc_funcs[pipe];
-
-		if (!(encoder->possible_crtcs & drm_crtc_mask(crtc)))
-			continue;
-		if (!funcs || !funcs->mode_valid)
-			continue;
-
-		status = funcs->mode_valid(crtc, mode,
-					   DRM_MODE_CONNECTOR_HDMIA);
-		if (status != MODE_OK)
-			return status;
-	}
-
 	return MODE_OK;
 }
 
 static struct drm_connector_helper_funcs cdn_dp_connector_helper_funcs = {
 	.get_modes = cdn_dp_connector_get_modes,
-	.best_encoder = cdn_dp_connector_best_encoder,
 	.mode_valid = cdn_dp_connector_mode_valid,
 };
 
@@ -384,47 +361,24 @@ static int cdn_dp_firmware_init(struct cdn_dp_device *dp)
 	return cdn_dp_event_config(dp);
 }
 
-static int cdn_dp_get_sink_capability(struct cdn_dp_device *dp,
-				      struct cdn_dp_port *port,
-				      u8 *sink_count)
+static int cdn_dp_get_sink_capability(struct cdn_dp_device *dp)
 {
 	int ret;
-	unsigned long timeout = jiffies + msecs_to_jiffies(CDN_DPCD_TIMEOUT_MS);
 
-	/*
-	 * Attempt to read sink count & sink capability, retry in case the sink
-	 * may not be ready.
-	 *
-	 * Sinks are *supposed* to come up within 1ms from an off state, but
-	 * some docks need more time to power up.
-	 */
-	while (time_before(jiffies, timeout)) {
-		if (!extcon_get_state(port->extcon, EXTCON_DISP_DP))
-			return -ENODEV;
+	if (!cdn_dp_check_sink_connection(dp))
+		return -ENODEV;
 
-		if (cdn_dp_get_sink_count(dp, sink_count)) {
-			usleep_range(5000, 10000);
-			continue;
-		}
-
-		if (!*sink_count)
-			return -ENODEV;
-
-		ret = cdn_dp_dpcd_read(dp, DP_DPCD_REV, dp->dpcd,
-				       DP_RECEIVER_CAP_SIZE);
-		if (ret) {
-			DRM_DEV_ERROR(dp->dev, "Failed to get caps %d\n", ret);
-			return ret;
-		}
-
-		kfree(dp->edid);
-		dp->edid = drm_do_get_edid(&dp->connector,
-					   cdn_dp_get_edid_block, dp);
-		return 0;
+	ret = cdn_dp_dpcd_read(dp, DP_DPCD_REV, dp->dpcd,
+			       DP_RECEIVER_CAP_SIZE);
+	if (ret) {
+		DRM_DEV_ERROR(dp->dev, "Failed to get caps %d\n", ret);
+		return ret;
 	}
 
-	DRM_DEV_ERROR(dp->dev, "Get sink capability timed out\n");
-	return -ETIMEDOUT;
+	kfree(dp->edid);
+	dp->edid = drm_do_get_edid(&dp->connector,
+				   cdn_dp_get_edid_block, dp);
+	return 0;
 }
 
 static int cdn_dp_enable_phy(struct cdn_dp_device *dp, struct cdn_dp_port *port)
@@ -471,6 +425,7 @@ static int cdn_dp_enable_phy(struct cdn_dp_device *dp, struct cdn_dp_port *port)
 		goto err_power_on;
 	}
 
+	dp->active_port = port->id;
 	return 0;
 
 err_power_on:
@@ -500,6 +455,7 @@ static int cdn_dp_disable_phy(struct cdn_dp_device *dp,
 
 	port->phy_enabled = false;
 	port->lanes = 0;
+	dp->active_port = -1;
 	return 0;
 }
 
@@ -524,8 +480,8 @@ static int cdn_dp_disable(struct cdn_dp_device *dp)
 	cdn_dp_set_firmware_active(dp, false);
 	cdn_dp_clk_disable(dp);
 	dp->active = false;
-	dp->link.rate = 0;
-	dp->link.num_lanes = 0;
+	dp->max_lanes = 0;
+	dp->max_rate = 0;
 	if (!dp->connected) {
 		kfree(dp->edid);
 		dp->edid = NULL;
@@ -538,7 +494,6 @@ static int cdn_dp_enable(struct cdn_dp_device *dp)
 {
 	int ret, i, lanes;
 	struct cdn_dp_port *port;
-	u8 sink_count;
 
 	port = cdn_dp_connected_port(dp);
 	if (!port) {
@@ -569,8 +524,8 @@ static int cdn_dp_enable(struct cdn_dp_device *dp)
 			if (ret)
 				continue;
 
-			ret = cdn_dp_get_sink_capability(dp, port, &sink_count);
-			if (ret || (!ret && !sink_count)) {
+			ret = cdn_dp_get_sink_capability(dp);
+			if (ret) {
 				cdn_dp_disable_phy(dp, port);
 			} else {
 				dp->active = true;
@@ -591,9 +546,7 @@ static void cdn_dp_encoder_mode_set(struct drm_encoder *encoder,
 {
 	struct cdn_dp_device *dp = encoder_to_dp(encoder);
 	struct drm_display_info *display_info = &dp->connector.display_info;
-	struct rockchip_crtc_state *state;
 	struct video_info *video = &dp->video_info;
-	int ret, val;
 
 	switch (display_info->bpc) {
 	case 10:
@@ -608,30 +561,8 @@ static void cdn_dp_encoder_mode_set(struct drm_encoder *encoder,
 	}
 
 	video->color_fmt = PXL_RGB;
-
 	video->v_sync_polarity = !!(mode->flags & DRM_MODE_FLAG_NVSYNC);
 	video->h_sync_polarity = !!(mode->flags & DRM_MODE_FLAG_NHSYNC);
-
-	ret = drm_of_encoder_active_endpoint_id(dp->dev->of_node, encoder);
-	if (ret < 0) {
-		DRM_DEV_ERROR(dp->dev, "Could not get vop id, %d", ret);
-		return;
-	}
-
-	DRM_DEV_DEBUG_KMS(dp->dev, "vop %s output to cdn-dp\n",
-			  (ret) ? "LIT" : "BIG");
-	state = to_rockchip_crtc_state(encoder->crtc->state);
-	if (ret) {
-		val = DP_SEL_VOP_LIT | (DP_SEL_VOP_LIT << 16);
-		state->output_mode = ROCKCHIP_OUT_MODE_P888;
-	} else {
-		val = DP_SEL_VOP_LIT << 16;
-		state->output_mode = ROCKCHIP_OUT_MODE_AAAA;
-	}
-
-	ret = cdn_dp_grf_write(dp, GRF_SOC_CON9, val);
-	if (ret)
-		return;
 
 	memcpy(&dp->mode, adjusted, sizeof(*mode));
 }
@@ -642,7 +573,7 @@ static bool cdn_dp_check_link_status(struct cdn_dp_device *dp)
 	struct cdn_dp_port *port = cdn_dp_connected_port(dp);
 	u8 sink_lanes = drm_dp_max_lane_count(dp->dpcd);
 
-	if (!port || !dp->link.rate || !dp->link.num_lanes)
+	if (!port || !dp->max_rate || !dp->max_lanes)
 		return false;
 
 	if (cdn_dp_dpcd_read(dp, DP_LANE0_1_STATUS, link_status,
@@ -658,9 +589,27 @@ static bool cdn_dp_check_link_status(struct cdn_dp_device *dp)
 static void cdn_dp_encoder_enable(struct drm_encoder *encoder)
 {
 	struct cdn_dp_device *dp = encoder_to_dp(encoder);
-	int ret;
+	int ret, val;
+
+	ret = drm_of_encoder_active_endpoint_id(dp->dev->of_node, encoder);
+	if (ret < 0) {
+		DRM_DEV_ERROR(dp->dev, "Could not get vop id, %d", ret);
+		return;
+	}
+
+	DRM_DEV_DEBUG_KMS(dp->dev, "vop %s output to cdn-dp\n",
+			  (ret) ? "LIT" : "BIG");
+	if (ret)
+		val = DP_SEL_VOP_LIT | (DP_SEL_VOP_LIT << 16);
+	else
+		val = DP_SEL_VOP_LIT << 16;
+
+	ret = cdn_dp_grf_write(dp, GRF_SOC_CON9, val);
+	if (ret)
+		return;
 
 	mutex_lock(&dp->lock);
+
 	ret = cdn_dp_enable(dp);
 	if (ret) {
 		DRM_DEV_ERROR(dp->dev, "Failed to enable encoder %d\n",
@@ -694,13 +643,6 @@ static void cdn_dp_encoder_enable(struct drm_encoder *encoder)
 	}
 out:
 	mutex_unlock(&dp->lock);
-	if (!ret) {
-#ifdef CONFIG_SWITCH
-		switch_set_state(&dp->switchdev, 1);
-#else
-		hdmi_event_connect(dp->dev);
-#endif
-	}
 }
 
 static void cdn_dp_encoder_disable(struct drm_encoder *encoder)
@@ -717,11 +659,6 @@ static void cdn_dp_encoder_disable(struct drm_encoder *encoder)
 		}
 	}
 	mutex_unlock(&dp->lock);
-#ifdef CONFIG_SWITCH
-	switch_set_state(&dp->switchdev, 0);
-#else
-	hdmi_event_disconnect(dp->dev);
-#endif
 
 	/*
 	 * In the following 2 cases, we need to run the event_work to re-enable
@@ -744,10 +681,6 @@ static int cdn_dp_encoder_atomic_check(struct drm_encoder *encoder,
 
 	s->output_mode = ROCKCHIP_OUT_MODE_AAAA;
 	s->output_type = DRM_MODE_CONNECTOR_DisplayPort;
-	s->bus_format = MEDIA_BUS_FMT_RGB888_1X24;
-	s->tv_state = &conn_state->tv;
-	s->eotf = TRADITIONAL_GAMMA_SDR;
-	s->color_space = V4L2_COLORSPACE_DEFAULT;
 
 	return 0;
 }
@@ -757,10 +690,6 @@ static const struct drm_encoder_helper_funcs cdn_dp_encoder_helper_funcs = {
 	.enable = cdn_dp_encoder_enable,
 	.disable = cdn_dp_encoder_disable,
 	.atomic_check = cdn_dp_encoder_atomic_check,
-};
-
-static const struct drm_encoder_funcs cdn_dp_encoder_funcs = {
-	.destroy = drm_encoder_cleanup,
 };
 
 static int cdn_dp_parse_dt(struct cdn_dp_device *dp)
@@ -848,7 +777,7 @@ static int cdn_dp_audio_hw_params(struct device *dev,  void *data,
 
 	mutex_lock(&dp->lock);
 	if (!dp->active) {
-		ret = 0;
+		ret = -ENODEV;
 		goto out;
 	}
 
@@ -890,15 +819,15 @@ out:
 	mutex_unlock(&dp->lock);
 }
 
-static int cdn_dp_audio_digital_mute(struct device *dev, void *data,
-				     bool enable)
+static int cdn_dp_audio_mute_stream(struct device *dev, void *data,
+				    bool enable, int direction)
 {
 	struct cdn_dp_device *dp = dev_get_drvdata(dev);
 	int ret;
 
 	mutex_lock(&dp->lock);
 	if (!dp->active) {
-		ret = 0;
+		ret = -ENODEV;
 		goto out;
 	}
 
@@ -922,8 +851,9 @@ static int cdn_dp_audio_get_eld(struct device *dev, void *data,
 static const struct hdmi_codec_ops audio_codec_ops = {
 	.hw_params = cdn_dp_audio_hw_params,
 	.audio_shutdown = cdn_dp_audio_shutdown,
-	.digital_mute = cdn_dp_audio_digital_mute,
+	.mute_stream = cdn_dp_audio_mute_stream,
 	.get_eld = cdn_dp_audio_get_eld,
+	.no_capture_mute = 1,
 };
 
 static int cdn_dp_audio_codec_init(struct cdn_dp_device *dp,
@@ -989,7 +919,6 @@ static void cdn_dp_pd_event_work(struct work_struct *work)
 	enum drm_connector_status old_status;
 
 	int ret;
-	u8 sink_count;
 
 	mutex_lock(&dp->lock);
 
@@ -1017,14 +946,14 @@ static void cdn_dp_pd_event_work(struct work_struct *work)
 		}
 
 	/* Enabled and connected to a dongle without a sink, notify userspace */
-	} else if (cdn_dp_get_sink_count(dp, &sink_count) || !sink_count) {
+	} else if (!cdn_dp_check_sink_connection(dp)) {
 		DRM_DEV_INFO(dp->dev, "Connected without sink. Assert hpd\n");
 		dp->connected = false;
 
 	/* Enabled and connected with a sink, re-train if requested */
 	} else if (!cdn_dp_check_link_status(dp)) {
-		unsigned int rate = dp->link.rate;
-		unsigned int lanes = dp->link.num_lanes;
+		unsigned int rate = dp->max_rate;
+		unsigned int lanes = dp->max_lanes;
 		struct drm_display_mode *mode = &dp->mode;
 
 		DRM_DEV_INFO(dp->dev, "Connected with sink. Re-train link\n");
@@ -1037,7 +966,7 @@ static void cdn_dp_pd_event_work(struct work_struct *work)
 
 		/* If training result is changed, update the video config */
 		if (mode->clock &&
-		    (rate != dp->link.rate || lanes != dp->link.num_lanes)) {
+		    (rate != dp->max_rate || lanes != dp->max_lanes)) {
 			ret = cdn_dp_config_video(dp);
 			if (ret) {
 				dp->connected = false;
@@ -1090,8 +1019,9 @@ static int cdn_dp_bind(struct device *dev, struct device *master, void *data)
 	dp->drm_dev = drm_dev;
 	dp->connected = false;
 	dp->active = false;
+	dp->active_port = -1;
+	dp->fw_loaded = false;
 
-	mutex_init(&dp->lock);
 	INIT_WORK(&dp->event_work, cdn_dp_pd_event_work);
 
 	encoder = &dp->encoder;
@@ -1100,8 +1030,8 @@ static int cdn_dp_bind(struct device *dev, struct device *master, void *data)
 							     dev->of_node);
 	DRM_DEBUG_KMS("possible_crtcs = 0x%x\n", encoder->possible_crtcs);
 
-	ret = drm_encoder_init(drm_dev, encoder, &cdn_dp_encoder_funcs,
-			       DRM_MODE_ENCODER_TMDS, NULL);
+	ret = drm_simple_encoder_init(drm_dev, encoder,
+				      DRM_MODE_ENCODER_TMDS);
 	if (ret) {
 		DRM_ERROR("failed to initialize encoder with drm\n");
 		return ret;
@@ -1123,18 +1053,11 @@ static int cdn_dp_bind(struct device *dev, struct device *master, void *data)
 
 	drm_connector_helper_add(connector, &cdn_dp_connector_helper_funcs);
 
-#ifdef CONFIG_SWITCH
-	dp->switchdev.name = "cdn-dp";
-	switch_dev_register(&dp->switchdev);
-#endif
-
-	ret = drm_mode_connector_attach_encoder(connector, encoder);
+	ret = drm_connector_attach_encoder(connector, encoder);
 	if (ret) {
 		DRM_ERROR("failed to attach connector and encoder\n");
 		goto err_free_connector;
 	}
-
-	cdn_dp_audio_codec_init(dp, dev);
 
 	for (i = 0; i < dp->ports; i++) {
 		port = dp->port[i];
@@ -1169,18 +1092,14 @@ static void cdn_dp_unbind(struct device *dev, struct device *master, void *data)
 	struct drm_encoder *encoder = &dp->encoder;
 	struct drm_connector *connector = &dp->connector;
 
-#ifdef CONFIG_SWITCH
-	switch_dev_unregister(&dp->switchdev);
-#endif
-
 	cancel_work_sync(&dp->event_work);
-	platform_device_unregister(dp->audio_pdev);
 	cdn_dp_encoder_disable(encoder);
 	encoder->funcs->destroy(encoder);
 	connector->funcs->destroy(connector);
 
 	pm_runtime_disable(dev);
-	release_firmware(dp->fw);
+	if (dp->fw_loaded)
+		release_firmware(dp->fw);
 	kfree(dp->edid);
 	dp->edid = NULL;
 }
@@ -1190,7 +1109,7 @@ static const struct component_ops cdn_dp_component_ops = {
 	.unbind = cdn_dp_unbind,
 };
 
-int cdn_dp_suspend(struct device *dev)
+static int cdn_dp_suspend(struct device *dev)
 {
 	struct cdn_dp_device *dp = dev_get_drvdata(dev);
 	int ret = 0;
@@ -1204,7 +1123,7 @@ int cdn_dp_suspend(struct device *dev)
 	return ret;
 }
 
-int cdn_dp_resume(struct device *dev)
+static __maybe_unused int cdn_dp_resume(struct device *dev)
 {
 	struct cdn_dp_device *dp = dev_get_drvdata(dev);
 
@@ -1248,7 +1167,7 @@ static int cdn_dp_probe(struct platform_device *pdev)
 			continue;
 
 		port = devm_kzalloc(dev, sizeof(*port), GFP_KERNEL);
-		if (!dp)
+		if (!port)
 			return -ENOMEM;
 
 		port->extcon = extcon;
@@ -1263,7 +1182,10 @@ static int cdn_dp_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 
+	mutex_init(&dp->lock);
 	dev_set_drvdata(dev, dp);
+
+	cdn_dp_audio_codec_init(dp, dev);
 
 	return component_add(dev, &cdn_dp_component_ops);
 }
@@ -1272,6 +1194,7 @@ static int cdn_dp_remove(struct platform_device *pdev)
 {
 	struct cdn_dp_device *dp = platform_get_drvdata(pdev);
 
+	platform_device_unregister(dp->audio_pdev);
 	cdn_dp_suspend(dp->dev);
 	component_del(&pdev->dev, &cdn_dp_component_ops);
 
@@ -1290,7 +1213,7 @@ static const struct dev_pm_ops cdn_dp_pm_ops = {
 				cdn_dp_resume)
 };
 
-static struct platform_driver cdn_dp_driver = {
+struct platform_driver cdn_dp_driver = {
 	.probe = cdn_dp_probe,
 	.remove = cdn_dp_remove,
 	.shutdown = cdn_dp_shutdown,
@@ -1301,9 +1224,3 @@ static struct platform_driver cdn_dp_driver = {
 		   .pm = &cdn_dp_pm_ops,
 	},
 };
-
-module_platform_driver(cdn_dp_driver);
-
-MODULE_AUTHOR("Chris Zhong <zyw@rock-chips.com>");
-MODULE_DESCRIPTION("cdn DP Driver");
-MODULE_LICENSE("GPL v2");
