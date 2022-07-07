@@ -12,6 +12,21 @@
 
 	chosen {
 		stdout-path = "serial2:1500000n8";
+		bootargs = "dom0_mem=2048M hmp-unsafe=true pci-passthrough=true acpi=force";
+                xen,dom0-bootargs = "console=hvc0 earlyprintk=xen clk_ignore_unused root=/dev/nvme0n1p2 rw init=/sbin/init rootwait rootfstype=ext4 ignore_loglevel";
+		modules {
+			#address-cells = <2>;
+			#size-cells = <2>;
+
+			module@1 {
+				compatible = "xen,linux-zimage", "xen,multiboot-module";
+				reg = <0x0 0x03F80000 0x0 0x02000000>;
+			};
+                        module@2 {
+                                compatible = "xen,linux-initrd", "xen,multiboot-module";
+                                reg = <0x0 0x06000000 0x0 0x02000000>;
+                        };
+                };
 	};
 	
 	leds {

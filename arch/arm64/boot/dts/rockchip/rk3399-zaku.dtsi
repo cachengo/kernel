@@ -430,6 +430,7 @@
 };
 
 &pcie0 {
+        device_type = "pci";
 	num-lanes = <4>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pcie_clkreqn_cpm>;

@@ -25,6 +25,7 @@
 #include "util/synthetic-events.h"
 #include "util/thread.h"
 #include "util/namespaces.h"
+#include "util/util.h"
 
 #include <linux/err.h>
 #include <subcmd/parse-options.h>
@@ -110,7 +111,8 @@ static int perf_event__repipe_op2_synth(struct perf_session *session,
 
 static int perf_event__repipe_op4_synth(struct perf_session *session,
 					union perf_event *event,
-					u64 data __maybe_unused)
+					u64 data __maybe_unused,
+					const char *str __maybe_unused)
 {
 	return perf_event__repipe_synth(session->tool, event);
 }
@@ -354,7 +356,7 @@ static struct dso *findnew_dso(int pid, int tid, const char *filename,
 		nnsi = nsinfo__copy(nsi);
 		if (nnsi) {
 			nsinfo__put(nsi);
-			nnsi->need_setns = false;
+			nsinfo__clear_need_setns(nnsi);
 			nsi = nnsi;
 		}
 		dso = machine__findnew_vdso(machine, thread);
@@ -535,12 +537,9 @@ static int perf_event__repipe_exit(struct perf_tool *tool,
 static int perf_event__repipe_tracing_data(struct perf_session *session,
 					   union perf_event *event)
 {
-	int err;
-
 	perf_event__repipe_synth(session->tool, event);
-	err = perf_event__process_tracing_data(session, event);
 
-	return err;
+	return perf_event__process_tracing_data(session, event);
 }
 
 static int dso__read_build_id(struct dso *dso)
@@ -553,6 +552,15 @@ static int dso__read_build_id(struct dso *dso)
 	nsinfo__mountns_enter(dso->nsinfo, &nsc);
 	if (filename__read_build_id(dso->long_name, &dso->bid) > 0)
 		dso->has_build_id = true;
+	else if (dso->nsinfo) {
+		char *new_name;
+
+		new_name = filename_with_chroot(dso->nsinfo->pid,
+						dso->long_name);
+		if (new_name && filename__read_build_id(new_name, &dso->bid) > 0)
+			dso->has_build_id = true;
+		free(new_name);
+	}
 	nsinfo__mountns_exit(&nsc);
 
 	return dso->has_build_id ? 0 : -1;
@@ -819,7 +827,8 @@ static int __cmd_inject(struct perf_inject *inject)
 		inject->tool.auxtrace_info  = perf_event__process_auxtrace_info;
 		inject->tool.auxtrace	    = perf_event__process_auxtrace;
 		inject->tool.aux	    = perf_event__drop_aux;
-		inject->tool.itrace_start   = perf_event__drop_aux,
+		inject->tool.itrace_start   = perf_event__drop_aux;
+		inject->tool.aux_output_hw_id = perf_event__drop_aux;
 		inject->tool.ordered_events = true;
 		inject->tool.ordering_requires_timestamps = true;
 		/* Allow space in the header for new attributes */
@@ -886,6 +895,7 @@ int cmd_inject(int argc, const char **argv)
 			.lost_samples	= perf_event__repipe,
 			.aux		= perf_event__repipe,
 			.itrace_start	= perf_event__repipe,
+			.aux_output_hw_id = perf_event__repipe,
 			.context_switch	= perf_event__repipe,
 			.throttle	= perf_event__repipe,
 			.unthrottle	= perf_event__repipe,
@@ -942,6 +952,10 @@ int cmd_inject(int argc, const char **argv)
 #endif
 		OPT_INCR('v', "verbose", &verbose,
 			 "be more verbose (show build ids, etc)"),
+		OPT_STRING('k', "vmlinux", &symbol_conf.vmlinux_name,
+			   "file", "vmlinux pathname"),
+		OPT_BOOLEAN(0, "ignore-vmlinux", &symbol_conf.ignore_vmlinux,
+			    "don't load vmlinux even if found"),
 		OPT_STRING(0, "kallsyms", &symbol_conf.kallsyms_name, "file",
 			   "kallsyms pathname"),
 		OPT_BOOLEAN('f', "force", &data.force, "don't complain, do it"),
@@ -975,6 +989,9 @@ int cmd_inject(int argc, const char **argv)
 		pr_err("--strip option requires --itrace option\n");
 		return -1;
 	}
+
+	if (symbol__validate_sym_arguments())
+		return -1;
 
 	if (inject.in_place_update) {
 		if (!strcmp(inject.input_name, "-")) {

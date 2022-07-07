@@ -415,8 +415,7 @@ static int create_log_context(struct dm_dirty_log *log, struct dm_target *ti,
 	/*
 	 * Work out how many "unsigned long"s we need to hold the bitset.
 	 */
-	bitset_size = dm_round_up(region_count,
-				  sizeof(*lc->clean_bits) << BYTE_SHIFT);
+	bitset_size = dm_round_up(region_count, BITS_PER_LONG);
 	bitset_size >>= BYTE_SHIFT;
 
 	lc->bitset_uint32_count = bitset_size / sizeof(*lc->clean_bits);
@@ -447,7 +446,7 @@ static int create_log_context(struct dm_dirty_log *log, struct dm_target *ti,
 				bdev_logical_block_size(lc->header_location.
 							    bdev));
 
-		if (buf_size > i_size_read(dev->bdev->bd_inode)) {
+		if (buf_size > bdev_nr_bytes(dev->bdev)) {
 			DMWARN("log device %s too small: need %llu bytes",
 				dev->name, (unsigned long long)buf_size);
 			kfree(lc);
