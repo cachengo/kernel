@@ -104,22 +104,6 @@
 	};
 };
 
-&cpu_l0 {
-	operating-points-v2 = <&cluster0_opp>;
-};
-
-&cpu_l1 {
-	operating-points-v2 = <&cluster0_opp>;
-};
-
-&cpu_l2 {
-	operating-points-v2 = <&cluster0_opp>;
-};
-
-&cpu_l3 {
-	operating-points-v2 = <&cluster0_opp>;
-};
-
 &cpu_b0 {
 	operating-points-v2 = <&cluster1_opp>;
 };
@@ -131,3 +115,4 @@
 &gpu {
 	operating-points-v2 = <&gpu_opp_table>;
 };
+
