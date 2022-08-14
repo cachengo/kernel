@@ -110,12 +110,40 @@
 &usbdrd_dwc3_1 {
 	dr_mode = "host";
 };
-/* Changed Pin */
+
 &vcc3v3_pcie {
 	gpio = <&gpio4 18 GPIO_ACTIVE_HIGH>;
 };
-/* Changed Pin and label */
+
 &vcc5v0_usb {
 	gpio = <&gpio4 27 GPIO_ACTIVE_HIGH>;
 };
 
+&spi1 {
+	status = "okay";
+	flash@0 {
+		status = "okay";
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <10000000>;
+
+		#address-cells = <1>;
+		#size-cells = <1>;
+		partition@0 {
+			label = "IDBlock";
+			reg = <0x0 0x200000>;
+		};
+
+		partition@1 {
+			label = "uboot-recovery";
+			reg = <0x200000 0x200000>;      
+		};
+
+		partition@2 {
+			label = "uboot";
+			reg = <0x400000 0x200000>;
+		};
+
+	};
+
+};
