@@ -143,6 +143,15 @@
 			label = "uboot";
 			reg = <0x400000 0x200000>;
 		};
+		partition@3 {
+			label = "trust";
+			reg = <0x600000 0x100000>;
+		};
+		partition@4 {
+			label = "uboot-env";
+			reg = <0x700000 0x100000>;
+		};
+
 
 	};
 
