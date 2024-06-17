@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 /*
- * Copyright (c) 2022 Rockchip Electronics Co., Ltd.
- * Copyright (c) 2022 Radxa Limited
+ * Copyright (c) 2023 Rockchip Electronics Co., Ltd.
+ * Copyright (c) 2023 Radxa Limited
  *
  */
 
@@ -21,7 +21,7 @@
 #include "rk3588-linux.dtsi"
 
 / {
-	model = "Radxa ZAKU2";
+	model = "Radxa ZAKU2 V1.2";
 	compatible = "radxa,zaku2", "rockchip,rk3588";
 
 	/delete-node/ chosen;
@@ -45,24 +45,6 @@
 		vin-supply = <&vcc12v_dcin>;
 	};
 
-	wifi_disable: wifi-diable-gpio-regulator {
-		compatible = "regulator-fixed";
-		regulator-name = "wifi_disable";
-		enable-active-high;
-		gpio = <&gpio4 RK_PA2 GPIO_ACTIVE_HIGH>;
-		regulator-boot-on;
-		regulator-always-on;
-	};
-
-	bt_wake: bt-wake-gpio-regulator {
-		compatible = "regulator-fixed";
-		regulator-name = "bt_wake";
-		enable-active-high;
-		gpio = <&gpio3 RK_PD5 GPIO_ACTIVE_HIGH>;
-		regulator-boot-on;
-		regulator-always-on;
-	};
-
 	vcc_1v1_nldo_s3: vcc-1v1-nldo-s3 {
 		compatible = "regulator-fixed";
 		regulator-name = "vcc_1v1_nldo_s3";
@@ -72,18 +54,20 @@
 		regulator-max-microvolt = <1100000>;
 		vin-supply = <&vcc5v0_sys>;
 	};
-	//pcie2.0 bottom
-	vcc3v3_pcie2x1l2: vcc3v3-pcie2x1l2 {
+
+	vcc3v3_pcie30x2: vcc3v3-pcie2x1l2 {
 		compatible = "regulator-fixed";
 		regulator-name = "vcc3v3_pcie2x1l2";
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
 		enable-active-high;
-		gpios = <&gpio1 RK_PA4 GPIO_ACTIVE_HIGH>;
+		regulator-boot-on;
+		regulator-always-on;
+		gpios = <&gpio1 RK_PB7 GPIO_ACTIVE_HIGH>;
 		startup-delay-us = <5000>;
 		vin-supply = <&vcc5v0_sys>;
 	};
-	//wifi
+
 	vcc3v3_pcie2x1l0: vcc3v3-pcie2x1l0 {
 		compatible = "regulator-fixed";
 		regulator-name = "vcc3v3_pcie2x1l0";
@@ -96,18 +80,20 @@
 		startup-delay-us = <50000>;
 		vin-supply = <&vcc5v0_sys>;
 	};
-	//pcie3.0 top
+
 	vcc3v3_pcie30: vcc3v3-pcie30 {
 		compatible = "regulator-fixed";
 		regulator-name = "vcc3v3_pcie30";
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
 		enable-active-high;
+		regulator-boot-on;
+		regulator-always-on;
 		gpios = <&gpio1 RK_PA4 GPIO_ACTIVE_HIGH>;
 		startup-delay-us = <5000>;
 		vin-supply = <&vcc5v0_sys>;
 	};
-	//system status
+
 	leds {
 		compatible = "gpio-leds";
 		pinctrl-names = "default";
@@ -384,7 +370,7 @@
 	status = "okay";
 	vref-supply = <&avcc_1v8_s0>;
 };
-//emmc
+
 &sdhci {
 	bus-width = <8>;
 	no-sdio;
@@ -400,19 +386,25 @@
 	status = "okay";
 };
 
+&usb2phy0_grf {
+	status = "okay";
+};
+
+&u2phy0 {
+	status = "okay";
+};
+
 &u2phy2 {
 	status = "okay";
 };
 
+&u2phy0_otg {
+	rockchip,sel-pipe-phystatus;
+	rockchip,typec-vbus-det;
+	status = "okay";
+};
+
 &u2phy2_host {
-	status = "okay";
-};
-
-&u2phy3 {
-	status = "okay";
-};
-
-&u2phy3_host {
 	status = "okay";
 };
 
@@ -424,11 +416,21 @@
 	status = "okay";
 };
 
-&usb_host1_ehci {
+&usbdp_phy0 {
 	status = "okay";
 };
 
-&usb_host1_ohci {
+&usbdp_phy0_u3 {
+	status = "okay";
+};
+
+&usbdrd3_0 {
+	status = "okay";
+};
+
+&usbdrd_dwc3_0 {
+	dr_mode = "otg";
+	extcon = <&u2phy0>;
 	status = "okay";
 };
 
@@ -440,56 +442,6 @@
 	status = "okay";
 };
 
-&combphy2_psu {
-	status = "okay";
-};
-
-&u2phy1 {
-	status = "okay";
-};
-
-&u2phy1_otg {
-	status = "okay";
-};
-
-&usbdrd3_1{
-	status = "okay";
-};
-
-&usbdrd_dwc3_1{
-	status = "okay";
-};
-
-&usbdp_phy1 {
-	status = "okay";
-};
-
-&usbdp_phy1_u3 {
-	status = "okay";
-};
-
-&i2c4 {
-	status = "disabled";
-};
-
-&u2phy0 {
-	status = "okay";
-};
-
-&u2phy0_otg {
-	rockchip,typec-vbus-det;
-	status = "okay";
-};
-
-&usbdrd3_0 {
-	status = "okay";
-};
-
-&usbdrd_dwc3_0 {
-	status = "okay";
-	dr_mode = "otg";
-};
-
 &spdif_tx2 {
 	status = "okay";
 };
@@ -498,9 +450,7 @@
 	status = "okay";
 };
 
-&pcie2x1l2 {
-	reset-gpios = <&gpio3 RK_PD2 GPIO_ACTIVE_HIGH>;
-	vpcie3v3-supply = <&vcc3v3_pcie2x1l2>;
+&combphy1_ps {
 	status = "okay";
 };
 
@@ -510,23 +460,21 @@
 	status = "okay";
 };
 
-&combphy1_ps {
+&pcie30phy {
+	rockchip,pcie30-phymode = <PHY_MODE_PCIE_NANBNB>;
 	status = "okay";
 };
 
-&pcie30phy {
+&pcie3x2 {
+	reset-gpios = <&gpio4 RK_PB0 GPIO_ACTIVE_HIGH>;
+	vpcie3v3-supply = <&vcc3v3_pcie30x2>;
 	status = "okay";
 };
 
 &pcie3x4 {
+	num-lanes = <2>;
 	reset-gpios = <&gpio4 RK_PB6 GPIO_ACTIVE_HIGH>;
 	vpcie3v3-supply = <&vcc3v3_pcie30>;
-	status = "okay";
-};
-
-&pwm1 {
-	pinctrl-names = "active";
-	pinctrl-0 = <&pwm1m0_pins>;
 	status = "okay";
 };
 
