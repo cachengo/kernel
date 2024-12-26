@@ -1886,11 +1886,14 @@ static int nfs_update_inode(struct inode *inode, struct nfs_fattr *fattr)
 	nfsi->read_cache_jiffies = fattr->time_start;
 
 	save_cache_validity = nfsi->cache_validity;
-	nfsi->cache_validity &= ~(NFS_INO_INVALID_ATTR
-			| NFS_INO_INVALID_ATIME
-			| NFS_INO_REVAL_FORCED
-			| NFS_INO_REVAL_PAGECACHE
-			| NFS_INO_INVALID_BLOCKS);
+	nfsi->cache_validity &=
+		~(NFS_INO_INVALID_ATIME | NFS_INO_REVAL_FORCED |
+		  NFS_INO_INVALID_CHANGE | NFS_INO_INVALID_CTIME |
+		  NFS_INO_INVALID_MTIME | NFS_INO_INVALID_SIZE |
+		  NFS_INO_INVALID_OTHER | NFS_INO_INVALID_BLOCKS |
+		  NFS_INO_INVALID_NLINK | NFS_INO_INVALID_MODE |
+		  NFS_INO_INVALID_BTIME | NFS_INO_INVALID_WINATTR |
+		  NFS_INO_INVALID_UNCACHE);
 
 	/* Do atomic weak cache consistency updates */
 	nfs_wcc_update_inode(inode, fattr);
@@ -1916,6 +1919,7 @@ static int nfs_update_inode(struct inode *inode, struct nfs_fattr *fattr)
 					| NFS_INO_INVALID_OTHER;
 				if (S_ISDIR(inode->i_mode))
 					nfs_force_lookup_revalidate(inode);
+				attr_changed = true;
 				dprintk("NFS: change_attr change on server for file %s/%ld\n",
 						inode->i_sb->s_id,
 						inode->i_ino);
