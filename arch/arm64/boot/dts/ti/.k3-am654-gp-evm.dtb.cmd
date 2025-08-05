@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/ti/k3-am654-gp-evm.dtb := ./scripts/dtc/fdtoverlay -o arch/arm64/boot/dts/ti/k3-am654-gp-evm.dtb -i arch/arm64/boot/dts/ti/k3-am654-base-board.dtb arch/arm64/boot/dts/ti/k3-am654-base-board-rocktech-rk101-panel.dtbo arch/arm64/boot/dts/ti/k3-am654-pcie-usb3.dtbo 

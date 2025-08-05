@@ -1,0 +1,4 @@
+k3-am642-evm-icssg1-dualemac-mii.o: \
+ arch/arm64/boot/dts/ti/k3-am642-evm-icssg1-dualemac-mii.dtso \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ arch/arm64/boot/dts/ti/k3-pinctrl.h

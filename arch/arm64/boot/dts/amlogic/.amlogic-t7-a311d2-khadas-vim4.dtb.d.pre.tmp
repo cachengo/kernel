@@ -1,0 +1,7 @@
+amlogic-t7-a311d2-khadas-vim4.o: \
+ arch/arm64/boot/dts/amlogic/amlogic-t7-a311d2-khadas-vim4.dts \
+ arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h \
+ scripts/dtc/include-prefixes/dt-bindings/power/amlogic,t7-pwrc.h \
+ arch/arm64/boot/dts/amlogic/amlogic-t7-reset.h

@@ -1,0 +1,6 @@
+k3-j784s4-evm-quad-port-eth-exp1.o: \
+ arch/arm64/boot/dts/ti/k3-j784s4-evm-quad-port-eth-exp1.dtso \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ scripts/dtc/include-prefixes/dt-bindings/phy/phy-cadence.h \
+ scripts/dtc/include-prefixes/dt-bindings/phy/phy.h \
+ arch/arm64/boot/dts/ti/k3-pinctrl.h arch/arm64/boot/dts/ti/k3-serdes.h

@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/kernel/pi/relocate.pi.o := objcopy --prefix-symbols=__pi_ --remove-section=.note.gnu.property  arch/arm64/kernel/pi/relocate.o arch/arm64/kernel/pi/relocate.pi.o && arch/arm64/kernel/pi/relacheck arch/arm64/kernel/pi/relocate.pi.o arch/arm64/kernel/pi/relocate.o

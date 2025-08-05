@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/freescale/imx8mm-kontron-dl.dtb := ./scripts/dtc/fdtoverlay -o arch/arm64/boot/dts/freescale/imx8mm-kontron-dl.dtb -i arch/arm64/boot/dts/freescale/imx8mm-kontron-bl.dtb arch/arm64/boot/dts/freescale/imx8mm-kontron-dl.dtbo 

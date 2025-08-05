@@ -1,0 +1,3 @@
+imx8mm-kontron-dl.o: arch/arm64/boot/dts/freescale/imx8mm-kontron-dl.dtso \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ arch/arm64/boot/dts/freescale/imx8mm-pinfunc.h

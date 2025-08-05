@@ -1,0 +1,21 @@
+# 0 "arch/arm64/boot/dts/freescale/fsl-lx2160a-tqmlx2160a-mblx2160a_14_x_x.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/freescale/fsl-lx2160a-tqmlx2160a-mblx2160a_14_x_x.dtso"
+
+
+
+
+
+
+
+/dts-v1/;
+/plugin/;
+
+&dpmac1 {
+ managed = "in-band-status";
+};
+
+&pcs_mdio1 {
+ status = "okay";
+};

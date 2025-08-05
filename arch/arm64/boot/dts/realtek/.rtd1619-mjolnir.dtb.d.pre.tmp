@@ -1,0 +1,5 @@
+rtd1619-mjolnir.o: arch/arm64/boot/dts/realtek/rtd1619-mjolnir.dts \
+ arch/arm64/boot/dts/realtek/rtd1619.dtsi \
+ arch/arm64/boot/dts/realtek/rtd16xx.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h

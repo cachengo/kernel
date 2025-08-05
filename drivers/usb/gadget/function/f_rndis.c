@@ -84,19 +84,6 @@ static inline struct f_rndis *func_to_rndis(struct usb_function *f)
 	return container_of(f, struct f_rndis, port.func);
 }
 
-/* peak (theoretical) bulk transfer rate in bits-per-second */
-static unsigned int bitrate(struct usb_gadget *g)
-{
-	if (gadget_is_superspeed(g) && g->speed >= USB_SPEED_SUPER_PLUS)
-		return 4250000000U;
-	if (gadget_is_superspeed(g) && g->speed == USB_SPEED_SUPER)
-		return 3750000000U;
-	else if (gadget_is_dualspeed(g) && g->speed == USB_SPEED_HIGH)
-		return 13 * 512 * 8 * 1000 * 8;
-	else
-		return 19 * 64 * 1 * 1000 * 8;
-}
-
 /*-------------------------------------------------------------------------*/
 
 /*
@@ -115,9 +102,9 @@ static struct usb_interface_descriptor rndis_control_intf = {
 	/* .bInterfaceNumber = DYNAMIC */
 	/* status endpoint is optional; this could be patched later */
 	.bNumEndpoints =	1,
-	.bInterfaceClass =	USB_CLASS_WIRELESS_CONTROLLER,
-	.bInterfaceSubClass =	1,
-	.bInterfaceProtocol =   3,
+	.bInterfaceClass =	USB_CLASS_COMM,
+	.bInterfaceSubClass =   USB_CDC_SUBCLASS_ACM,
+	.bInterfaceProtocol =   USB_CDC_ACM_PROTO_VENDOR,
 	/* .iInterface = DYNAMIC */
 };
 
@@ -176,9 +163,9 @@ rndis_iad_descriptor = {
 
 	.bFirstInterface =	0, /* XXX, hardcoded */
 	.bInterfaceCount = 	2,	// control + data
-	.bFunctionClass =	USB_CLASS_WIRELESS_CONTROLLER,
-	.bFunctionSubClass =	1,
-	.bFunctionProtocol =	3,
+	.bFunctionClass =	USB_CLASS_COMM,
+	.bFunctionSubClass =	USB_CDC_SUBCLASS_ETHERNET,
+	.bFunctionProtocol =	USB_CDC_PROTO_NONE,
 	/* .iFunction = DYNAMIC */
 };
 
@@ -512,20 +499,6 @@ rndis_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 		}
 		break;
 
-	case ((USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE) << 8)
-			| USB_CDC_SET_ETHERNET_PACKET_FILTER:
-		/*
-		 * see 6.2.30: no data, wIndex = interface, wValue = packet
-		 * filter bitmap. However, we don't really set cdc_filter to
-		 * wValue for rndis, because cdc_filter is not RNDIS-specific.
-		 * Return value 0 to avoid usb controllers stall ep0.
-		 */
-		if (w_length != 0 || w_index != rndis->ctrl_id)
-			goto invalid;
-		DBG(cdev, "packet filter %02x\n", w_value);
-		value = 0;
-		break;
-
 	default:
 invalid:
 		VDBG(cdev, "invalid control req%02x.%02x v%04x i%04x l%d\n",
@@ -654,7 +627,7 @@ static void rndis_open(struct gether *geth)
 	DBG(cdev, "%s\n", __func__);
 
 	rndis_set_param_medium(rndis->params, RNDIS_MEDIUM_802_3,
-				bitrate(cdev->gadget) / 100);
+				gether_bitrate(cdev->gadget) / 100);
 	rndis_signal_connect(rndis->params);
 }
 
@@ -825,9 +798,7 @@ rndis_bind(struct usb_configuration *c, struct usb_function *f)
 	 * until we're activated via set_alt().
 	 */
 
-	DBG(cdev, "RNDIS: %s speed IN/%s OUT/%s NOTIFY/%s\n",
-			gadget_is_superspeed(c->cdev->gadget) ? "super" :
-			gadget_is_dualspeed(c->cdev->gadget) ? "dual" : "full",
+	DBG(cdev, "RNDIS: IN/%s OUT/%s NOTIFY/%s\n",
 			rndis->port.in_ep->name, rndis->port.out_ep->name,
 			rndis->notify->name);
 	return 0;
@@ -1042,5 +1013,6 @@ static struct usb_function *rndis_alloc(struct usb_function_instance *fi)
 }
 
 DECLARE_USB_FUNCTION_INIT(rndis, rndis_alloc_inst, rndis_alloc);
+MODULE_DESCRIPTION("RNDIS link function driver");
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("David Brownell");

@@ -1,0 +1,69 @@
+# 0 "arch/arm64/boot/dts/ti/k3-am654-pcie-usb3.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/ti/k3-am654-pcie-usb3.dtso"
+
+
+
+
+
+
+
+/dts-v1/;
+/plugin/;
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h" 1
+# 11 "arch/arm64/boot/dts/ti/k3-am654-pcie-usb3.dtso" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/phy/phy.h" 1
+# 12 "arch/arm64/boot/dts/ti/k3-am654-pcie-usb3.dtso" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/phy/phy-am654-serdes.h" 1
+# 13 "arch/arm64/boot/dts/ti/k3-am654-pcie-usb3.dtso" 2
+
+# 1 "arch/arm64/boot/dts/ti/k3-pinctrl.h" 1
+# 15 "arch/arm64/boot/dts/ti/k3-am654-pcie-usb3.dtso" 2
+
+&serdes1 {
+ status = "okay";
+};
+
+&pcie1_rc {
+ num-lanes = <1>;
+ phys = <&serdes1 2 0>;
+ phy-names = "pcie-phy0";
+ reset-gpios = <&pca9555 5 0>;
+ status = "okay";
+};
+
+&main_pmx0 {
+ usb0_pins_default: usb0-default-pins {
+  pinctrl-single,pins = <
+   (((0x02bc) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (0))
+  >;
+ };
+};
+
+&serdes0 {
+ status = "okay";
+ assigned-clocks = <&k3_clks 153 4>, <&serdes0 0>;
+ assigned-clock-parents = <&k3_clks 153 7>, <&k3_clks 153 4>;
+};
+
+&dwc3_0 {
+ status = "okay";
+ assigned-clock-parents = <&k3_clks 151 4>,
+ <&k3_clks 151 8>;
+ phys = <&serdes0 4 0>;
+ phy-names = "usb3-phy";
+};
+
+&usb0 {
+ pinctrl-names = "default";
+ pinctrl-0 = <&usb0_pins_default>;
+ dr_mode = "host";
+ maximum-speed = "super-speed";
+ snps,dis-u1-entry-quirk;
+ snps,dis-u2-entry-quirk;
+};
+
+&usb0_phy {
+ status = "okay";
+};

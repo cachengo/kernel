@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/actions/dtbs-list := {   echo arch/arm64/boot/dts/actions/s700-cubieboard7.dtb;   echo arch/arm64/boot/dts/actions/s900-bubblegum-96.dtb; :; } > arch/arm64/boot/dts/actions/dtbs-list

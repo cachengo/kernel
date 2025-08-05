@@ -1,0 +1,4 @@
+rk3308-s0-ext-antenna.o: \
+ arch/arm64/boot/dts/rockchip/overlay/rk3308-s0-ext-antenna.dtso \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ scripts/dtc/include-prefixes/dt-bindings/pinctrl/rockchip.h

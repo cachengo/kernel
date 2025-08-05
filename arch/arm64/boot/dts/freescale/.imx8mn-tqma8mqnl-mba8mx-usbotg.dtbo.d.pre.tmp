@@ -1,0 +1,4 @@
+imx8mn-tqma8mqnl-mba8mx-usbotg.o: \
+ arch/arm64/boot/dts/freescale/imx8mn-tqma8mqnl-mba8mx-usbotg.dtso \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ arch/arm64/boot/dts/freescale/imx8mn-pinfunc.h

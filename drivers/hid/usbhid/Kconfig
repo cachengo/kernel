@@ -5,8 +5,7 @@ menu "USB HID support"
 config USB_HID
 	tristate "USB HID transport layer"
 	default y
-	depends on USB && INPUT
-	select HID
+	depends on HID
 	help
 	  Say Y here if you want to connect USB keyboards,
 	  mice, joysticks, graphic tablets, or any other HID based devices
@@ -38,7 +37,7 @@ config USB_HIDDEV
 	help
 	  Say Y here if you want to support HID devices (from the USB
 	  specification standpoint) that aren't strictly user interface
-	  devices, like monitor controls and Uninterruptable Power Supplies.
+	  devices, like monitor controls and Uninterruptible Power Supplies.
 
 	  This module supports these devices separately using a separate
 	  event interface on /dev/usb/hiddevX (char 180:96 to 180:111).

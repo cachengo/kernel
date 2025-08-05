@@ -45,6 +45,7 @@
 #include <asm/cacheflush.h>
 #include <asm/cp15.h>
 #include <asm/fiq.h>
+#include <asm/mach/irq.h>
 #include <asm/irq.h>
 #include <asm/traps.h>
 
@@ -94,9 +95,8 @@ int show_fiq_list(struct seq_file *p, int prec)
 void set_fiq_handler(void *start, unsigned int length)
 {
 	void *base = vectors_page;
-	unsigned int volatile offset = FIQ_OFFSET;
+	unsigned offset = FIQ_OFFSET;
 
-	offset &= 0xfffffffc;
 	memcpy(base + offset, start, length);
 	if (!cache_is_vipt_nonaliasing())
 		flush_icache_range((unsigned long)base + offset,

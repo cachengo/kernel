@@ -1,0 +1,27 @@
+# 0 "arch/arm64/boot/dts/amlogic/meson-g12a-fbx8am-realtek.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/amlogic/meson-g12a-fbx8am-realtek.dtso"
+
+
+
+/dts-v1/;
+/plugin/;
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h" 1
+# 8 "arch/arm64/boot/dts/amlogic/meson-g12a-fbx8am-realtek.dtso" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/meson-g12a-gpio.h" 1
+# 9 "arch/arm64/boot/dts/amlogic/meson-g12a-fbx8am-realtek.dtso" 2
+
+&uart_A {
+ bluetooth {
+  compatible = "realtek,rtl8822cs-bt";
+  enable-gpios = <&gpio 82 0>;
+  host-wake-gpios = <&gpio 84 0>;
+  device-wake-gpios = <&gpio 83 0>;
+ };
+};
+
+&sd_emmc_a {
+
+};

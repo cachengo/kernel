@@ -1,0 +1,2 @@
+fsl-lx2160a-tqmlx2160a-mblx2160a_12_x_x.o: \
+ arch/arm64/boot/dts/freescale/fsl-lx2160a-tqmlx2160a-mblx2160a_12_x_x.dtso

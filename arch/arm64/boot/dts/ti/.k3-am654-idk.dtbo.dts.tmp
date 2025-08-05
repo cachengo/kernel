@@ -1,0 +1,362 @@
+# 0 "arch/arm64/boot/dts/ti/k3-am654-idk.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/ti/k3-am654-idk.dtso"
+
+
+
+
+
+
+
+/dts-v1/;
+/plugin/;
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h" 1
+# 12 "arch/arm64/boot/dts/ti/k3-am654-idk.dtso" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/net/ti-dp83867.h" 1
+# 13 "arch/arm64/boot/dts/ti/k3-am654-idk.dtso" 2
+# 1 "arch/arm64/boot/dts/ti/k3-pinctrl.h" 1
+# 14 "arch/arm64/boot/dts/ti/k3-am654-idk.dtso" 2
+
+&{/} {
+ aliases {
+  ethernet3 = "/icssg0-eth/ethernet-ports/port@0";
+  ethernet4 = "/icssg0-eth/ethernet-ports/port@1";
+  ethernet5 = "/icssg1-eth/ethernet-ports/port@0";
+  ethernet6 = "/icssg1-eth/ethernet-ports/port@1";
+ };
+
+
+ icssg0_eth: icssg0-eth {
+  compatible = "ti,am654-icssg-prueth";
+  pinctrl-names = "default";
+  pinctrl-0 = <&icssg0_rgmii_pins_default>;
+  sram = <&msmc_ram>;
+  ti,prus = <&pru0_0>, <&rtu0_0>, <&tx_pru0_0>, <&pru0_1>, <&rtu0_1>, <&tx_pru0_1>;
+  firmware-name = "ti-pruss/am65x-sr2-pru0-prueth-fw.elf",
+    "ti-pruss/am65x-sr2-rtu0-prueth-fw.elf",
+    "ti-pruss/am65x-sr2-txpru0-prueth-fw.elf",
+    "ti-pruss/am65x-sr2-pru1-prueth-fw.elf",
+    "ti-pruss/am65x-sr2-rtu1-prueth-fw.elf",
+    "ti-pruss/am65x-sr2-txpru1-prueth-fw.elf";
+
+  ti,pruss-gp-mux-sel = <2>,
+          <2>,
+          <2>,
+          <2>,
+          <2>,
+          <2>;
+
+  ti,mii-g-rt = <&icssg0_mii_g_rt>;
+  ti,mii-rt = <&icssg0_mii_rt>;
+  ti,pa-stats = <&icssg0_pa_stats>;
+  ti,iep = <&icssg0_iep0>, <&icssg0_iep1>;
+
+  interrupt-parent = <&icssg0_intc>;
+  interrupts = <24 0 2>, <25 1 3>;
+  interrupt-names = "tx_ts0", "tx_ts1";
+
+  dmas = <&main_udmap 0xc100>,
+         <&main_udmap 0xc101>,
+         <&main_udmap 0xc102>,
+         <&main_udmap 0xc103>,
+         <&main_udmap 0xc104>,
+         <&main_udmap 0xc105>,
+         <&main_udmap 0xc106>,
+         <&main_udmap 0xc107>,
+
+         <&main_udmap 0x4100>,
+         <&main_udmap 0x4101>;
+  dma-names = "tx0-0", "tx0-1", "tx0-2", "tx0-3",
+       "tx1-0", "tx1-1", "tx1-2", "tx1-3",
+       "rx0", "rx1";
+
+  ethernet-ports {
+   #address-cells = <1>;
+   #size-cells = <0>;
+   icssg0_emac0: port@0 {
+    reg = <0>;
+    phy-handle = <&icssg0_phy0>;
+    phy-mode = "rgmii-id";
+    ti,syscon-rgmii-delay = <&scm_conf 0x4100>;
+
+    local-mac-address = [00 00 00 00 00 00];
+   };
+   icssg0_emac1: port@1 {
+    reg = <1>;
+    phy-handle = <&icssg0_phy1>;
+    phy-mode = "rgmii-id";
+    ti,syscon-rgmii-delay = <&scm_conf 0x4104>;
+
+    local-mac-address = [00 00 00 00 00 00];
+   };
+  };
+ };
+
+
+ icssg1_eth: icssg1-eth {
+  compatible = "ti,am654-icssg-prueth";
+  pinctrl-names = "default";
+  pinctrl-0 = <&icssg1_rgmii_pins_default>;
+  sram = <&msmc_ram>;
+  ti,prus = <&pru1_0>, <&rtu1_0>, <&tx_pru1_0>, <&pru1_1>, <&rtu1_1>, <&tx_pru1_1>;
+  firmware-name = "ti-pruss/am65x-sr2-pru0-prueth-fw.elf",
+    "ti-pruss/am65x-sr2-rtu0-prueth-fw.elf",
+    "ti-pruss/am65x-sr2-txpru0-prueth-fw.elf",
+    "ti-pruss/am65x-sr2-pru1-prueth-fw.elf",
+    "ti-pruss/am65x-sr2-rtu1-prueth-fw.elf",
+    "ti-pruss/am65x-sr2-txpru1-prueth-fw.elf";
+
+  ti,pruss-gp-mux-sel = <2>,
+          <2>,
+          <2>,
+          <2>,
+          <2>,
+          <2>;
+
+  ti,mii-g-rt = <&icssg1_mii_g_rt>;
+  ti,mii-rt = <&icssg1_mii_rt>;
+  ti,pa-stats = <&icssg1_pa_stats>;
+  ti,iep = <&icssg1_iep0>, <&icssg1_iep1>;
+
+  interrupt-parent = <&icssg1_intc>;
+  interrupts = <24 0 2>, <25 1 3>;
+  interrupt-names = "tx_ts0", "tx_ts1";
+
+  dmas = <&main_udmap 0xc200>,
+         <&main_udmap 0xc201>,
+         <&main_udmap 0xc202>,
+         <&main_udmap 0xc203>,
+         <&main_udmap 0xc204>,
+         <&main_udmap 0xc205>,
+         <&main_udmap 0xc206>,
+         <&main_udmap 0xc207>,
+
+         <&main_udmap 0x4200>,
+         <&main_udmap 0x4201>;
+  dma-names = "tx0-0", "tx0-1", "tx0-2", "tx0-3",
+       "tx1-0", "tx1-1", "tx1-2", "tx1-3",
+       "rx0", "rx1";
+
+  ethernet-ports {
+   #address-cells = <1>;
+   #size-cells = <0>;
+   icssg1_emac0: port@0 {
+    reg = <0>;
+    phy-handle = <&icssg1_phy0>;
+    phy-mode = "rgmii-id";
+    ti,syscon-rgmii-delay = <&scm_conf 0x4110>;
+
+    local-mac-address = [00 00 00 00 00 00];
+   };
+   icssg1_emac1: port@1 {
+    reg = <1>;
+    phy-handle = <&icssg1_phy1>;
+    phy-mode = "rgmii-id";
+    ti,syscon-rgmii-delay = <&scm_conf 0x4114>;
+
+    local-mac-address = [00 00 00 00 00 00];
+   };
+  };
+ };
+
+ transceiver1: can-phy0 {
+  compatible = "ti,tcan1042";
+  #phy-cells = <0>;
+  max-bitrate = <5000000>;
+  pinctrl-names = "default";
+  pinctrl-0 = <&mcan0_gpio_pins_default>;
+  standby-gpios = <&main_gpio1 47 1>;
+ };
+
+ transceiver2: can-phy1 {
+  compatible = "ti,tcan1042";
+  #phy-cells = <0>;
+  max-bitrate = <5000000>;
+  pinctrl-names = "default";
+  pinctrl-0 = <&mcan1_gpio_pins_default>;
+  standby-gpios = <&main_gpio1 67 1>;
+ };
+};
+
+&main_pmx0 {
+
+ icssg0_mdio_pins_default: icssg0-mdio-default-pins {
+  pinctrl-single,pins = <
+   (((0x0294) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (0))
+   (((0x0298) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (0))
+  >;
+ };
+
+ icssg0_rgmii_pins_default: icssg0-rgmii-default-pins {
+  pinctrl-single,pins = <
+   (((0x0244) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x0248) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x024c) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x0250) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x0274) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+   (((0x0278) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+   (((0x027c) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+   (((0x0280) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+   (((0x0284) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x0270) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+   (((0x025c) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x0254) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+
+   (((0x01f4) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x01f8) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x01fc) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x0200) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x0224) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+   (((0x0228) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+   (((0x022c) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+   (((0x0230) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+   (((0x0234) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x0220) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+   (((0x020c) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x0204) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+  >;
+ };
+
+ icssg0_iep0_pins_default: icssg0-iep0-default-pins {
+  pinctrl-single,pins = <
+   (((0x0240) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+  >;
+ };
+
+ icssg1_mdio_pins_default: icssg1-mdio-default-pins {
+  pinctrl-single,pins = <
+   (((0x0180) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (0))
+   (((0x0184) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (0))
+  >;
+ };
+
+ icssg1_rgmii_pins_default: icssg1-rgmii-default-pins {
+  pinctrl-single,pins = <
+   (((0x0130) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x0134) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x0138) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x013c) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x0160) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+   (((0x0164) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+   (((0x0168) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+   (((0x016c) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+   (((0x0170) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x015c) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+   (((0x0148) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x0140) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+
+   (((0x00e0) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x00e4) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x00e8) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x00ec) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x0110) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+   (((0x0114) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+   (((0x0118) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+   (((0x011c) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+   (((0x0120) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x010c) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+   (((0x00f8) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x00f0) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+  >;
+ };
+
+ icssg1_iep0_pins_default: icssg1-iep0-default-pins {
+  pinctrl-single,pins = <
+   (((0x012c) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+  >;
+ };
+
+ mcan0_gpio_pins_default: mcan0-gpio-default-pins {
+  pinctrl-single,pins = <
+   (((0x023c) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (7))
+  >;
+ };
+
+ mcan1_gpio_pins_default: mcan1-gpio-default-pins {
+  pinctrl-single,pins = <
+   (((0x028c) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (7))
+  >;
+ };
+};
+
+&wkup_pmx0 {
+ mcu_mcan0_pins_default: mcu-mcan0-default-pins {
+  pinctrl-single,pins = <
+   (((0x00ac) & 0x1fff)) ((((1 << (18)) | (1 << (17) | (0 << (16))))) | (0))
+   (((0x00a8) & 0x1fff)) ((((0 << (18)) | (1 << (17) | (0 << (16))))) | (0))
+  >;
+ };
+
+ mcu_mcan1_pins_default: mcu-mcan1-default-pins {
+  pinctrl-single,pins = <
+   (((0x00c4) & 0x1fff)) ((((1 << (18)) | (1 << (17) | (0 << (16))))) | (1))
+   (((0x00c0) & 0x1fff)) ((((0 << (18)) | (1 << (17) | (0 << (16))))) | (1))
+  >;
+ };
+};
+
+&icssg0_mdio {
+ status = "okay";
+ pinctrl-names = "default";
+ pinctrl-0 = <&icssg0_mdio_pins_default>;
+ #address-cells = <1>;
+ #size-cells = <0>;
+
+ icssg0_phy0: ethernet-phy@0 {
+  reg = <0>;
+  ti,rx-internal-delay = <0x7>;
+  ti,fifo-depth = <0x01>;
+ };
+
+ icssg0_phy1: ethernet-phy@3 {
+  reg = <3>;
+  ti,rx-internal-delay = <0x7>;
+  ti,fifo-depth = <0x01>;
+ };
+};
+
+&icssg0_iep0 {
+ pinctrl-names = "default";
+ pinctrl-0 = <&icssg0_iep0_pins_default>;
+};
+
+&icssg1_mdio {
+ status = "okay";
+ pinctrl-names = "default";
+ pinctrl-0 = <&icssg1_mdio_pins_default>;
+ #address-cells = <1>;
+ #size-cells = <0>;
+
+ icssg1_phy0: ethernet-phy@0 {
+  reg = <0>;
+  ti,rx-internal-delay = <0x7>;
+  ti,fifo-depth = <0x01>;
+ };
+
+ icssg1_phy1: ethernet-phy@3 {
+  reg = <3>;
+  ti,rx-internal-delay = <0x7>;
+  ti,fifo-depth = <0x01>;
+ };
+};
+
+&icssg1_iep0 {
+ pinctrl-names = "default";
+ pinctrl-0 = <&icssg1_iep0_pins_default>;
+};
+
+&m_can0 {
+ pinctrl-names = "default";
+ pinctrl-0 = <&mcu_mcan0_pins_default>;
+ phys = <&transceiver1>;
+ status = "okay";
+};
+
+&m_can1 {
+ pinctrl-names = "default";
+ pinctrl-0 = <&mcu_mcan1_pins_default>;
+ phys = <&transceiver2>;
+ status = "okay";
+};

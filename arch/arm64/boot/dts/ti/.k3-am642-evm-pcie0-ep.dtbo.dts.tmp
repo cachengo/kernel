@@ -1,0 +1,52 @@
+# 0 "arch/arm64/boot/dts/ti/k3-am642-evm-pcie0-ep.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/ti/k3-am642-evm-pcie0-ep.dtso"
+# 11 "arch/arm64/boot/dts/ti/k3-am642-evm-pcie0-ep.dtso"
+/dts-v1/;
+/plugin/;
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h" 1
+# 9 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h"
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h" 1
+# 10 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h" 2
+# 15 "arch/arm64/boot/dts/ti/k3-am642-evm-pcie0-ep.dtso" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/soc/ti,sci_pm_domain.h" 1
+# 16 "arch/arm64/boot/dts/ti/k3-am642-evm-pcie0-ep.dtso" 2
+
+# 1 "arch/arm64/boot/dts/ti/k3-pinctrl.h" 1
+# 18 "arch/arm64/boot/dts/ti/k3-am642-evm-pcie0-ep.dtso" 2
+
+
+
+
+
+&pcie0_rc {
+ status = "disabled";
+};
+
+&cbass_main {
+ #address-cells = <2>;
+ #size-cells = <2>;
+ interrupt-parent = <&gic500>;
+
+ pcie0_ep: pcie-ep@f102000 {
+  compatible = "ti,am64-pcie-ep", "ti,j721e-pcie-ep";
+  reg = <0x00 0x0f102000 0x00 0x1000>,
+        <0x00 0x0f100000 0x00 0x400>,
+        <0x00 0x0d000000 0x00 0x00800000>,
+        <0x00 0x68000000 0x00 0x08000000>;
+  reg-names = "intd_cfg", "user_cfg", "reg", "mem";
+  interrupt-names = "link_state";
+  interrupts = <0 203 1>;
+  max-link-speed = <2>;
+  num-lanes = <1>;
+  power-domains = <&k3_pds 114 1>;
+  clocks = <&k3_clks 114 0>;
+  clock-names = "fck";
+  max-functions = /bits/ 8 <1>;
+  phys = <&serdes0_pcie_link>;
+  phy-names = "pcie-phy";
+  ti,syscon-pcie-ctrl = <&main_conf 0x4070>;
+ };
+};

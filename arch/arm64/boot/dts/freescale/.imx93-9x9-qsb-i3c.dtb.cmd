@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/freescale/imx93-9x9-qsb-i3c.dtb := ./scripts/dtc/fdtoverlay -o arch/arm64/boot/dts/freescale/imx93-9x9-qsb-i3c.dtb -i arch/arm64/boot/dts/freescale/imx93-9x9-qsb.dtb arch/arm64/boot/dts/freescale/imx93-9x9-qsb-i3c.dtbo 

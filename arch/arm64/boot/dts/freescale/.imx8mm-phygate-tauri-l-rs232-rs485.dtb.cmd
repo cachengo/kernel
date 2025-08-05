@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/freescale/imx8mm-phygate-tauri-l-rs232-rs485.dtb := ./scripts/dtc/fdtoverlay -o arch/arm64/boot/dts/freescale/imx8mm-phygate-tauri-l-rs232-rs485.dtb -i arch/arm64/boot/dts/freescale/imx8mm-phygate-tauri-l.dtb arch/arm64/boot/dts/freescale/imx8mm-phygate-tauri-l-rs232-rs485.dtbo 

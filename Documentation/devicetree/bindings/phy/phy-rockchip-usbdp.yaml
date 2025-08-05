@@ -13,31 +13,34 @@ maintainers:
 properties:
   compatible:
     enum:
+      - rockchip,rk3576-usbdp-phy
       - rockchip,rk3588-usbdp-phy
 
   reg:
     maxItems: 1
 
+  "#phy-cells":
+    description: |
+      Cell allows setting the type of the PHY. Possible values are:
+      - PHY_TYPE_USB3
+      - PHY_TYPE_DP
+    const: 1
+
   clocks:
-    items:
-      - description: phy ref clock.
-      - description: phy pcs immortal clock.
-      - description: phy peripheral clock.
+    maxItems: 4
 
   clock-names:
     items:
       - const: refclk
       - const: immortal
       - const: pclk
+      - const: utmi
 
   resets:
-      - description: phy init reset.
-      - description: phy cmn reset.
-      - description: phy lane reset.
-      - description: phy pcs apb reset.
-      - description: phy pma apb reset.
+    maxItems: 5
 
   reset-names:
+    items:
       - const: init
       - const: cmn
       - const: lane
@@ -45,17 +48,21 @@ properties:
       - const: pma_apb
 
   rockchip,dp-lane-mux:
+    $ref: /schemas/types.yaml#/definitions/uint32-array
     minItems: 2
     maxItems: 4
+    items:
+      maximum: 3
     description:
-      An array of physical Tyep-C lanes indexes. Position of an entry determines
-      the dp lane index, while the value of an entry indicater physical Type-C lane.
-      The support dp lanes number are 2 or 4. e.g. for 2 lanes dp lanes map, we could
-      have "rockchip,dp-lane-mux = <2, 3>;", assuming dp lane0 on Type-C phy lane2,
-      dp lane1 on Type-C phy lane3. For 4 lanes dp lanes map, we could have
-      "rockchip,dp-lane-mux = <0, 1, 2, 3>;", assuming dp lane0 on Type-C phy lane0,
-      dp lane1 on Type-C phy lane1, dp lane2 on Type-C phy lane2, dp lane3 on Type-C
-      phy lane3. If dp lane map by DisplayPort Alt mode, this property is not need.
+      An array of physical Type-C lanes indexes. Position of an entry
+      determines the DisplayPort (DP) lane index, while the value of an entry
+      indicates physical Type-C lane. The supported DP lanes number are 2 or 4.
+      e.g. for 2 lanes DP lanes map, we could have "rockchip,dp-lane-mux = <2,
+      3>;", assuming DP lane0 on Type-C phy lane2, DP lane1 on Type-C phy
+      lane3. For 4 lanes DP lanes map, we could have "rockchip,dp-lane-mux =
+      <0, 1, 2, 3>;", assuming DP lane0 on Type-C phy lane0, DP lane1 on Type-C
+      phy lane1, DP lane2 on Type-C phy lane2, DP lane3 on Type-C phy lane3. If
+      DP lanes are mapped by DisplayPort Alt mode, this property is not needed.
 
   rockchip,u2phy-grf:
     $ref: /schemas/types.yaml#/definitions/phandle
@@ -76,29 +83,33 @@ properties:
     $ref: /schemas/types.yaml#/definitions/phandle
     description:
       Phandle to the syscon managing the 'video output general register files'.
-      When select the dp lane mapping will request its phandle.
+      When select the DP lane mapping will request its phandle.
 
-  dp-port:
-    type: object
-    additionalProperties: false
+  sbu1-dc-gpios:
+    description:
+      GPIO connected to the SBU1 line of the USB-C connector via a big resistor
+      (~100K) to apply a DC offset for signalling the connector orientation.
+    maxItems: 1
 
-    properties:
-      "#phy-cells":
-        const: 0
+  sbu2-dc-gpios:
+    description:
+      GPIO connected to the SBU2 line of the USB-C connector via a big resistor
+      (~100K) to apply a DC offset for signalling the connector orientation.
+    maxItems: 1
 
-    required:
-      - "#phy-cells"
+  orientation-switch:
+    description: Flag the port as possible handler of orientation switching
+    type: boolean
 
-  u3-port:
-    type: object
-    additionalProperties: false
+  mode-switch:
+    description: Flag the port as possible handler of altmode switching
+    type: boolean
 
-    properties:
-      "#phy-cells":
-        const: 0
-
-    required:
-      - "#phy-cells"
+  port:
+    $ref: /schemas/graph.yaml#/properties/port
+    description:
+      A port node to link the PHY to a TypeC controller for the purpose of
+      handling orientation switching.
 
 required:
   - compatible
@@ -107,40 +118,32 @@ required:
   - clock-names
   - resets
   - reset-names
-  - dp-port
-  - u3-port
+  - "#phy-cells"
 
 additionalProperties: false
 
 examples:
   - |
-    #include <dt-bindings/clock/rk3588-cru.h>
+    #include <dt-bindings/clock/rockchip,rk3588-cru.h>
+    #include <dt-bindings/reset/rockchip,rk3588-cru.h>
 
     usbdp_phy0: phy@fed80000 {
       compatible = "rockchip,rk3588-usbdp-phy";
-      reg = <0x0 0xfed80000 0x0 0x10000>;
-      rockchip,u2phy-grf = <&usb2phy0_grf>;
-      rockchip,usb-grf = <&usb_grf>;
-      rockchip,usbdpphy-grf = <&usbdpphy0_grf>;
-      rockchip,vo-grf = <&vo0_grf>;
+      reg = <0xfed80000 0x10000>;
+      #phy-cells = <1>;
       clocks = <&cru CLK_USBDPPHY_MIPIDCPPHY_REF>,
                <&cru CLK_USBDP_PHY0_IMMORTAL>,
-               <&cru PCLK_USBDPPHY0>;
-      clock-names = "refclk", "immortal", "pclk";
+               <&cru PCLK_USBDPPHY0>,
+               <&u2phy0>;
+      clock-names = "refclk", "immortal", "pclk", "utmi";
       resets = <&cru SRST_USBDP_COMBO_PHY0_INIT>,
                <&cru SRST_USBDP_COMBO_PHY0_CMN>,
                <&cru SRST_USBDP_COMBO_PHY0_LANE>,
                <&cru SRST_USBDP_COMBO_PHY0_PCS>,
                <&cru SRST_P_USBDPPHY0>;
       reset-names = "init", "cmn", "lane", "pcs_apb", "pma_apb";
-      status = "disabled";
-
-      usbdp_phy0_dp: dp-port {
-        #phy-cells = <0>;
-        status = "disabled";
-      };
-
-      usbdp_phy0_u3: u3-port {
-        #phy-cells = <0>;
-        status = "disabled";
+      rockchip,u2phy-grf = <&usb2phy0_grf>;
+      rockchip,usb-grf = <&usb_grf>;
+      rockchip,usbdpphy-grf = <&usbdpphy0_grf>;
+      rockchip,vo-grf = <&vo0_grf>;
     };

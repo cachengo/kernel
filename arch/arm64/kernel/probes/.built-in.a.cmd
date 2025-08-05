@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/kernel/probes/built-in.a := rm -f arch/arm64/kernel/probes/built-in.a;  printf "arch/arm64/kernel/probes/%s " uprobes.o decode-insn.o simulate-insn.o | xargs ar cDPrST arch/arm64/kernel/probes/built-in.a

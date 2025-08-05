@@ -1,0 +1,1 @@
+savedcmd_security/keys/trusted-keys/trusted.mod := printf '%s\n'   trusted_core.o trusted_tpm1.o trusted_tpm2.o tpm2key.asn1.o trusted_tee.o trusted_caam.o | awk '!x[$$0]++ { print("security/keys/trusted-keys/"$$0) }' > security/keys/trusted-keys/trusted.mod

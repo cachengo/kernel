@@ -1,0 +1,9 @@
+t8015-d211.o: arch/arm64/boot/dts/apple/t8015-d211.dts \
+ arch/arm64/boot/dts/apple/t8015-8plus.dtsi \
+ arch/arm64/boot/dts/apple/t8015-8.dtsi \
+ arch/arm64/boot/dts/apple/t8015.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/apple-aic.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h \
+ scripts/dtc/include-prefixes/dt-bindings/pinctrl/apple.h \
+ arch/arm64/boot/dts/apple/t8015-common.dtsi

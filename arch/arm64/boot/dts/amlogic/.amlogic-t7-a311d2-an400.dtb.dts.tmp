@@ -1,0 +1,258 @@
+# 0 "arch/arm64/boot/dts/amlogic/amlogic-t7-a311d2-an400.dts"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/amlogic/amlogic-t7-a311d2-an400.dts"
+
+
+
+
+
+/dts-v1/;
+
+# 1 "arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi" 1
+
+
+
+
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h" 1
+# 9 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h"
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h" 1
+# 10 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h" 2
+# 7 "arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/power/amlogic,t7-pwrc.h" 1
+# 8 "arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi" 2
+# 1 "arch/arm64/boot/dts/amlogic/amlogic-t7-reset.h" 1
+# 9 "arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi" 2
+
+/ {
+ interrupt-parent = <&gic>;
+ #address-cells = <2>;
+ #size-cells = <2>;
+
+ cpus {
+  #address-cells = <0x2>;
+  #size-cells = <0x0>;
+
+  cpu-map {
+   cluster0 {
+    core0 {
+     cpu = <&cpu100>;
+    };
+    core1 {
+     cpu = <&cpu101>;
+    };
+    core2 {
+     cpu = <&cpu102>;
+    };
+    core3 {
+     cpu = <&cpu103>;
+    };
+   };
+
+   cluster1 {
+    core0 {
+     cpu = <&cpu0>;
+    };
+    core1 {
+     cpu = <&cpu1>;
+    };
+    core2 {
+     cpu = <&cpu2>;
+    };
+    core3 {
+     cpu = <&cpu3>;
+    };
+   };
+  };
+
+  cpu100: cpu@100 {
+   device_type = "cpu";
+   compatible = "arm,cortex-a53";
+   reg = <0x0 0x100>;
+   enable-method = "psci";
+  };
+
+  cpu101: cpu@101 {
+   device_type = "cpu";
+   compatible = "arm,cortex-a53";
+   reg = <0x0 0x101>;
+   enable-method = "psci";
+  };
+
+  cpu102: cpu@102 {
+   device_type = "cpu";
+   compatible = "arm,cortex-a53";
+   reg = <0x0 0x102>;
+   enable-method = "psci";
+  };
+
+  cpu103: cpu@103 {
+   device_type = "cpu";
+   compatible = "arm,cortex-a53";
+   reg = <0x0 0x103>;
+   enable-method = "psci";
+  };
+
+  cpu0: cpu@0 {
+   device_type = "cpu";
+   compatible = "arm,cortex-a73";
+   reg = <0x0 0x0>;
+   enable-method = "psci";
+  };
+
+  cpu1: cpu@1 {
+   device_type = "cpu";
+   compatible = "arm,cortex-a73";
+   reg = <0x0 0x1>;
+   enable-method = "psci";
+  };
+
+  cpu2: cpu@2 {
+   device_type = "cpu";
+   compatible = "arm,cortex-a73";
+   reg = <0x0 0x2>;
+   enable-method = "psci";
+  };
+
+  cpu3: cpu@3 {
+   device_type = "cpu";
+   compatible = "arm,cortex-a73";
+   reg = <0x0 0x3>;
+   enable-method = "psci";
+  };
+ };
+
+ timer {
+  compatible = "arm,armv8-timer";
+  interrupts = <1 13 ((((1 << (8)) - 1) << 8) | 8)>,
+        <1 14 ((((1 << (8)) - 1) << 8) | 8)>,
+        <1 11 ((((1 << (8)) - 1) << 8) | 8)>,
+        <1 10 ((((1 << (8)) - 1) << 8) | 8)>;
+ };
+
+ psci {
+  compatible = "arm,psci-1.0";
+  method = "smc";
+ };
+
+ sm: secure-monitor {
+  compatible = "amlogic,meson-gxbb-sm";
+
+  pwrc: power-controller {
+   compatible = "amlogic,t7-pwrc";
+   #power-domain-cells = <1>;
+  };
+ };
+
+ soc {
+  compatible = "simple-bus";
+  #address-cells = <2>;
+  #size-cells = <2>;
+  ranges;
+
+  gic: interrupt-controller@fff01000 {
+   compatible = "arm,gic-400";
+   #interrupt-cells = <3>;
+   #address-cells = <0>;
+   interrupt-controller;
+   reg = <0x0 0xfff01000 0 0x1000>,
+         <0x0 0xfff02000 0 0x0100>;
+   interrupts = <1 9 ((((1 << (8)) - 1) << 8) | 4)>;
+  };
+
+  apb4: bus@fe000000 {
+   compatible = "simple-bus";
+   reg = <0x0 0xfe000000 0x0 0x480000>;
+   #address-cells = <2>;
+   #size-cells = <2>;
+   ranges = <0x0 0x0 0x0 0xfe000000 0x0 0x480000>;
+
+   reset: reset-controller@2000 {
+    compatible = "amlogic,t7-reset";
+    reg = <0x0 0x2000 0x0 0x98>;
+    #reset-cells = <1>;
+   };
+
+   watchdog@2100 {
+    compatible = "amlogic,t7-wdt";
+    reg = <0x0 0x2100 0x0 0x10>;
+    clocks = <&xtal>;
+   };
+
+   periphs_pinctrl: pinctrl@4000 {
+    compatible = "amlogic,t7-periphs-pinctrl";
+    #address-cells = <2>;
+    #size-cells = <2>;
+    ranges;
+
+    gpio: bank@4000 {
+     reg = <0x0 0x4000 0x0 0x0064>,
+           <0x0 0x40c0 0x0 0x0220>;
+     reg-names = "mux", "gpio";
+     gpio-controller;
+     #gpio-cells = <2>;
+     gpio-ranges = <&periphs_pinctrl 0 0 157>;
+    };
+   };
+
+   gpio_intc: interrupt-controller@4080 {
+    compatible = "amlogic,t7-gpio-intc",
+          "amlogic,meson-gpio-intc";
+    reg = <0x0 0x4080 0x0 0x20>;
+    interrupt-controller;
+    #interrupt-cells = <2>;
+    amlogic,channel-interrupts =
+     <10 11 12 13 14 15 16 17 18 19 20 21>;
+   };
+
+   uart_a: serial@78000 {
+    compatible = "amlogic,t7-uart", "amlogic,meson-s4-uart";
+    reg = <0x0 0x78000 0x0 0x18>;
+    interrupts = <0 168 1>;
+    status = "disabled";
+   };
+
+   sec_ao: ao-secure@10220 {
+    compatible = "amlogic,t7-ao-secure",
+          "amlogic,meson-gx-ao-secure",
+          "syscon";
+    reg = <0x0 0x10220 0x0 0x140>;
+    amlogic,has-chip-id;
+   };
+  };
+
+ };
+};
+# 9 "arch/arm64/boot/dts/amlogic/amlogic-t7-a311d2-an400.dts" 2
+
+/ {
+ model = "Amlogic A311D2 AN400 Development Board";
+ compatible = "amlogic,an400", "amlogic,a311d2", "amlogic,t7";
+ interrupt-parent = <&gic>;
+ #address-cells = <2>;
+ #size-cells = <2>;
+
+ aliases {
+  serial0 = &uart_a;
+ };
+
+ memory@0 {
+  device_type = "memory";
+  reg = <0x00000000 0x00000000 0x00000000 0xE0000000
+   0x00000001 0x00000000 0x00000000 0x20000000>;
+ };
+
+ xtal: xtal-clk {
+  compatible = "fixed-clock";
+  clock-frequency = <24000000>;
+  clock-output-names = "xtal";
+  #clock-cells = <0>;
+ };
+};
+
+&uart_a {
+ clocks = <&xtal>, <&xtal>, <&xtal>;
+ clock-names = "xtal", "pclk", "baud";
+ status = "okay";
+};

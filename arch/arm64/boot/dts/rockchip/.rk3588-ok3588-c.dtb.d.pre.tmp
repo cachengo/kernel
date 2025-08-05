@@ -1,0 +1,22 @@
+rk3588-ok3588-c.o: arch/arm64/boot/dts/rockchip/rk3588-ok3588-c.dts \
+ arch/arm64/boot/dts/rockchip/rk3588-fet3588-c.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ scripts/dtc/include-prefixes/dt-bindings/input/input.h \
+ scripts/dtc/include-prefixes/dt-bindings/input/linux-event-codes.h \
+ scripts/dtc/include-prefixes/dt-bindings/leds/common.h \
+ arch/arm64/boot/dts/rockchip/rk3588.dtsi \
+ arch/arm64/boot/dts/rockchip/rk3588-extra.dtsi \
+ arch/arm64/boot/dts/rockchip/rk3588-base.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/clock/rockchip,rk3588-cru.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h \
+ scripts/dtc/include-prefixes/dt-bindings/power/rk3588-power.h \
+ scripts/dtc/include-prefixes/dt-bindings/reset/rockchip,rk3588-cru.h \
+ scripts/dtc/include-prefixes/dt-bindings/phy/phy.h \
+ scripts/dtc/include-prefixes/dt-bindings/ata/ahci.h \
+ scripts/dtc/include-prefixes/dt-bindings/thermal/thermal.h \
+ arch/arm64/boot/dts/rockchip/rk3588-base-pinctrl.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/pinctrl/rockchip.h \
+ arch/arm64/boot/dts/rockchip/rockchip-pinconf.dtsi \
+ arch/arm64/boot/dts/rockchip/rk3588-extra-pinctrl.dtsi \
+ arch/arm64/boot/dts/rockchip/rk3588-opp.dtsi

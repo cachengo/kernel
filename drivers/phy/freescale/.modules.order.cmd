@@ -1,0 +1,1 @@
+savedcmd_drivers/phy/freescale/modules.order := {   echo drivers/phy/freescale/phy-fsl-imx8-mipi-dphy.o;   echo drivers/phy/freescale/phy-fsl-samsung-hdmi.o; :; } > drivers/phy/freescale/modules.order

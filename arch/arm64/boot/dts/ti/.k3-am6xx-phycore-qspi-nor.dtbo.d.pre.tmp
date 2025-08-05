@@ -1,0 +1,3 @@
+k3-am6xx-phycore-qspi-nor.o: \
+ arch/arm64/boot/dts/ti/k3-am6xx-phycore-qspi-nor.dtso \
+ arch/arm64/boot/dts/ti/k3-pinctrl.h

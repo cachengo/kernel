@@ -1,0 +1,1 @@
+savedcmd_drivers/pinctrl/realtek/built-in.a := rm -f drivers/pinctrl/realtek/built-in.a;  printf "drivers/pinctrl/realtek/%s " pinctrl-rtd.o pinctrl-rtd1619b.o pinctrl-rtd1319d.o pinctrl-rtd1315e.o | xargs ar cDPrST drivers/pinctrl/realtek/built-in.a

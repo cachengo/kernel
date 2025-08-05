@@ -1,0 +1,17 @@
+drivers/pwm/pwm-adp5585.o
+drivers/pwm/pwm-bcm2835.o
+drivers/pwm/pwm-brcmstb.o
+drivers/pwm/pwm-cros-ec.o
+drivers/pwm/pwm-imx27.o
+drivers/pwm/pwm-meson.o
+drivers/pwm/pwm-mediatek.o
+drivers/pwm/pwm-mtk-disp.o
+drivers/pwm/pwm-rcar.o
+drivers/pwm/pwm-renesas-tpu.o
+drivers/pwm/pwm-rz-mtu3.o
+drivers/pwm/pwm-sl28cpld.o
+drivers/pwm/pwm-sun4i.o
+drivers/pwm/pwm-tegra.o
+drivers/pwm/pwm-tiecap.o
+drivers/pwm/pwm-tiehrpwm.o
+drivers/pwm/pwm-visconti.o

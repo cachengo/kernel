@@ -8,8 +8,6 @@
 #ifndef _ASM_MICROBLAZE_PGALLOC_H
 #define _ASM_MICROBLAZE_PGALLOC_H
 
-#ifdef CONFIG_MMU
-
 #include <linux/kernel.h>	/* For min/max macros */
 #include <linux/highmem.h>
 #include <linux/pgtable.h>
@@ -23,14 +21,7 @@
 
 extern void __bad_pte(pmd_t *pmd);
 
-static inline pgd_t *get_pgd(void)
-{
-	return (pgd_t *)__get_free_pages(GFP_KERNEL|__GFP_ZERO, 0);
-}
-
-#define pgd_alloc(mm)		get_pgd()
-
-#define pmd_pgtable(pmd)	pmd_page(pmd)
+#define pgd_alloc(mm)		__pgd_alloc(mm, 0)
 
 extern pte_t *pte_alloc_one_kernel(struct mm_struct *mm);
 
@@ -41,7 +32,5 @@ extern pte_t *pte_alloc_one_kernel(struct mm_struct *mm);
 
 #define pmd_populate_kernel(mm, pmd, pte) \
 		(pmd_val(*(pmd)) = (unsigned long) (pte))
-
-#endif /* CONFIG_MMU */
 
 #endif /* _ASM_MICROBLAZE_PGALLOC_H */

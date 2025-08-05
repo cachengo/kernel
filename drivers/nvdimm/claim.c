@@ -4,6 +4,7 @@
  */
 #include <linux/device.h>
 #include <linux/sizes.h>
+#include <linux/badblocks.h>
 #include "nd-core.h"
 #include "pmem.h"
 #include "pfn.h"
@@ -64,13 +65,6 @@ bool nd_attach_ndns(struct device *dev, struct nd_namespace_common *attach,
 	claimed = __nd_attach_ndns(dev, attach, _ndns);
 	nvdimm_bus_unlock(&attach->dev);
 	return claimed;
-}
-
-static int namespace_match(struct device *dev, void *data)
-{
-	char *name = data;
-
-	return strcmp(name, dev_name(dev)) == 0;
 }
 
 static bool is_idle(struct device *dev, struct nd_namespace_common *ndns)
@@ -167,7 +161,7 @@ ssize_t nd_namespace_store(struct device *dev,
 		goto out;
 	}
 
-	found = device_find_child(dev->parent, name, namespace_match);
+	found = device_find_child_by_name(dev->parent, name);
 	if (!found) {
 		dev_dbg(dev, "'%s' not found under %s\n", name,
 				dev_name(dev->parent));

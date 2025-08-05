@@ -269,27 +269,7 @@ Namely, when invoked to select an idle state for a CPU (i.e. an idle state that
 the CPU will ask the processor hardware to enter), it attempts to predict the
 idle duration and uses the predicted value for idle state selection.
 
-It first obtains the time until the closest timer event with the assumption
-that the scheduler tick will be stopped.  That time, referred to as the *sleep
-length* in what follows, is the upper bound on the time before the next CPU
-wakeup.  It is used to determine the sleep length range, which in turn is needed
-to get the sleep length correction factor.
-
-The ``menu`` governor maintains two arrays of sleep length correction factors.
-One of them is used when tasks previously running on the given CPU are waiting
-for some I/O operations to complete and the other one is used when that is not
-the case.  Each array contains several correction factor values that correspond
-to different sleep length ranges organized so that each range represented in the
-array is approximately 10 times wider than the previous one.
-
-The correction factor for the given sleep length range (determined before
-selecting the idle state for the CPU) is updated after the CPU has been woken
-up and the closer the sleep length is to the observed idle duration, the closer
-to 1 the correction factor becomes (it must fall between 0 and 1 inclusive).
-The sleep length is multiplied by the correction factor for the range that it
-falls into to obtain the first approximation of the predicted idle duration.
-
-Next, the governor uses a simple pattern recognition algorithm to refine its
+It first uses a simple pattern recognition algorithm to obtain a preliminary
 idle duration prediction.  Namely, it saves the last 8 observed idle duration
 values and, when predicting the idle duration next time, it computes the average
 and variance of them.  If the variance is small (smaller than 400 square
@@ -301,29 +281,39 @@ Again, if the variance of them is small (in the above sense), the average is
 taken as the "typical interval" value and so on, until either the "typical
 interval" is determined or too many data points are disregarded, in which case
 the "typical interval" is assumed to equal "infinity" (the maximum unsigned
-integer value).  The "typical interval" computed this way is compared with the
-sleep length multiplied by the correction factor and the minimum of the two is
-taken as the predicted idle duration.
+integer value).
 
-Then, the governor computes an extra latency limit to help "interactive"
-workloads.  It uses the observation that if the exit latency of the selected
-idle state is comparable with the predicted idle duration, the total time spent
-in that state probably will be very short and the amount of energy to save by
-entering it will be relatively small, so likely it is better to avoid the
-overhead related to entering that state and exiting it.  Thus selecting a
-shallower state is likely to be a better option then.   The first approximation
-of the extra latency limit is the predicted idle duration itself which
-additionally is divided by a value depending on the number of tasks that
-previously ran on the given CPU and now they are waiting for I/O operations to
-complete.  The result of that division is compared with the latency limit coming
-from the power management quality of service, or `PM QoS <cpu-pm-qos_>`_,
-framework and the minimum of the two is taken as the limit for the idle states'
-exit latency.
+If the "typical interval" computed this way is long enough, the governor obtains
+the time until the closest timer event with the assumption that the scheduler
+tick will be stopped.  That time, referred to as the *sleep length* in what follows,
+is the upper bound on the time before the next CPU wakeup.  It is used to determine
+the sleep length range, which in turn is needed to get the sleep length correction
+factor.
+
+The ``menu`` governor maintains an array containing several correction factor
+values that correspond to different sleep length ranges organized so that each
+range represented in the array is approximately 10 times wider than the previous
+one.
+
+The correction factor for the given sleep length range (determined before
+selecting the idle state for the CPU) is updated after the CPU has been woken
+up and the closer the sleep length is to the observed idle duration, the closer
+to 1 the correction factor becomes (it must fall between 0 and 1 inclusive).
+The sleep length is multiplied by the correction factor for the range that it
+falls into to obtain an approximation of the predicted idle duration that is
+compared to the "typical interval" determined previously and the minimum of
+the two is taken as the idle duration prediction.
+
+If the "typical interval" value is small, which means that the CPU is likely
+to be woken up soon enough, the sleep length computation is skipped as it may
+be costly and the idle duration is simply predicted to equal the "typical
+interval" value.
 
 Now, the governor is ready to walk the list of idle states and choose one of
 them.  For this purpose, it compares the target residency of each state with
-the predicted idle duration and the exit latency of it with the computed latency
-limit.  It selects the state with the target residency closest to the predicted
+the predicted idle duration and the exit latency of it with the with the latency
+limit coming from the power management quality of service, or `PM QoS <cpu-pm-qos_>`_,
+framework.  It selects the state with the target residency closest to the predicted
 idle duration, but still below it, and exit latency that does not exceed the
 limit.
 
@@ -347,81 +337,8 @@ for tickless systems.  It follows the same basic strategy as the ``menu`` `one
 <menu-gov_>`_: it always tries to find the deepest idle state suitable for the
 given conditions.  However, it applies a different approach to that problem.
 
-First, it does not use sleep length correction factors, but instead it attempts
-to correlate the observed idle duration values with the available idle states
-and use that information to pick up the idle state that is most likely to
-"match" the upcoming CPU idle interval.   Second, it does not take the tasks
-that were running on the given CPU in the past and are waiting on some I/O
-operations to complete now at all (there is no guarantee that they will run on
-the same CPU when they become runnable again) and the pattern detection code in
-it avoids taking timer wakeups into account.  It also only uses idle duration
-values less than the current time till the closest timer (with the scheduler
-tick excluded) for that purpose.
-
-Like in the ``menu`` governor `case <menu-gov_>`_, the first step is to obtain
-the *sleep length*, which is the time until the closest timer event with the
-assumption that the scheduler tick will be stopped (that also is the upper bound
-on the time until the next CPU wakeup).  That value is then used to preselect an
-idle state on the basis of three metrics maintained for each idle state provided
-by the ``CPUIdle`` driver: ``hits``, ``misses`` and ``early_hits``.
-
-The ``hits`` and ``misses`` metrics measure the likelihood that a given idle
-state will "match" the observed (post-wakeup) idle duration if it "matches" the
-sleep length.  They both are subject to decay (after a CPU wakeup) every time
-the target residency of the idle state corresponding to them is less than or
-equal to the sleep length and the target residency of the next idle state is
-greater than the sleep length (that is, when the idle state corresponding to
-them "matches" the sleep length).  The ``hits`` metric is increased if the
-former condition is satisfied and the target residency of the given idle state
-is less than or equal to the observed idle duration and the target residency of
-the next idle state is greater than the observed idle duration at the same time
-(that is, it is increased when the given idle state "matches" both the sleep
-length and the observed idle duration).  In turn, the ``misses`` metric is
-increased when the given idle state "matches" the sleep length only and the
-observed idle duration is too short for its target residency.
-
-The ``early_hits`` metric measures the likelihood that a given idle state will
-"match" the observed (post-wakeup) idle duration if it does not "match" the
-sleep length.  It is subject to decay on every CPU wakeup and it is increased
-when the idle state corresponding to it "matches" the observed (post-wakeup)
-idle duration and the target residency of the next idle state is less than or
-equal to the sleep length (i.e. the idle state "matching" the sleep length is
-deeper than the given one).
-
-The governor walks the list of idle states provided by the ``CPUIdle`` driver
-and finds the last (deepest) one with the target residency less than or equal
-to the sleep length.  Then, the ``hits`` and ``misses`` metrics of that idle
-state are compared with each other and it is preselected if the ``hits`` one is
-greater (which means that that idle state is likely to "match" the observed idle
-duration after CPU wakeup).  If the ``misses`` one is greater, the governor
-preselects the shallower idle state with the maximum ``early_hits`` metric
-(or if there are multiple shallower idle states with equal ``early_hits``
-metric which also is the maximum, the shallowest of them will be preselected).
-[If there is a wakeup latency constraint coming from the `PM QoS framework
-<cpu-pm-qos_>`_ which is hit before reaching the deepest idle state with the
-target residency within the sleep length, the deepest idle state with the exit
-latency within the constraint is preselected without consulting the ``hits``,
-``misses`` and ``early_hits`` metrics.]
-
-Next, the governor takes several idle duration values observed most recently
-into consideration and if at least a half of them are greater than or equal to
-the target residency of the preselected idle state, that idle state becomes the
-final candidate to ask for.  Otherwise, the average of the most recent idle
-duration values below the target residency of the preselected idle state is
-computed and the governor walks the idle states shallower than the preselected
-one and finds the deepest of them with the target residency within that average.
-That idle state is then taken as the final candidate to ask for.
-
-Still, at this point the governor may need to refine the idle state selection if
-it has not decided to `stop the scheduler tick <idle-cpus-and-tick_>`_.  That
-generally happens if the target residency of the idle state selected so far is
-less than the tick period and the tick has not been stopped already (in a
-previous iteration of the idle loop).  Then, like in the ``menu`` governor
-`case <menu-gov_>`_, the sleep length used in the previous computations may not
-reflect the real time until the closest timer event and if it really is greater
-than that time, a shallower state with a suitable target residency may need to
-be selected.
-
+.. kernel-doc:: drivers/cpuidle/governors/teo.c
+   :doc: teo-description
 
 .. _idle-states-representation:
 
@@ -685,8 +602,8 @@ the ``menu`` governor to be used on the systems that use the ``ladder`` governor
 by default this way, for example.
 
 The other kernel command line parameters controlling CPU idle time management
-described below are only relevant for the *x86* architecture and some of
-them affect Intel processors only.
+described below are only relevant for the *x86* architecture and references
+to ``intel_idle`` affect Intel processors only.
 
 The *x86* architecture support code recognizes three kernel command line
 options related to CPU idle time management: ``idle=poll``, ``idle=halt``,
@@ -708,10 +625,13 @@ idle, so it very well may hurt single-thread computations performance as well as
 energy-efficiency.  Thus using it for performance reasons may not be a good idea
 at all.]
 
-The ``idle=nomwait`` option disables the ``intel_idle`` driver and causes
-``acpi_idle`` to be used (as long as all of the information needed by it is
-there in the system's ACPI tables), but it is not allowed to use the
-``MWAIT`` instruction of the CPUs to ask the hardware to enter idle states.
+The ``idle=nomwait`` option prevents the use of ``MWAIT`` instruction of
+the CPU to enter idle states. When this option is used, the ``acpi_idle``
+driver will use the ``HLT`` instruction instead of ``MWAIT``. On systems
+running Intel processors, this option disables the ``intel_idle`` driver
+and forces the use of the ``acpi_idle`` driver instead. Note that in either
+case, ``acpi_idle`` driver will function only if all the information needed
+by it is in the system's ACPI tables.
 
 In addition to the architecture-level kernel command line options affecting CPU
 idle time management, there are parameters affecting individual ``CPUIdle``

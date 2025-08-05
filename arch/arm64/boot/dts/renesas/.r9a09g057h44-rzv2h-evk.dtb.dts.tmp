@@ -1,0 +1,917 @@
+# 0 "arch/arm64/boot/dts/renesas/r9a09g057h44-rzv2h-evk.dts"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/renesas/r9a09g057h44-rzv2h-evk.dts"
+
+
+
+
+
+
+
+/dts-v1/;
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/pinctrl/renesas,r9a09g057-pinctrl.h" 1
+# 12 "./scripts/dtc/include-prefixes/dt-bindings/pinctrl/renesas,r9a09g057-pinctrl.h"
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/pinctrl/rzg2l-pinctrl.h" 1
+# 13 "./scripts/dtc/include-prefixes/dt-bindings/pinctrl/renesas,r9a09g057-pinctrl.h" 2
+# 11 "arch/arm64/boot/dts/renesas/r9a09g057h44-rzv2h-evk.dts" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h" 1
+# 12 "arch/arm64/boot/dts/renesas/r9a09g057h44-rzv2h-evk.dts" 2
+# 1 "arch/arm64/boot/dts/renesas/r9a09g057.dtsi" 1
+
+
+
+
+
+
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/clock/renesas,r9a09g057-cpg.h" 1
+
+
+
+
+
+
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/clock/renesas-cpg-mssr.h" 1
+# 9 "./scripts/dtc/include-prefixes/dt-bindings/clock/renesas,r9a09g057-cpg.h" 2
+# 9 "arch/arm64/boot/dts/renesas/r9a09g057.dtsi" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h" 1
+# 9 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h"
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h" 1
+# 10 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h" 2
+# 10 "arch/arm64/boot/dts/renesas/r9a09g057.dtsi" 2
+
+/ {
+ compatible = "renesas,r9a09g057";
+ #address-cells = <2>;
+ #size-cells = <2>;
+
+ audio_extal_clk: audio-clk {
+  compatible = "fixed-clock";
+  #clock-cells = <0>;
+
+  clock-frequency = <0>;
+ };
+# 30 "arch/arm64/boot/dts/renesas/r9a09g057.dtsi"
+ cluster0_opp: opp-table-0 {
+  compatible = "operating-points-v2";
+
+  opp-1700000000 {
+   opp-hz = /bits/ 64 <1700000000>;
+   opp-microvolt = <900000>;
+   clock-latency-ns = <300000>;
+  };
+  opp-850000000 {
+   opp-hz = /bits/ 64 <850000000>;
+   opp-microvolt = <800000>;
+   clock-latency-ns = <300000>;
+  };
+  opp-425000000 {
+   opp-hz = /bits/ 64 <425000000>;
+   opp-microvolt = <800000>;
+   clock-latency-ns = <300000>;
+  };
+  opp-212500000 {
+   opp-hz = /bits/ 64 <212500000>;
+   opp-microvolt = <800000>;
+   clock-latency-ns = <300000>;
+   opp-suspend;
+  };
+ };
+
+ cpus {
+  #address-cells = <1>;
+  #size-cells = <0>;
+
+  cpu0: cpu@0 {
+   compatible = "arm,cortex-a55";
+   reg = <0>;
+   device_type = "cpu";
+   next-level-cache = <&L3_CA55>;
+   enable-method = "psci";
+   clocks = <&cpg 0 1>;
+   operating-points-v2 = <&cluster0_opp>;
+  };
+
+  cpu1: cpu@100 {
+   compatible = "arm,cortex-a55";
+   reg = <0x100>;
+   device_type = "cpu";
+   next-level-cache = <&L3_CA55>;
+   enable-method = "psci";
+   clocks = <&cpg 0 2>;
+   operating-points-v2 = <&cluster0_opp>;
+  };
+
+  cpu2: cpu@200 {
+   compatible = "arm,cortex-a55";
+   reg = <0x200>;
+   device_type = "cpu";
+   next-level-cache = <&L3_CA55>;
+   enable-method = "psci";
+   clocks = <&cpg 0 3>;
+   operating-points-v2 = <&cluster0_opp>;
+  };
+
+  cpu3: cpu@300 {
+   compatible = "arm,cortex-a55";
+   reg = <0x300>;
+   device_type = "cpu";
+   next-level-cache = <&L3_CA55>;
+   enable-method = "psci";
+   clocks = <&cpg 0 4>;
+   operating-points-v2 = <&cluster0_opp>;
+  };
+
+  L3_CA55: cache-controller-0 {
+   compatible = "cache";
+   cache-unified;
+   cache-size = <0x100000>;
+   cache-level = <3>;
+  };
+ };
+
+ psci {
+  compatible = "arm,psci-1.0", "arm,psci-0.2";
+  method = "smc";
+ };
+
+ qextal_clk: qextal-clk {
+  compatible = "fixed-clock";
+  #clock-cells = <0>;
+
+  clock-frequency = <0>;
+ };
+
+ rtxin_clk: rtxin-clk {
+  compatible = "fixed-clock";
+  #clock-cells = <0>;
+
+  clock-frequency = <0>;
+ };
+
+ soc: soc {
+  compatible = "simple-bus";
+  interrupt-parent = <&gic>;
+  #address-cells = <2>;
+  #size-cells = <2>;
+  ranges;
+
+  icu: interrupt-controller@10400000 {
+   compatible = "renesas,r9a09g057-icu";
+   reg = <0 0x10400000 0 0x10000>;
+   #interrupt-cells = <2>;
+   #address-cells = <0>;
+   interrupt-controller;
+   interrupts = <0 0 4>,
+         <0 1 4>,
+         <0 2 4>,
+         <0 3 4>,
+         <0 4 4>,
+         <0 5 4>,
+         <0 6 4>,
+         <0 7 4>,
+         <0 8 4>,
+         <0 9 4>,
+         <0 10 4>,
+         <0 11 4>,
+         <0 12 4>,
+         <0 13 4>,
+         <0 14 4>,
+         <0 15 4>,
+         <0 16 4>,
+         <0 419 4>,
+         <0 420 4>,
+         <0 421 4>,
+         <0 422 4>,
+         <0 423 4>,
+         <0 424 4>,
+         <0 425 4>,
+         <0 426 4>,
+         <0 427 4>,
+         <0 428 4>,
+         <0 429 4>,
+         <0 430 4>,
+         <0 431 4>,
+         <0 432 4>,
+         <0 433 4>,
+         <0 434 4>,
+         <0 435 4>,
+         <0 436 4>,
+         <0 437 4>,
+         <0 438 4>,
+         <0 439 4>,
+         <0 440 4>,
+         <0 441 4>,
+         <0 442 4>,
+         <0 443 4>,
+         <0 444 4>,
+         <0 445 4>,
+         <0 446 4>,
+         <0 447 4>,
+         <0 448 4>,
+         <0 449 4>,
+         <0 450 4>,
+         <0 262 1>,
+         <0 263 1>,
+         <0 264 1>,
+         <0 265 1>,
+         <0 266 4>,
+         <0 451 4>,
+         <0 452 4>,
+         <0 453 4>,
+         <0 454 4>;
+   interrupt-names = "nmi",
+       "port_irq0", "port_irq1", "port_irq2",
+       "port_irq3", "port_irq4", "port_irq5",
+       "port_irq6", "port_irq7", "port_irq8",
+       "port_irq9", "port_irq10", "port_irq11",
+       "port_irq12", "port_irq13", "port_irq14",
+       "port_irq15",
+       "tint0", "tint1", "tint2", "tint3",
+       "tint4", "tint5", "tint6", "tint7",
+       "tint8", "tint9", "tint10", "tint11",
+       "tint12", "tint13", "tint14", "tint15",
+       "tint16", "tint17", "tint18", "tint19",
+       "tint20", "tint21", "tint22", "tint23",
+       "tint24", "tint25", "tint26", "tint27",
+       "tint28", "tint29", "tint30", "tint31",
+       "int-ca55-0", "int-ca55-1",
+       "int-ca55-2", "int-ca55-3",
+       "icu-error-ca55",
+       "gpt-u0-gtciada", "gpt-u0-gtciadb",
+       "gpt-u1-gtciada", "gpt-u1-gtciadb";
+   clocks = <&cpg 1 0x5>;
+   power-domains = <&cpg>;
+   resets = <&cpg 0x36>;
+  };
+
+  pinctrl: pinctrl@10410000 {
+   compatible = "renesas,r9a09g057-pinctrl";
+   reg = <0 0x10410000 0 0x10000>;
+   clocks = <&cpg 0 8>;
+   gpio-controller;
+   #gpio-cells = <2>;
+   gpio-ranges = <&pinctrl 0 0 96>;
+   #interrupt-cells = <2>;
+   interrupt-controller;
+   interrupt-parent = <&icu>;
+   power-domains = <&cpg>;
+   resets = <&cpg 0xa5>, <&cpg 0xa6>;
+  };
+
+  cpg: clock-controller@10420000 {
+   compatible = "renesas,r9a09g057-cpg";
+   reg = <0 0x10420000 0 0x10000>;
+   clocks = <&audio_extal_clk>, <&rtxin_clk>, <&qextal_clk>;
+   clock-names = "audio_extal", "rtxin", "qextal";
+   #clock-cells = <2>;
+   #reset-cells = <1>;
+   #power-domain-cells = <0>;
+  };
+
+  sys: system-controller@10430000 {
+   compatible = "renesas,r9a09g057-sys";
+   reg = <0 0x10430000 0 0x10000>;
+   clocks = <&cpg 0 0>;
+   resets = <&cpg 0x30>;
+   status = "disabled";
+  };
+
+  ostm0: timer@11800000 {
+   compatible = "renesas,r9a09g057-ostm", "renesas,ostm";
+   reg = <0x0 0x11800000 0x0 0x1000>;
+   interrupts = <0 17 1>;
+   clocks = <&cpg 1 0x43>;
+   resets = <&cpg 0x6d>;
+   power-domains = <&cpg>;
+   status = "disabled";
+  };
+
+  ostm1: timer@11801000 {
+   compatible = "renesas,r9a09g057-ostm", "renesas,ostm";
+   reg = <0x0 0x11801000 0x0 0x1000>;
+   interrupts = <0 18 1>;
+   clocks = <&cpg 1 0x44>;
+   resets = <&cpg 0x6e>;
+   power-domains = <&cpg>;
+   status = "disabled";
+  };
+
+  ostm2: timer@14000000 {
+   compatible = "renesas,r9a09g057-ostm", "renesas,ostm";
+   reg = <0x0 0x14000000 0x0 0x1000>;
+   interrupts = <0 19 1>;
+   clocks = <&cpg 1 0x45>;
+   resets = <&cpg 0x6f>;
+   power-domains = <&cpg>;
+   status = "disabled";
+  };
+
+  ostm3: timer@14001000 {
+   compatible = "renesas,r9a09g057-ostm", "renesas,ostm";
+   reg = <0x0 0x14001000 0x0 0x1000>;
+   interrupts = <0 20 1>;
+   clocks = <&cpg 1 0x46>;
+   resets = <&cpg 0x70>;
+   power-domains = <&cpg>;
+   status = "disabled";
+  };
+
+  ostm4: timer@12c00000 {
+   compatible = "renesas,r9a09g057-ostm", "renesas,ostm";
+   reg = <0x0 0x12c00000 0x0 0x1000>;
+   interrupts = <0 21 1>;
+   clocks = <&cpg 1 0x47>;
+   resets = <&cpg 0x71>;
+   power-domains = <&cpg>;
+   status = "disabled";
+  };
+
+  ostm5: timer@12c01000 {
+   compatible = "renesas,r9a09g057-ostm", "renesas,ostm";
+   reg = <0x0 0x12c01000 0x0 0x1000>;
+   interrupts = <0 22 1>;
+   clocks = <&cpg 1 0x48>;
+   resets = <&cpg 0x72>;
+   power-domains = <&cpg>;
+   status = "disabled";
+  };
+
+  ostm6: timer@12c02000 {
+   compatible = "renesas,r9a09g057-ostm", "renesas,ostm";
+   reg = <0x0 0x12c02000 0x0 0x1000>;
+   interrupts = <0 23 1>;
+   clocks = <&cpg 1 0x49>;
+   resets = <&cpg 0x73>;
+   power-domains = <&cpg>;
+   status = "disabled";
+  };
+
+  ostm7: timer@12c03000 {
+   compatible = "renesas,r9a09g057-ostm", "renesas,ostm";
+   reg = <0x0 0x12c03000 0x0 0x1000>;
+   interrupts = <0 24 1>;
+   clocks = <&cpg 1 0x4a>;
+   resets = <&cpg 0x74>;
+   power-domains = <&cpg>;
+   status = "disabled";
+  };
+
+  wdt0: watchdog@11c00400 {
+   compatible = "renesas,r9a09g057-wdt";
+   reg = <0 0x11c00400 0 0x400>;
+   clocks = <&cpg 1 0x4b>, <&cpg 1 0x4c>;
+   clock-names = "pclk", "oscclk";
+   resets = <&cpg 0x75>;
+   power-domains = <&cpg>;
+   status = "disabled";
+  };
+
+  wdt1: watchdog@14400000 {
+   compatible = "renesas,r9a09g057-wdt";
+   reg = <0 0x14400000 0 0x400>;
+   clocks = <&cpg 1 0x4d>, <&cpg 1 0x4e>;
+   clock-names = "pclk", "oscclk";
+   resets = <&cpg 0x76>;
+   power-domains = <&cpg>;
+   status = "disabled";
+  };
+
+  wdt2: watchdog@13000000 {
+   compatible = "renesas,r9a09g057-wdt";
+   reg = <0 0x13000000 0 0x400>;
+   clocks = <&cpg 1 0x4f>, <&cpg 1 0x50>;
+   clock-names = "pclk", "oscclk";
+   resets = <&cpg 0x77>;
+   power-domains = <&cpg>;
+   status = "disabled";
+  };
+
+  wdt3: watchdog@13000400 {
+   compatible = "renesas,r9a09g057-wdt";
+   reg = <0 0x13000400 0 0x400>;
+   clocks = <&cpg 1 0x51>, <&cpg 1 0x52>;
+   clock-names = "pclk", "oscclk";
+   resets = <&cpg 0x78>;
+   power-domains = <&cpg>;
+   status = "disabled";
+  };
+
+  scif: serial@11c01400 {
+   compatible = "renesas,scif-r9a09g057";
+   reg = <0 0x11c01400 0 0x400>;
+   interrupts = <0 529 4>,
+         <0 532 4>,
+         <0 533 4>,
+         <0 530 4>,
+         <0 534 4>,
+         <0 531 4>,
+         <0 535 4>,
+         <0 536 1>,
+         <0 537 1>;
+   interrupt-names = "eri", "rxi", "txi", "bri", "dri",
+       "tei", "tei-dri", "rxi-edge", "txi-edge";
+   clocks = <&cpg 1 0x8f>;
+   clock-names = "fck";
+   power-domains = <&cpg>;
+   resets = <&cpg 0x95>;
+   status = "disabled";
+  };
+
+  i2c0: i2c@14400400 {
+   compatible = "renesas,riic-r9a09g057";
+   reg = <0 0x14400400 0 0x400>;
+   interrupts = <0 174 4>,
+         <0 507 1>,
+         <0 506 1>,
+         <0 176 4>,
+         <0 177 4>,
+         <0 175 4>,
+         <0 178 4>,
+         <0 179 4>;
+   interrupt-names = "tei", "ri", "ti", "spi", "sti",
+       "naki", "ali", "tmoi";
+   clocks = <&cpg 1 0x94>;
+   resets = <&cpg 0x98>;
+   power-domains = <&cpg>;
+   #address-cells = <1>;
+   #size-cells = <0>;
+   status = "disabled";
+  };
+
+  i2c1: i2c@14400800 {
+   compatible = "renesas,riic-r9a09g057";
+   reg = <0 0x14400800 0 0x400>;
+   interrupts = <0 180 4>,
+         <0 509 1>,
+         <0 508 1>,
+         <0 182 4>,
+         <0 183 4>,
+         <0 181 4>,
+         <0 184 4>,
+         <0 185 4>;
+   interrupt-names = "tei", "ri", "ti", "spi", "sti",
+       "naki", "ali", "tmoi";
+   clocks = <&cpg 1 0x95>;
+   resets = <&cpg 0x99>;
+   power-domains = <&cpg>;
+   #address-cells = <1>;
+   #size-cells = <0>;
+   status = "disabled";
+  };
+
+  i2c2: i2c@14400c00 {
+   compatible = "renesas,riic-r9a09g057";
+   reg = <0 0x14400c00 0 0x400>;
+   interrupts = <0 186 4>,
+         <0 511 1>,
+         <0 510 1>,
+         <0 188 4>,
+         <0 189 4>,
+         <0 187 4>,
+         <0 190 4>,
+         <0 191 4>;
+   interrupt-names = "tei", "ri", "ti", "spi", "sti",
+       "naki", "ali", "tmoi";
+   clocks = <&cpg 1 0x96>;
+   resets = <&cpg 0x9a>;
+   power-domains = <&cpg>;
+   #address-cells = <1>;
+   #size-cells = <0>;
+   status = "disabled";
+  };
+
+  i2c3: i2c@14401000 {
+   compatible = "renesas,riic-r9a09g057";
+   reg = <0 0x14401000 0 0x400>;
+   interrupts = <0 192 4>,
+         <0 513 1>,
+         <0 512 1>,
+         <0 194 4>,
+         <0 195 4>,
+         <0 193 4>,
+         <0 196 4>,
+         <0 197 4>;
+   interrupt-names = "tei", "ri", "ti", "spi", "sti",
+       "naki", "ali", "tmoi";
+   clocks = <&cpg 1 0x97>;
+   resets = <&cpg 0x9b>;
+   power-domains = <&cpg>;
+   #address-cells = <1>;
+   #size-cells = <0>;
+   status = "disabled";
+  };
+
+  i2c4: i2c@14401400 {
+   compatible = "renesas,riic-r9a09g057";
+   reg = <0 0x14401400 0 0x400>;
+   interrupts = <0 198 4>,
+         <0 515 1>,
+         <0 514 1>,
+         <0 200 4>,
+         <0 201 4>,
+         <0 199 4>,
+         <0 202 4>,
+         <0 203 4>;
+   interrupt-names = "tei", "ri", "ti", "spi", "sti",
+       "naki", "ali", "tmoi";
+   clocks = <&cpg 1 0x98>;
+   resets = <&cpg 0x9c>;
+   power-domains = <&cpg>;
+   #address-cells = <1>;
+   #size-cells = <0>;
+   status = "disabled";
+  };
+
+  i2c5: i2c@14401800 {
+   compatible = "renesas,riic-r9a09g057";
+   reg = <0 0x14401800 0 0x400>;
+   interrupts = <0 204 4>,
+         <0 517 1>,
+         <0 516 1>,
+         <0 206 4>,
+         <0 207 4>,
+         <0 205 4>,
+         <0 208 4>,
+         <0 209 4>;
+   interrupt-names = "tei", "ri", "ti", "spi", "sti",
+       "naki", "ali", "tmoi";
+   clocks = <&cpg 1 0x99>;
+   resets = <&cpg 0x9d>;
+   power-domains = <&cpg>;
+   #address-cells = <1>;
+   #size-cells = <0>;
+   status = "disabled";
+  };
+
+  i2c6: i2c@14401c00 {
+   compatible = "renesas,riic-r9a09g057";
+   reg = <0 0x14401c00 0 0x400>;
+   interrupts = <0 210 4>,
+         <0 519 1>,
+         <0 518 1>,
+         <0 212 4>,
+         <0 213 4>,
+         <0 211 4>,
+         <0 214 4>,
+         <0 215 4>;
+   interrupt-names = "tei", "ri", "ti", "spi", "sti",
+       "naki", "ali", "tmoi";
+   clocks = <&cpg 1 0x9a>;
+   resets = <&cpg 0x9e>;
+   power-domains = <&cpg>;
+   #address-cells = <1>;
+   #size-cells = <0>;
+   status = "disabled";
+  };
+
+  i2c7: i2c@14402000 {
+   compatible = "renesas,riic-r9a09g057";
+   reg = <0 0x14402000 0 0x400>;
+   interrupts = <0 216 4>,
+         <0 521 1>,
+         <0 520 1>,
+         <0 218 4>,
+         <0 219 4>,
+         <0 217 4>,
+         <0 220 4>,
+         <0 221 4>;
+   interrupt-names = "tei", "ri", "ti", "spi", "sti",
+       "naki", "ali", "tmoi";
+   clocks = <&cpg 1 0x9b>;
+   resets = <&cpg 0x9f>;
+   power-domains = <&cpg>;
+   #address-cells = <1>;
+   #size-cells = <0>;
+   status = "disabled";
+  };
+
+  i2c8: i2c@11c01000 {
+   compatible = "renesas,riic-r9a09g057";
+   reg = <0 0x11c01000 0 0x400>;
+   interrupts = <0 222 4>,
+         <0 523 1>,
+         <0 522 1>,
+         <0 224 4>,
+         <0 225 4>,
+         <0 223 4>,
+         <0 226 4>,
+         <0 227 4>;
+   interrupt-names = "tei", "ri", "ti", "spi", "sti",
+       "naki", "ali", "tmoi";
+   clocks = <&cpg 1 0x93>;
+   resets = <&cpg 0xa0>;
+   power-domains = <&cpg>;
+   #address-cells = <1>;
+   #size-cells = <0>;
+   status = "disabled";
+  };
+
+  gic: interrupt-controller@14900000 {
+   compatible = "arm,gic-v3";
+   reg = <0x0 0x14900000 0 0x20000>,
+         <0x0 0x14940000 0 0x80000>;
+   #interrupt-cells = <3>;
+   #address-cells = <0>;
+   interrupt-controller;
+   interrupts = <1 9 8>;
+  };
+
+  sdhi0: mmc@15c00000 {
+   compatible = "renesas,sdhi-r9a09g057";
+   reg = <0x0 0x15c00000 0 0x10000>;
+   interrupts = <0 735 4>,
+         <0 736 4>;
+   clocks = <&cpg 1 0xa3>, <&cpg 1 0xa5>,
+     <&cpg 1 0xa4>, <&cpg 1 0xa6>;
+   clock-names = "core", "clkh", "cd", "aclk";
+   resets = <&cpg 0xa7>;
+   power-domains = <&cpg>;
+   status = "disabled";
+  };
+
+  sdhi1: mmc@15c10000 {
+   compatible = "renesas,sdhi-r9a09g057";
+   reg = <0x0 0x15c10000 0 0x10000>;
+   interrupts = <0 737 4>,
+         <0 738 4>;
+   clocks = <&cpg 1 0xa7>, <&cpg 1 0xa9>,
+     <&cpg 1 0xa8>, <&cpg 1 0xaa>;
+   clock-names = "core", "clkh", "cd", "aclk";
+   resets = <&cpg 0xa8>;
+   power-domains = <&cpg>;
+   status = "disabled";
+  };
+
+  sdhi2: mmc@15c20000 {
+   compatible = "renesas,sdhi-r9a09g057";
+   reg = <0x0 0x15c20000 0 0x10000>;
+   interrupts = <0 739 4>,
+         <0 740 4>;
+   clocks = <&cpg 1 0xab>, <&cpg 1 0xad>,
+     <&cpg 1 0xac>, <&cpg 1 0xae>;
+   clock-names = "core", "clkh", "cd", "aclk";
+   resets = <&cpg 0xa9>;
+   power-domains = <&cpg>;
+   status = "disabled";
+  };
+ };
+
+ timer {
+  compatible = "arm,armv8-timer";
+  interrupts-extended = <&gic 1 13 8>,
+          <&gic 1 14 8>,
+          <&gic 1 11 8>,
+          <&gic 1 10 8>,
+          <&gic 1 12 8>;
+  interrupt-names = "sec-phys", "phys", "virt", "hyp-phys", "hyp-virt";
+ };
+};
+# 13 "arch/arm64/boot/dts/renesas/r9a09g057h44-rzv2h-evk.dts" 2
+
+/ {
+ model = "Renesas RZ/V2H EVK Board based on r9a09g057h44";
+ compatible = "renesas,rzv2h-evk", "renesas,r9a09g057h44", "renesas,r9a09g057";
+
+ aliases {
+  i2c0 = &i2c0;
+  i2c1 = &i2c1;
+  i2c2 = &i2c2;
+  i2c3 = &i2c3;
+  i2c6 = &i2c6;
+  i2c7 = &i2c7;
+  i2c8 = &i2c8;
+  mmc1 = &sdhi1;
+  serial0 = &scif;
+ };
+
+ chosen {
+  bootargs = "ignore_loglevel";
+  stdout-path = "serial0:115200n8";
+ };
+
+ memory@48000000 {
+  device_type = "memory";
+
+  reg = <0x0 0x48000000 0x1 0xF8000000>;
+ };
+
+ memory@240000000 {
+  device_type = "memory";
+  reg = <0x2 0x40000000 0x2 0x00000000>;
+ };
+
+ reg_3p3v: regulator1 {
+  compatible = "regulator-fixed";
+
+  regulator-name = "fixed-3.3V";
+  regulator-min-microvolt = <3300000>;
+  regulator-max-microvolt = <3300000>;
+  regulator-boot-on;
+  regulator-always-on;
+ };
+
+ vqmmc_sdhi1: regulator-vccq-sdhi1 {
+  compatible = "regulator-gpio";
+  regulator-name = "SDHI1 VccQ";
+  gpios = <&pinctrl ((10) * 8 + (2)) 0>;
+  regulator-min-microvolt = <1800000>;
+  regulator-max-microvolt = <3300000>;
+  gpios-states = <0>;
+  states = <3300000 0>, <1800000 1>;
+ };
+};
+
+&audio_extal_clk {
+ clock-frequency = <22579200>;
+};
+
+&i2c0 {
+ pinctrl-0 = <&i2c0_pins>;
+ pinctrl-names = "default";
+ clock-frequency = <400000>;
+
+ status = "okay";
+};
+
+&i2c1 {
+ pinctrl-0 = <&i2c1_pins>;
+ pinctrl-names = "default";
+ clock-frequency = <400000>;
+
+ status = "okay";
+};
+
+&i2c2 {
+ pinctrl-0 = <&i2c2_pins>;
+ pinctrl-names = "default";
+ clock-frequency = <400000>;
+
+ status = "okay";
+};
+
+&i2c3 {
+ pinctrl-0 = <&i2c3_pins>;
+ pinctrl-names = "default";
+ clock-frequency = <400000>;
+
+ status = "okay";
+};
+
+&i2c6 {
+ pinctrl-0 = <&i2c6_pins>;
+ pinctrl-names = "default";
+ clock-frequency = <400000>;
+
+ status = "okay";
+};
+
+&i2c7 {
+ pinctrl-0 = <&i2c7_pins>;
+ pinctrl-names = "default";
+ clock-frequency = <400000>;
+
+ status = "okay";
+};
+
+&i2c8 {
+ pinctrl-0 = <&i2c8_pins>;
+ pinctrl-names = "default";
+ clock-frequency = <400000>;
+
+ status = "okay";
+};
+
+&ostm0 {
+ status = "okay";
+};
+
+&ostm1 {
+ status = "okay";
+};
+
+&ostm2 {
+ status = "okay";
+};
+
+&ostm3 {
+ status = "okay";
+};
+
+&ostm4 {
+ status = "okay";
+};
+
+&ostm5 {
+ status = "okay";
+};
+
+&ostm6 {
+ status = "okay";
+};
+
+&ostm7 {
+ status = "okay";
+};
+
+&pinctrl {
+ i2c0_pins: i2c0 {
+  pinmux = <((3) * 8 + (0) | ((1) << 16))>,
+    <((3) * 8 + (1) | ((1) << 16))>;
+ };
+
+ i2c1_pins: i2c1 {
+  pinmux = <((3) * 8 + (2) | ((1) << 16))>,
+    <((3) * 8 + (3) | ((1) << 16))>;
+ };
+
+ i2c2_pins: i2c2 {
+  pinmux = <((2) * 8 + (0) | ((4) << 16))>,
+    <((2) * 8 + (1) | ((4) << 16))>;
+ };
+
+ i2c3_pins: i2c3 {
+  pinmux = <((3) * 8 + (6) | ((1) << 16))>,
+    <((3) * 8 + (7) | ((1) << 16))>;
+ };
+
+ i2c6_pins: i2c6 {
+  pinmux = <((4) * 8 + (4) | ((1) << 16))>,
+    <((4) * 8 + (5) | ((1) << 16))>;
+ };
+
+ i2c7_pins: i2c7 {
+  pinmux = <((4) * 8 + (6) | ((1) << 16))>,
+    <((4) * 8 + (7) | ((1) << 16))>;
+ };
+
+ i2c8_pins: i2c8 {
+  pinmux = <((0) * 8 + (6) | ((1) << 16))>,
+    <((0) * 8 + (7) | ((1) << 16))>;
+ };
+
+ scif_pins: scif {
+  pins = "SCIF_TXD", "SCIF_RXD";
+  renesas,output-impedance = <1>;
+ };
+
+ sd1-pwr-en-hog {
+  gpio-hog;
+  gpios = <((10) * 8 + (3)) 0>;
+  output-high;
+  line-name = "sd1_pwr_en";
+ };
+
+ sdhi1_pins: sd1 {
+  sd1_dat_cmd {
+   pins = "SD1DAT0", "SD1DAT1", "SD1DAT2", "SD1DAT3", "SD1CMD";
+   input-enable;
+   renesas,output-impedance = <3>;
+   slew-rate = <0>;
+  };
+
+  sd1_clk {
+   pins = "SD1CLK";
+   renesas,output-impedance = <3>;
+   slew-rate = <0>;
+  };
+
+  sd1_cd {
+   pinmux = <((9) * 8 + (4) | ((14) << 16))>;
+  };
+ };
+};
+
+&qextal_clk {
+ clock-frequency = <24000000>;
+};
+
+&rtxin_clk {
+ clock-frequency = <32768>;
+};
+
+&scif {
+ pinctrl-0 = <&scif_pins>;
+ pinctrl-names = "default";
+
+ status = "okay";
+};
+
+&sdhi1 {
+ pinctrl-0 = <&sdhi1_pins>;
+ pinctrl-1 = <&sdhi1_pins>;
+ pinctrl-names = "default", "state_uhs";
+ vmmc-supply = <&reg_3p3v>;
+ vqmmc-supply = <&vqmmc_sdhi1>;
+ bus-width = <4>;
+ sd-uhs-sdr50;
+ sd-uhs-sdr104;
+ status = "okay";
+};
+
+&wdt1 {
+ status = "okay";
+};

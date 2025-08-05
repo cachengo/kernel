@@ -1,11 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * Copyright (C) Rockchip Electronics Co.Ltd
+ * Copyright (C) Rockchip Electronics Co., Ltd.
  * Author:
  *      Algea Cao <algea.cao@rock-chips.com>
  */
 #ifndef __DW_HDMI_QP_H__
 #define __DW_HDMI_QP_H__
+
+#include <linux/bits.h>
+
 /* Main Unit Registers */
 #define CORE_ID						0x0
 #define VER_NUMBER					0x4
@@ -109,7 +112,7 @@
 #define AUD_FIFO_INIT_ON_OVF_MSK			BIT(2)
 #define AUD_FIFO_INIT_ON_OVF_EN				BIT(2)
 #define I2S_LINES_EN_MSK				GENMASK(7, 4)
-#define I2S_LINES_EN(x)					BIT(x + 4)
+#define I2S_LINES_EN(x)					BIT((x) + 4)
 #define I2S_BPCUV_RCV_MSK				BIT(12)
 #define I2S_BPCUV_RCV_EN				BIT(12)
 #define I2S_BPCUV_RCV_DIS				0

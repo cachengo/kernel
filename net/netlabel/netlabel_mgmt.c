@@ -63,7 +63,7 @@ static const struct nla_policy netlbl_mgmt_genl_policy[NLBL_MGMT_A_MAX + 1] = {
  */
 
 /**
- * netlbl_mgmt_add - Handle an ADD message
+ * netlbl_mgmt_add_common - Handle an ADD message
  * @info: the Generic NETLINK info block
  * @audit_info: NetLabel audit information
  *
@@ -96,7 +96,7 @@ static int netlbl_mgmt_add_common(struct genl_info *info,
 			ret_val = -ENOMEM;
 			goto add_free_entry;
 		}
-		nla_strlcpy(entry->domain,
+		nla_strscpy(entry->domain,
 			    info->attrs[NLBL_MGMT_A_DOMAIN], tmp_size);
 	}
 
@@ -107,11 +107,9 @@ static int netlbl_mgmt_add_common(struct genl_info *info,
 
 	switch (entry->def.type) {
 	case NETLBL_NLTYPE_UNLABELED:
-		if (info->attrs[NLBL_MGMT_A_FAMILY])
-			entry->family =
-				nla_get_u16(info->attrs[NLBL_MGMT_A_FAMILY]);
-		else
-			entry->family = AF_UNSPEC;
+		entry->family =
+			nla_get_u16_default(info->attrs[NLBL_MGMT_A_FAMILY],
+					    AF_UNSPEC);
 		break;
 	case NETLBL_NLTYPE_CIPSOV4:
 		if (!info->attrs[NLBL_MGMT_A_CV4DOI])
@@ -435,7 +433,7 @@ static int netlbl_mgmt_add(struct sk_buff *skb, struct genl_info *info)
 	     (info->attrs[NLBL_MGMT_A_IPV6MASK] != NULL)))
 		return -EINVAL;
 
-	netlbl_netlink_auditinfo(skb, &audit_info);
+	netlbl_netlink_auditinfo(&audit_info);
 
 	return netlbl_mgmt_add_common(info, &audit_info);
 }
@@ -458,7 +456,7 @@ static int netlbl_mgmt_remove(struct sk_buff *skb, struct genl_info *info)
 	if (!info->attrs[NLBL_MGMT_A_DOMAIN])
 		return -EINVAL;
 
-	netlbl_netlink_auditinfo(skb, &audit_info);
+	netlbl_netlink_auditinfo(&audit_info);
 
 	domain = nla_data(info->attrs[NLBL_MGMT_A_DOMAIN]);
 	return netlbl_domhsh_remove(domain, AF_UNSPEC, &audit_info);
@@ -558,7 +556,7 @@ static int netlbl_mgmt_adddef(struct sk_buff *skb, struct genl_info *info)
 	     (info->attrs[NLBL_MGMT_A_IPV6MASK] != NULL)))
 		return -EINVAL;
 
-	netlbl_netlink_auditinfo(skb, &audit_info);
+	netlbl_netlink_auditinfo(&audit_info);
 
 	return netlbl_mgmt_add_common(info, &audit_info);
 }
@@ -577,7 +575,7 @@ static int netlbl_mgmt_removedef(struct sk_buff *skb, struct genl_info *info)
 {
 	struct netlbl_audit audit_info;
 
-	netlbl_netlink_auditinfo(skb, &audit_info);
+	netlbl_netlink_auditinfo(&audit_info);
 
 	return netlbl_domhsh_remove_default(AF_UNSPEC, &audit_info);
 }
@@ -601,10 +599,7 @@ static int netlbl_mgmt_listdef(struct sk_buff *skb, struct genl_info *info)
 	struct netlbl_dom_map *entry;
 	u16 family;
 
-	if (info->attrs[NLBL_MGMT_A_FAMILY])
-		family = nla_get_u16(info->attrs[NLBL_MGMT_A_FAMILY]);
-	else
-		family = AF_INET;
+	family = nla_get_u16_default(info->attrs[NLBL_MGMT_A_FAMILY], AF_INET);
 
 	ans_skb = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
 	if (ans_skb == NULL)
@@ -826,6 +821,7 @@ static struct genl_family netlbl_mgmt_gnl_family __ro_after_init = {
 	.module = THIS_MODULE,
 	.small_ops = netlbl_mgmt_genl_ops,
 	.n_small_ops = ARRAY_SIZE(netlbl_mgmt_genl_ops),
+	.resv_start_op = NLBL_MGMT_C_VERSION + 1,
 };
 
 /*

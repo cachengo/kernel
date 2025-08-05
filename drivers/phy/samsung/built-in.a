@@ -1,0 +1,20 @@
+!<thin>
+//                                              184       `
+phy-exynos-dp-video.o/
+phy-exynos-mipi-video.o/
+phy-gs101-ufs.o/
+phy-samsung-ufs.o/
+phy-exynos7-ufs.o/
+phy-exynosautov9-ufs.o/
+phy-fsd-ufs.o/
+phy-samsung-usb2.o/
+phy-exynos5-usbdrd.o/
+/0              0           0     0     644     25048     `
+/23             0           0     0     644     32520     `
+/48             0           0     0     644     21912     `
+/65             0           0     0     644     54544     `
+/84             0           0     0     644     11680     `
+/103            0           0     0     644     11200     `
+/127            0           0     0     644     11152     `
+/142            0           0     0     644     38304     `
+/162            0           0     0     644     112176    `

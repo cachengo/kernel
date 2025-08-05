@@ -1,0 +1,5 @@
+k3-am654-pcie-usb2.o: arch/arm64/boot/dts/ti/k3-am654-pcie-usb2.dtso \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ scripts/dtc/include-prefixes/dt-bindings/phy/phy.h \
+ scripts/dtc/include-prefixes/dt-bindings/phy/phy-am654-serdes.h \
+ arch/arm64/boot/dts/ti/k3-pinctrl.h

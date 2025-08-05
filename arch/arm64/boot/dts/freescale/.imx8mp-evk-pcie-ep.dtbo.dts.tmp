@@ -1,0 +1,21 @@
+# 0 "arch/arm64/boot/dts/freescale/imx8mp-evk-pcie-ep.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/freescale/imx8mp-evk-pcie-ep.dtso"
+
+
+
+
+
+/dts-v1/;
+/plugin/;
+
+&pcie {
+ status = "disabled";
+};
+
+&pcie_ep {
+ pinctrl-0 = <&pinctrl_pcie0>;
+ pinctrl-names = "default";
+ status = "okay";
+};

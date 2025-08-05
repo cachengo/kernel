@@ -1,0 +1,22 @@
+k3-am625-verdin-nonwifi-ivy.o: \
+ arch/arm64/boot/dts/ti/k3-am625-verdin-nonwifi-ivy.dts \
+ arch/arm64/boot/dts/ti/k3-am625.dtsi arch/arm64/boot/dts/ti/k3-am62.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h \
+ scripts/dtc/include-prefixes/dt-bindings/soc/ti,sci_pm_domain.h \
+ arch/arm64/boot/dts/ti/k3-pinctrl.h \
+ arch/arm64/boot/dts/ti/k3-am62-thermal.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/thermal/thermal.h \
+ arch/arm64/boot/dts/ti/k3-am62-main.dtsi \
+ arch/arm64/boot/dts/ti/k3-am62-mcu.dtsi \
+ arch/arm64/boot/dts/ti/k3-am62-wakeup.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/bus/ti-sysc.h \
+ arch/arm64/boot/dts/ti/k3-am62-verdin.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/input/input.h \
+ scripts/dtc/include-prefixes/dt-bindings/input/linux-event-codes.h \
+ scripts/dtc/include-prefixes/dt-bindings/net/ti-dp83867.h \
+ arch/arm64/boot/dts/ti/k3-am62-verdin-nonwifi.dtsi \
+ arch/arm64/boot/dts/ti/k3-am62-verdin-ivy.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/mux/mux.h \
+ scripts/dtc/include-prefixes/dt-bindings/leds/common.h

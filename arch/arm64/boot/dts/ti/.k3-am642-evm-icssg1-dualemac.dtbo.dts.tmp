@@ -1,0 +1,85 @@
+# 0 "arch/arm64/boot/dts/ti/k3-am642-evm-icssg1-dualemac.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/ti/k3-am642-evm-icssg1-dualemac.dtso"
+
+
+
+
+
+
+
+/dts-v1/;
+/plugin/;
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h" 1
+# 12 "arch/arm64/boot/dts/ti/k3-am642-evm-icssg1-dualemac.dtso" 2
+# 1 "arch/arm64/boot/dts/ti/k3-pinctrl.h" 1
+# 13 "arch/arm64/boot/dts/ti/k3-am642-evm-icssg1-dualemac.dtso" 2
+
+&{/} {
+ aliases {
+  ethernet1 = "/icssg1-eth/ethernet-ports/port@1";
+ };
+
+ mdio-mux-2 {
+  compatible = "mdio-mux-multiplexer";
+  mux-controls = <&mdio_mux>;
+  mdio-parent-bus = <&icssg1_mdio>;
+  #address-cells = <1>;
+  #size-cells = <0>;
+
+  mdio@0 {
+   reg = <0x0>;
+   #address-cells = <1>;
+   #size-cells = <0>;
+
+   icssg1_phy2: ethernet-phy@3 {
+    reg = <3>;
+    tx-internal-delay-ps = <250>;
+    rx-internal-delay-ps = <2000>;
+   };
+  };
+ };
+};
+
+&main_pmx0 {
+ icssg1_rgmii2_pins_default: icssg1-rgmii2-default-pins {
+  pinctrl-single,pins = <
+   (((0x0108) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x010c) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x0110) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x0114) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x0120) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x0118) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (2))
+   (((0x0134) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+   (((0x0138) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+   (((0x013c) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+   (((0x0140) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+   (((0x0148) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+   (((0x0144) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (2))
+  >;
+ };
+};
+
+&cpsw3g {
+ pinctrl-0 = <&rgmii1_pins_default>;
+};
+
+&cpsw_port2 {
+ status = "disabled";
+};
+
+&mdio_mux_1 {
+ status = "disabled";
+};
+
+&icssg1_eth {
+ pinctrl-0 = <&icssg1_rgmii1_pins_default>, <&icssg1_rgmii2_pins_default>;
+};
+
+&icssg1_emac1 {
+ status = "okay";
+ phy-handle = <&icssg1_phy2>;
+ phy-mode = "rgmii-id";
+};

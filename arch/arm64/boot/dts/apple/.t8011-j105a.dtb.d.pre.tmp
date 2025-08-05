@@ -1,0 +1,7 @@
+t8011-j105a.o: arch/arm64/boot/dts/apple/t8011-j105a.dts \
+ arch/arm64/boot/dts/apple/t8011.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/apple-aic.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h \
+ scripts/dtc/include-prefixes/dt-bindings/pinctrl/apple.h \
+ arch/arm64/boot/dts/apple/t8011-common.dtsi

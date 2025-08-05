@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/ti/k3-am654-idk.dtb := ./scripts/dtc/fdtoverlay -o arch/arm64/boot/dts/ti/k3-am654-idk.dtb -i arch/arm64/boot/dts/ti/k3-am654-evm.dtb arch/arm64/boot/dts/ti/k3-am654-idk.dtbo arch/arm64/boot/dts/ti/k3-am654-pcie-usb2.dtbo 

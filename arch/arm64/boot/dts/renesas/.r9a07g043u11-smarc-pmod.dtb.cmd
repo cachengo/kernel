@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/renesas/r9a07g043u11-smarc-pmod.dtb := ./scripts/dtc/fdtoverlay -o arch/arm64/boot/dts/renesas/r9a07g043u11-smarc-pmod.dtb -i arch/arm64/boot/dts/renesas/r9a07g043u11-smarc.dtb arch/arm64/boot/dts/renesas/r9a07g043-smarc-pmod.dtbo 

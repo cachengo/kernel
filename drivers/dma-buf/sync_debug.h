@@ -55,25 +55,20 @@ static inline struct sync_timeline *dma_fence_parent(struct dma_fence *fence)
  * @base: base fence object
  * @link: link on the sync timeline's list
  * @node: node in the sync timeline's tree
+ * @deadline: the earliest fence deadline hint
  */
 struct sync_pt {
 	struct dma_fence base;
 	struct list_head link;
 	struct rb_node node;
+	ktime_t deadline;
 };
 
 extern const struct file_operations sw_sync_debugfs_fops;
 
-#ifdef CONFIG_SW_SYNC_DEBUG
 void sync_timeline_debug_add(struct sync_timeline *obj);
 void sync_timeline_debug_remove(struct sync_timeline *obj);
 void sync_file_debug_add(struct sync_file *fence);
 void sync_file_debug_remove(struct sync_file *fence);
-#else
-static inline void sync_timeline_debug_add(struct sync_timeline *obj) {}
-static inline void sync_timeline_debug_remove(struct sync_timeline *obj) {}
-static inline void sync_file_debug_add(struct sync_file *fence) {}
-static inline void sync_file_debug_remove(struct sync_file *fence) {}
-#endif
 
 #endif /* _LINUX_SYNC_H */

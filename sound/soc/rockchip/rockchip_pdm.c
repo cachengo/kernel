@@ -8,7 +8,6 @@
 #include <linux/module.h>
 #include <linux/clk.h>
 #include <linux/of.h>
-#include <linux/of_device.h>
 #include <linux/pm_runtime.h>
 #include <linux/rational.h>
 #include <linux/regmap.h>
@@ -19,14 +18,12 @@
 #include "rockchip_pdm.h"
 
 #define PDM_DMA_BURST_SIZE	(8) /* size * width: 8*4 = 32 bytes */
-#define PDM_SIGNOFF_CLK_100M	(100000000)
-#define PDM_SIGNOFF_CLK_300M	(300000000)
+#define PDM_SIGNOFF_CLK_RATE	(100000000)
 #define PDM_PATH_MAX		(4)
 
 enum rk_pdm_version {
 	RK_PDM_RK3229,
 	RK_PDM_RK3308,
-	RK_PDM_RK3588,
 	RK_PDM_RV1126,
 };
 
@@ -78,8 +75,7 @@ static struct rk_pdm_ds_ratio ds_ratio[] = {
 };
 
 static unsigned int get_pdm_clk(struct rk_pdm_dev *pdm, unsigned int sr,
-				unsigned int *clk_src, unsigned int *clk_out,
-				unsigned int signoff)
+				unsigned int *clk_src, unsigned int *clk_out)
 {
 	unsigned int i, count, clk, div, rate;
 
@@ -104,7 +100,7 @@ static unsigned int get_pdm_clk(struct rk_pdm_dev *pdm, unsigned int sr,
 	}
 
 	if (!clk) {
-		clk = clk_round_rate(pdm->clk, signoff);
+		clk = clk_round_rate(pdm->clk, PDM_SIGNOFF_CLK_RATE);
 		*clk_src = clk;
 	}
 	return clk;
@@ -203,7 +199,7 @@ static int rockchip_pdm_hw_params(struct snd_pcm_substream *substream,
 	struct rk_pdm_dev *pdm = to_info(dai);
 	unsigned int val = 0;
 	unsigned int clk_rate, clk_div, samplerate;
-	unsigned int clk_src = 0, clk_out = 0, signoff = PDM_SIGNOFF_CLK_100M;
+	unsigned int clk_src, clk_out = 0;
 	unsigned long m, n;
 	bool change;
 	int ret;
@@ -212,10 +208,7 @@ static int rockchip_pdm_hw_params(struct snd_pcm_substream *substream,
 		return 0;
 
 	samplerate = params_rate(params);
-
-	if (pdm->version == RK_PDM_RK3588)
-		signoff = PDM_SIGNOFF_CLK_300M;
-	clk_rate = get_pdm_clk(pdm, samplerate, &clk_src, &clk_out, signoff);
+	clk_rate = get_pdm_clk(pdm, samplerate, &clk_src, &clk_out);
 	if (!clk_rate)
 		return -EINVAL;
 
@@ -224,7 +217,6 @@ static int rockchip_pdm_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 
 	if (pdm->version == RK_PDM_RK3308 ||
-	    pdm->version == RK_PDM_RK3588 ||
 	    pdm->version == RK_PDM_RV1126) {
 		rational_best_approximation(clk_out, clk_src,
 					    GENMASK(16 - 1, 0),
@@ -254,7 +246,7 @@ static int rockchip_pdm_hw_params(struct snd_pcm_substream *substream,
 				   val);
 	}
 
-	if (pdm->version == RK_PDM_RK3588 || pdm->version == RK_PDM_RV1126) {
+	if (pdm->version == RK_PDM_RV1126) {
 		val = get_pdm_cic_ratio(clk_out);
 		regmap_update_bits(pdm->regmap, PDM_CLK_CTRL, PDM_CIC_RATIO_MSK, val);
 		val = samplerate_to_bit(samplerate);
@@ -380,12 +372,13 @@ static int rockchip_pdm_dai_probe(struct snd_soc_dai *dai)
 {
 	struct rk_pdm_dev *pdm = to_info(dai);
 
-	dai->capture_dma_data = &pdm->capture_dma_data;
+	snd_soc_dai_dma_data_set_capture(dai, &pdm->capture_dma_data);
 
 	return 0;
 }
 
 static const struct snd_soc_dai_ops rockchip_pdm_dai_ops = {
+	.probe = rockchip_pdm_dai_probe,
 	.set_fmt = rockchip_pdm_set_fmt,
 	.trigger = rockchip_pdm_trigger,
 	.hw_params = rockchip_pdm_hw_params,
@@ -398,7 +391,6 @@ static const struct snd_soc_dai_ops rockchip_pdm_dai_ops = {
 			      SNDRV_PCM_FMTBIT_S32_LE)
 
 static struct snd_soc_dai_driver rockchip_pdm_dai = {
-	.probe = rockchip_pdm_dai_probe,
 	.capture = {
 		.stream_name = "Capture",
 		.channels_min = 2,
@@ -407,18 +399,18 @@ static struct snd_soc_dai_driver rockchip_pdm_dai = {
 		.formats = ROCKCHIP_PDM_FORMATS,
 	},
 	.ops = &rockchip_pdm_dai_ops,
-	.symmetric_rates = 1,
+	.symmetric_rate = 1,
 };
 
 static const struct snd_soc_component_driver rockchip_pdm_component = {
 	.name = "rockchip-pdm",
+	.legacy_dai_naming = 1,
 };
 
 static int rockchip_pdm_runtime_suspend(struct device *dev)
 {
 	struct rk_pdm_dev *pdm = dev_get_drvdata(dev);
 
-	regcache_cache_only(pdm->regmap, true);
 	clk_disable_unprepare(pdm->clk);
 	clk_disable_unprepare(pdm->hclk);
 
@@ -438,17 +430,11 @@ static int rockchip_pdm_runtime_resume(struct device *dev)
 
 	ret = clk_prepare_enable(pdm->hclk);
 	if (ret) {
+		clk_disable_unprepare(pdm->clk);
 		dev_err(pdm->dev, "hclock enable failed %d\n", ret);
 		return ret;
 	}
 
-	regcache_cache_only(pdm->regmap, false);
-	regcache_mark_dirty(pdm->regmap);
-	ret = regcache_sync(pdm->regmap);
-	if (ret) {
-		clk_disable_unprepare(pdm->clk);
-		clk_disable_unprepare(pdm->hclk);
-	}
 	return 0;
 }
 
@@ -549,8 +535,6 @@ static const struct of_device_id rockchip_pdm_match[] __maybe_unused = {
 	  .data = (void *)RK_PDM_RK3308 },
 	{ .compatible = "rockchip,rk3568-pdm",
 	  .data = (void *)RK_PDM_RV1126 },
-	{ .compatible = "rockchip,rk3588-pdm",
-	  .data = (void *)RK_PDM_RK3588 },
 	{ .compatible = "rockchip,rv1126-pdm",
 	  .data = (void *)RK_PDM_RV1126 },
 	{},
@@ -587,7 +571,6 @@ static int rockchip_pdm_path_parse(struct rk_pdm_dev *pdm, struct device_node *n
 static int rockchip_pdm_probe(struct platform_device *pdev)
 {
 	struct device_node *node = pdev->dev.of_node;
-	const struct of_device_id *match;
 	struct rk_pdm_dev *pdm;
 	struct resource *res;
 	void __iomem *regs;
@@ -597,10 +580,7 @@ static int rockchip_pdm_probe(struct platform_device *pdev)
 	if (!pdm)
 		return -ENOMEM;
 
-	match = of_match_device(rockchip_pdm_match, &pdev->dev);
-	if (match)
-		pdm->version = (enum rk_pdm_version)match->data;
-
+	pdm->version = (enum rk_pdm_version)device_get_match_data(&pdev->dev);
 	if (pdm->version == RK_PDM_RK3308) {
 		pdm->reset = devm_reset_control_get(&pdev->dev, "pdm-m");
 		if (IS_ERR(pdm->reset))
@@ -676,7 +656,7 @@ err_pm_disable:
 	return ret;
 }
 
-static int rockchip_pdm_remove(struct platform_device *pdev)
+static void rockchip_pdm_remove(struct platform_device *pdev)
 {
 	struct rk_pdm_dev *pdm = dev_get_drvdata(&pdev->dev);
 
@@ -686,8 +666,6 @@ static int rockchip_pdm_remove(struct platform_device *pdev)
 
 	clk_disable_unprepare(pdm->clk);
 	clk_disable_unprepare(pdm->hclk);
-
-	return 0;
 }
 
 #ifdef CONFIG_PM_SLEEP
@@ -705,11 +683,9 @@ static int rockchip_pdm_resume(struct device *dev)
 	struct rk_pdm_dev *pdm = dev_get_drvdata(dev);
 	int ret;
 
-	ret = pm_runtime_get_sync(dev);
-	if (ret < 0) {
-		pm_runtime_put(dev);
+	ret = pm_runtime_resume_and_get(dev);
+	if (ret < 0)
 		return ret;
-	}
 
 	ret = regcache_sync(pdm->regmap);
 

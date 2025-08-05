@@ -11,6 +11,12 @@
 
 #include "efi-header.S"
 
+#ifdef __ARMEB__
+#define OF_DT_MAGIC 0xd00dfeed
+#else
+#define OF_DT_MAGIC 0xedfe0dd0
+#endif
+
  AR_CLASS(	.arch	armv7-a	)
  M_CLASS(	.arch	armv7-m	)
 
@@ -61,11 +67,7 @@
 #if defined(CONFIG_ARCH_SA1100)
 		.macro	loadsp, rb, tmp1, tmp2
 		mov	\rb, #0x80000000	@ physical base address
-#ifdef CONFIG_DEBUG_LL_SER3
-		add	\rb, \rb, #0x00050000	@ Ser3
-#else
 		add	\rb, \rb, #0x00010000	@ Ser1
-#endif
 		.endm
 #else
 		.macro	loadsp,	rb, tmp1, tmp2
@@ -197,7 +199,8 @@ start:
 		 * were patching the initial instructions of the kernel, i.e
 		 * had started to exploit this "patch area".
 		 */
-		.rept	7
+		__initial_nops
+		.rept	5
 		__nop
 		.endr
 #ifndef CONFIG_THUMB2_KERNEL
@@ -273,11 +276,40 @@ not_angel:
 		 * are already placing their zImage in (eg) the top 64MB
 		 * of this range.
 		 */
-		mov	r4, pc
-		and	r4, r4, #0xf8000000
+		mov	r0, pc
+		and	r0, r0, #0xf8000000
+#ifdef CONFIG_USE_OF
+		adr	r1, LC1
+#ifdef CONFIG_ARM_APPENDED_DTB
+		/*
+		 * Look for an appended DTB.  If found, we cannot use it to
+		 * validate the calculated start of physical memory, as its
+		 * memory nodes may need to be augmented by ATAGS stored at
+		 * an offset from the same start of physical memory.
+		 */
+		ldr	r2, [r1, #4]	@ get &_edata
+		add	r2, r2, r1	@ relocate it
+		ldr	r2, [r2]	@ get DTB signature
+		ldr	r3, =OF_DT_MAGIC
+		cmp	r2, r3		@ do we have a DTB there?
+		beq	1f		@ if yes, skip validation
+#endif /* CONFIG_ARM_APPENDED_DTB */
+
+		/*
+		 * Make sure we have some stack before calling C code.
+		 * No GOT fixup has occurred yet, but none of the code we're
+		 * about to call uses any global variables.
+		 */
+		ldr	sp, [r1]	@ get stack location
+		add	sp, sp, r1	@ apply relocation
+
+		/* Validate calculated start against passed DTB */
+		mov	r1, r8
+		bl	fdt_check_mem_start
+1:
+#endif /* CONFIG_USE_OF */
 		/* Determine final kernel image address. */
-		add	r4, r4, #(TEXT_OFFSET & 0xffff0000)
-		add	r4, r4, #(TEXT_OFFSET & 0x0000ffff)
+		add	r4, r0, #TEXT_OFFSET
 #else
 		ldr	r4, =zreladdr
 #endif
@@ -333,11 +365,7 @@ restart:	adr	r0, LC1
  */
 
 		ldr	lr, [r6, #0]
-#ifndef __ARMEB__
-		ldr	r1, =0xedfe0dd0		@ sig is 0xd00dfeed big endian
-#else
-		ldr	r1, =0xd00dfeed
-#endif
+		ldr	r1, =OF_DT_MAGIC
 		cmp	lr, r1
 		bne	dtb_check_done		@ not found
 
@@ -379,8 +407,7 @@ restart:	adr	r0, LC1
 		 * of RAM and hope for the best.
 		 */
 		cmp	r0, #1
-		sub	r0, r4, #(TEXT_OFFSET & 0xffff0000)
-		sub	r0, r0, #(TEXT_OFFSET & 0x0000ffff)
+		sub	r0, r4, #TEXT_OFFSET
 		bic	r0, r0, #1
 		add	r0, r0, #0x100
 		mov	r1, r6
@@ -465,15 +492,10 @@ dtb_check_done:
 
 		/*
 		 * Compute the address of the hyp vectors after relocation.
-		 * This requires some arithmetic since we cannot directly
-		 * reference __hyp_stub_vectors in a PC-relative way.
 		 * Call __hyp_set_vectors with the new address so that we
 		 * can HVC again after the copy.
 		 */
-0:		adr	r0, 0b
-		movw	r1, #:lower16:__hyp_stub_vectors - 0b
-		movt	r1, #:upper16:__hyp_stub_vectors - 0b
-		add	r0, r0, r1
+		adr_l	r0, __hyp_stub_vectors
 		sub	r0, r0, r5
 		add	r0, r0, r10
 		bl	__hyp_set_vectors
@@ -624,17 +646,11 @@ not_relocated:	mov	r0, #0
 		cmp	r0, #HYP_MODE		@ if not booted in HYP mode...
 		bne	__enter_kernel		@ boot kernel directly
 
-		adr	r12, .L__hyp_reentry_vectors_offset
-		ldr	r0, [r12]
-		add	r0, r0, r12
-
+		adr_l	r0, __hyp_reentry_vectors
 		bl	__hyp_set_vectors
 		__HVC(0)			@ otherwise bounce to hyp mode
 
 		b	.			@ should never be reached
-
-		.align	2
-.L__hyp_reentry_vectors_offset:	.long	__hyp_reentry_vectors - .
 #else
 		b	__enter_kernel
 #endif
@@ -782,8 +798,8 @@ __setup_mmu:	sub	r3, r4, #16384		@ Page directory size
  * bits for the RAM area only.
  */
 		mov	r0, r3
-		mov	r9, r0, lsr #20
-		mov	r9, r9, lsl #20		@ start of RAM
+		mov	r9, r0, lsr #18
+		mov	r9, r9, lsl #18		@ start of RAM
 		add	r10, r9, #0x10000000	@ a reasonable RAM size
 		mov	r1, #0x12		@ XN|U + section mapping
 		orr	r1, r1, #3 << 10	@ AP=11

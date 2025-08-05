@@ -67,9 +67,6 @@ struct usb_ep *usb_ep_autoconfig_ss(
 )
 {
 	struct usb_ep	*ep;
-#if defined(CONFIG_ARCH_ROCKCHIP) && defined(CONFIG_NO_GKI)
-	u8 type = desc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
-#endif
 
 	if (gadget->ops->match_ep) {
 		ep = gadget->ops->match_ep(gadget, desc, ep_comp);
@@ -113,27 +110,6 @@ found_ep:
 	ep->desc = NULL;
 	ep->comp_desc = NULL;
 	ep->claimed = true;
-#if defined(CONFIG_ARCH_ROCKCHIP) && defined(CONFIG_NO_GKI)
-	ep->transfer_type = type;
-	if (gadget_is_superspeed(gadget) && ep_comp) {
-		switch (type) {
-		case USB_ENDPOINT_XFER_ISOC:
-			/* mult: bits 1:0 of bmAttributes */
-			ep->mult = (ep_comp->bmAttributes & 0x3) + 1;
-			fallthrough;
-		case USB_ENDPOINT_XFER_BULK:
-		case USB_ENDPOINT_XFER_INT:
-			ep->maxburst = ep_comp->bMaxBurst + 1;
-			break;
-		default:
-			break;
-		}
-	} else if (gadget_is_dualspeed(gadget) &&
-		   (type == USB_ENDPOINT_XFER_ISOC ||
-		    type == USB_ENDPOINT_XFER_INT)) {
-		ep->mult = usb_endpoint_maxp_mult(desc);
-	}
-#endif
 	return ep;
 }
 EXPORT_SYMBOL_GPL(usb_ep_autoconfig_ss);
@@ -205,7 +181,7 @@ EXPORT_SYMBOL_GPL(usb_ep_autoconfig);
  * This function can be used during function bind for endpoints obtained
  * from usb_ep_autoconfig(). It unclaims endpoint claimed by
  * usb_ep_autoconfig() to make it available for other functions. Endpoint
- * which was released is no longer invalid and shouldn't be used in
+ * which was released is no longer valid and shouldn't be used in
  * context of function which released it.
  */
 void usb_ep_autoconfig_release(struct usb_ep *ep)

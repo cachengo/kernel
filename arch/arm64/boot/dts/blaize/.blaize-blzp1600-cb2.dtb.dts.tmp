@@ -1,0 +1,322 @@
+# 0 "arch/arm64/boot/dts/blaize/blaize-blzp1600-cb2.dts"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/blaize/blaize-blzp1600-cb2.dts"
+
+
+
+
+
+/dts-v1/;
+
+# 1 "arch/arm64/boot/dts/blaize/blaize-blzp1600-som.dtsi" 1
+
+
+
+
+
+# 1 "arch/arm64/boot/dts/blaize/blaize-blzp1600.dtsi" 1
+
+
+
+
+
+/dts-v1/;
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h" 1
+# 9 "arch/arm64/boot/dts/blaize/blaize-blzp1600.dtsi" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h" 1
+# 9 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h"
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h" 1
+# 10 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h" 2
+# 10 "arch/arm64/boot/dts/blaize/blaize-blzp1600.dtsi" 2
+
+/ {
+ interrupt-parent = <&gic>;
+ #address-cells = <2>;
+ #size-cells = <2>;
+
+ cpus {
+  #address-cells = <2>;
+  #size-cells = <0>;
+
+  cpu0: cpu@0 {
+   compatible = "arm,cortex-a53";
+   reg = <0x0 0x0>;
+   device_type = "cpu";
+   enable-method = "psci";
+   next-level-cache = <&l2>;
+  };
+
+  cpu1: cpu@1 {
+   compatible = "arm,cortex-a53";
+   reg = <0x0 0x1>;
+   device_type = "cpu";
+   enable-method = "psci";
+   next-level-cache = <&l2>;
+  };
+
+  l2: l2-cache0 {
+   compatible = "cache";
+   cache-level = <2>;
+   cache-unified;
+  };
+ };
+
+ firmware {
+  scmi {
+   compatible = "arm,scmi-smc";
+   arm,smc-id = <0x82002000>;
+   #address-cells = <1>;
+   #size-cells = <0>;
+
+   shmem = <&scmi0_shm>;
+
+   scmi_clk: protocol@14 {
+    reg = <0x14>;
+    #clock-cells = <1>;
+   };
+
+   scmi_rst: protocol@16 {
+    reg = <0x16>;
+    #reset-cells = <1>;
+   };
+  };
+ };
+
+ pmu {
+  compatible = "arm,cortex-a53-pmu";
+  interrupts = <0 76 4>,
+        <0 77 4>;
+  interrupt-affinity = <&cpu0>, <&cpu1>;
+ };
+
+ psci {
+  compatible = "arm,psci-1.0", "arm,psci-0.2";
+  method = "smc";
+ };
+
+ reserved-memory {
+  #address-cells = <2>;
+  #size-cells = <2>;
+  ranges;
+
+
+  scmi0_shm: scmi-shmem@800 {
+   compatible = "arm,scmi-shmem";
+   reg = <0x0 0x800 0x0 0x80>;
+  };
+ };
+
+ timer {
+  compatible = "arm,armv8-timer";
+  interrupts =
+        <1 13 (((0x3) << 8) |
+       8)>,
+
+        <1 14 (((0x3) << 8) |
+       8)>,
+
+        <1 10 (((0x3) << 8) |
+       8)>,
+
+        <1 11 (((0x3) << 8) |
+       8)>;
+ };
+
+ soc@200000000 {
+  compatible = "simple-bus";
+  #address-cells = <1>;
+  #size-cells = <1>;
+  ranges = <0x0 0x2 0x0 0x850000>;
+
+  gic: interrupt-controller@410000 {
+   compatible = "arm,gic-400";
+   reg = <0x410000 0x20000>,
+         <0x420000 0x20000>,
+         <0x440000 0x20000>,
+         <0x460000 0x20000>;
+   #interrupt-cells = <3>;
+   #address-cells = <0>;
+   interrupt-controller;
+   interrupts = <1 9 (((0x3) << 8) |
+       8)>;
+  };
+
+  uart0: serial@4d0000 {
+   compatible = "ns16550a";
+   reg = <0x4d0000 0x1000>;
+   clocks = <&scmi_clk 59>;
+   resets = <&scmi_rst 59>;
+   reg-shift = <2>;
+   interrupts = <0 4 4>;
+   status = "disabled";
+  };
+
+  uart1: serial@4e0000 {
+   compatible = "ns16550a";
+   reg = <0x4e0000 0x1000>;
+   clocks = <&scmi_clk 60>;
+   resets = <&scmi_rst 60>;
+   reg-shift = <2>;
+   interrupts = <0 5 4>;
+   status = "disabled";
+  };
+
+  i2c0: i2c@4f0000 {
+   compatible = "snps,designware-i2c";
+   reg = <0x4f0000 0x1000>;
+   interrupts = <0 6 4>;
+   clocks = <&scmi_clk 54>;
+   resets = <&scmi_rst 54>;
+   #address-cells = <1>;
+   #size-cells = <0>;
+   status = "disabled";
+  };
+
+  i2c1: i2c@500000 {
+   compatible = "snps,designware-i2c";
+   reg = <0x500000 0x1000>;
+   interrupts = <0 7 4>;
+   clocks = <&scmi_clk 55>;
+   resets = <&scmi_rst 55>;
+   #address-cells = <1>;
+   #size-cells = <0>;
+   status = "disabled";
+  };
+
+  i2c2: i2c@510000 {
+   compatible = "snps,designware-i2c";
+   reg = <0x510000 0x1000>;
+   interrupts = <0 8 4>;
+   clocks = <&scmi_clk 56>;
+   resets = <&scmi_rst 56>;
+   #address-cells = <1>;
+   #size-cells = <0>;
+   status = "disabled";
+  };
+
+  i2c3: i2c@520000 {
+   compatible = "snps,designware-i2c";
+   reg = <0x520000 0x1000>;
+   interrupts = <0 9 4>;
+   clocks = <&scmi_clk 57>;
+   resets = <&scmi_rst 57>;
+   #address-cells = <1>;
+   #size-cells = <0>;
+   status = "disabled";
+  };
+
+  i2c4: i2c@530000 {
+   compatible = "snps,designware-i2c";
+   reg = <0x530000 0x1000>;
+   interrupts = <0 10 4>;
+   clocks = <&scmi_clk 58>;
+   resets = <&scmi_rst 58>;
+   #address-cells = <1>;
+   #size-cells = <0>;
+   status = "disabled";
+  };
+
+  arm_cc712: crypto@550000 {
+   compatible = "arm,cryptocell-712-ree";
+   reg = <0x550000 0x1000>;
+   interrupts = <0 67 4>;
+   clocks = <&scmi_clk 7>;
+  };
+ };
+};
+# 7 "arch/arm64/boot/dts/blaize/blaize-blzp1600-som.dtsi" 2
+
+/ {
+ memory@0 {
+  device_type = "memory";
+  reg = <0x0 0x0 0x1 0x0>;
+ };
+};
+
+
+&i2c4 {
+ clock-frequency = <100000>;
+ status = "okay";
+};
+
+&uart0 {
+ status = "okay";
+};
+# 9 "arch/arm64/boot/dts/blaize/blaize-blzp1600-cb2.dts" 2
+
+/ {
+ model = "Blaize BLZP1600 SoM1600P CB2 Development Board";
+
+ compatible = "blaize,blzp1600-cb2", "blaize,blzp1600";
+
+ aliases {
+  serial0 = &uart0;
+ };
+
+ chosen {
+  stdout-path = "serial0:115200";
+ };
+};
+
+&i2c0 {
+ clock-frequency = <100000>;
+ status = "okay";
+};
+
+&i2c1 {
+ clock-frequency = <100000>;
+ status = "okay";
+};
+
+&i2c3 {
+ clock-frequency = <100000>;
+ status = "okay";
+
+ gpio_expander: gpio@74 {
+  compatible = "ti,tca9539";
+  reg = <0x74>;
+  gpio-controller;
+  #gpio-cells = <2>;
+  gpio-line-names = "RSP_PIN_7",
+      "RSP_PIN_11",
+      "RSP_PIN_13",
+      "RSP_PIN_15",
+      "RSP_PIN_27",
+      "RSP_PIN_29",
+      "RSP_PIN_31",
+      "RSP_PIN_33",
+      "RSP_PIN_37",
+      "RSP_PIN_16",
+      "RSP_PIN_18",
+      "RSP_PIN_22",
+      "RSP_PIN_28",
+      "RSP_PIN_32",
+      "RSP_PIN_36",
+      "TP31";
+ };
+
+ gpio_expander_m2: gpio@75 {
+  compatible = "ti,tca9539";
+  reg = <0x75>;
+  gpio-controller;
+  #gpio-cells = <2>;
+  gpio-line-names = "M2_W_DIS1_N",
+      "M2_W_DIS2_N",
+      "M2_UART_WAKE_N",
+      "M2_COEX3",
+      "M2_COEX_RXD",
+      "M2_COEX_TXD",
+      "M2_VENDOR_PIN40",
+      "M2_VENDOR_PIN42",
+      "M2_VENDOR_PIN38",
+      "M2_SDIO_RST_N",
+      "M2_SDIO_WAKE_N",
+      "M2_PETN1",
+      "M2_PERP1",
+      "M2_PERN1",
+      "UIM_SWP",
+      "UART1_TO_RSP";
+ };
+};

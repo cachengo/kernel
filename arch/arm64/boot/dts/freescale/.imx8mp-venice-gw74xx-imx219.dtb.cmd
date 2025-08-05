@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/freescale/imx8mp-venice-gw74xx-imx219.dtb := ./scripts/dtc/fdtoverlay -o arch/arm64/boot/dts/freescale/imx8mp-venice-gw74xx-imx219.dtb -i arch/arm64/boot/dts/freescale/imx8mp-venice-gw74xx.dtb arch/arm64/boot/dts/freescale/imx8mp-venice-gw74xx-imx219.dtbo 

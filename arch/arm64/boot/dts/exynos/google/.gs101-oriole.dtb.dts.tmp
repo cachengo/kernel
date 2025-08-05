@@ -1,0 +1,3005 @@
+# 0 "arch/arm64/boot/dts/exynos/google/gs101-oriole.dts"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/exynos/google/gs101-oriole.dts"
+# 9 "arch/arm64/boot/dts/exynos/google/gs101-oriole.dts"
+/dts-v1/;
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h" 1
+# 12 "arch/arm64/boot/dts/exynos/google/gs101-oriole.dts" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/input/input.h" 1
+# 13 "./scripts/dtc/include-prefixes/dt-bindings/input/input.h"
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/input/linux-event-codes.h" 1
+# 14 "./scripts/dtc/include-prefixes/dt-bindings/input/input.h" 2
+# 13 "arch/arm64/boot/dts/exynos/google/gs101-oriole.dts" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/usb/pd.h" 1
+# 14 "arch/arm64/boot/dts/exynos/google/gs101-oriole.dts" 2
+# 1 "arch/arm64/boot/dts/exynos/google/gs101-pinctrl.h" 1
+# 15 "arch/arm64/boot/dts/exynos/google/gs101-oriole.dts" 2
+# 1 "arch/arm64/boot/dts/exynos/google/gs101.dtsi" 1
+# 9 "arch/arm64/boot/dts/exynos/google/gs101.dtsi"
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/clock/google,gs101.h" 1
+# 10 "arch/arm64/boot/dts/exynos/google/gs101.dtsi" 2
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h" 1
+# 9 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h"
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h" 1
+# 10 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h" 2
+# 12 "arch/arm64/boot/dts/exynos/google/gs101.dtsi" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/soc/samsung,exynos-usi.h" 1
+# 13 "arch/arm64/boot/dts/exynos/google/gs101.dtsi" 2
+
+/ {
+ compatible = "google,gs101";
+ #address-cells = <2>;
+ #size-cells = <1>;
+
+ interrupt-parent = <&gic>;
+
+ aliases {
+  pinctrl0 = &pinctrl_gpio_alive;
+  pinctrl1 = &pinctrl_far_alive;
+  pinctrl2 = &pinctrl_gsacore;
+  pinctrl3 = &pinctrl_gsactrl;
+  pinctrl4 = &pinctrl_peric0;
+  pinctrl5 = &pinctrl_peric1;
+  pinctrl6 = &pinctrl_hsi1;
+  pinctrl7 = &pinctrl_hsi2;
+ };
+
+ cpus {
+  #address-cells = <1>;
+  #size-cells = <0>;
+
+  cpu-map {
+   cluster0 {
+    core0 {
+     cpu = <&cpu0>;
+    };
+    core1 {
+     cpu = <&cpu1>;
+    };
+    core2 {
+     cpu = <&cpu2>;
+    };
+    core3 {
+     cpu = <&cpu3>;
+    };
+   };
+
+   cluster1 {
+    core0 {
+     cpu = <&cpu4>;
+    };
+    core1 {
+     cpu = <&cpu5>;
+    };
+   };
+
+   cluster2 {
+    core0 {
+     cpu = <&cpu6>;
+    };
+    core1 {
+     cpu = <&cpu7>;
+    };
+   };
+  };
+
+  cpu0: cpu@0 {
+   device_type = "cpu";
+   compatible = "arm,cortex-a55";
+   reg = <0x0000>;
+   enable-method = "psci";
+   cpu-idle-states = <&ANANKE_CPU_SLEEP>;
+   capacity-dmips-mhz = <250>;
+   dynamic-power-coefficient = <70>;
+  };
+
+  cpu1: cpu@100 {
+   device_type = "cpu";
+   compatible = "arm,cortex-a55";
+   reg = <0x0100>;
+   enable-method = "psci";
+   cpu-idle-states = <&ANANKE_CPU_SLEEP>;
+   capacity-dmips-mhz = <250>;
+   dynamic-power-coefficient = <70>;
+  };
+
+  cpu2: cpu@200 {
+   device_type = "cpu";
+   compatible = "arm,cortex-a55";
+   reg = <0x0200>;
+   enable-method = "psci";
+   cpu-idle-states = <&ANANKE_CPU_SLEEP>;
+   capacity-dmips-mhz = <250>;
+   dynamic-power-coefficient = <70>;
+  };
+
+  cpu3: cpu@300 {
+   device_type = "cpu";
+   compatible = "arm,cortex-a55";
+   reg = <0x0300>;
+   enable-method = "psci";
+   cpu-idle-states = <&ANANKE_CPU_SLEEP>;
+   capacity-dmips-mhz = <250>;
+   dynamic-power-coefficient = <70>;
+  };
+
+  cpu4: cpu@400 {
+   device_type = "cpu";
+   compatible = "arm,cortex-a76";
+   reg = <0x0400>;
+   enable-method = "psci";
+   cpu-idle-states = <&ENYO_CPU_SLEEP>;
+   capacity-dmips-mhz = <620>;
+   dynamic-power-coefficient = <284>;
+  };
+
+  cpu5: cpu@500 {
+   device_type = "cpu";
+   compatible = "arm,cortex-a76";
+   reg = <0x0500>;
+   enable-method = "psci";
+   cpu-idle-states = <&ENYO_CPU_SLEEP>;
+   capacity-dmips-mhz = <620>;
+   dynamic-power-coefficient = <284>;
+  };
+
+  cpu6: cpu@600 {
+   device_type = "cpu";
+   compatible = "arm,cortex-x1";
+   reg = <0x0600>;
+   enable-method = "psci";
+   cpu-idle-states = <&HERA_CPU_SLEEP>;
+   capacity-dmips-mhz = <1024>;
+   dynamic-power-coefficient = <650>;
+  };
+
+  cpu7: cpu@700 {
+   device_type = "cpu";
+   compatible = "arm,cortex-x1";
+   reg = <0x0700>;
+   enable-method = "psci";
+   cpu-idle-states = <&HERA_CPU_SLEEP>;
+   capacity-dmips-mhz = <1024>;
+   dynamic-power-coefficient = <650>;
+  };
+
+  idle-states {
+   entry-method = "psci";
+
+   ANANKE_CPU_SLEEP: cpu-ananke-sleep {
+    idle-state-name = "c2";
+    compatible = "arm,idle-state";
+    arm,psci-suspend-param = <0x0010000>;
+    entry-latency-us = <70>;
+    exit-latency-us = <160>;
+    min-residency-us = <2000>;
+   };
+
+   ENYO_CPU_SLEEP: cpu-enyo-sleep {
+    idle-state-name = "c2";
+    compatible = "arm,idle-state";
+    arm,psci-suspend-param = <0x0010000>;
+    entry-latency-us = <150>;
+    exit-latency-us = <190>;
+    min-residency-us = <2500>;
+   };
+
+   HERA_CPU_SLEEP: cpu-hera-sleep {
+    idle-state-name = "c2";
+    compatible = "arm,idle-state";
+    arm,psci-suspend-param = <0x0010000>;
+    entry-latency-us = <235>;
+    exit-latency-us = <220>;
+    min-residency-us = <3500>;
+   };
+  };
+ };
+
+
+ ect {
+ };
+
+ ext_24_5m: clock-1 {
+  compatible = "fixed-clock";
+  #clock-cells = <0>;
+  clock-output-names = "oscclk";
+ };
+
+ ext_200m: clock-2 {
+  compatible = "fixed-clock";
+  #clock-cells = <0>;
+  clock-output-names = "ext-200m";
+ };
+
+ pmu-0 {
+  compatible = "arm,cortex-a55-pmu";
+  interrupts = <1 7 4 &ppi_cluster0>;
+ };
+
+ pmu-1 {
+  compatible = "arm,cortex-a76-pmu";
+  interrupts = <1 7 4 &ppi_cluster1>;
+ };
+
+ pmu-2 {
+  compatible = "arm,cortex-x1-pmu";
+  interrupts = <1 7 4 &ppi_cluster2>;
+ };
+
+ pmu-3 {
+  compatible = "arm,dsu-pmu";
+  cpus = <&cpu0>, <&cpu1>, <&cpu2>, <&cpu3>,
+         <&cpu4>, <&cpu5>, <&cpu6>, <&cpu7>;
+  interrupts = <0 257 4 0>;
+ };
+
+ psci {
+  compatible = "arm,psci-1.0";
+  method = "smc";
+ };
+
+ reserved_memory: reserved-memory {
+  #address-cells = <2>;
+  #size-cells = <1>;
+  ranges;
+
+  gsa_reserved_protected: gsa@90200000 {
+   reg = <0x0 0x90200000 0x400000>;
+   no-map;
+  };
+
+  tpu_fw_reserved: tpu-fw@93000000 {
+   reg = <0x0 0x93000000 0x1000000>;
+   no-map;
+  };
+
+  aoc_reserve: aoc@94000000 {
+   reg = <0x0 0x94000000 0x03000000>;
+   no-map;
+  };
+
+  abl_reserved: abl@f8800000 {
+   reg = <0x0 0xf8800000 0x02000000>;
+   no-map;
+  };
+
+  dss_log_reserved: dss-log-reserved@fd3f0000 {
+   reg = <0x0 0xfd3f0000 0x0000e000>;
+   no-map;
+  };
+
+  debug_kinfo_reserved: debug-kinfo-reserved@fd3fe000 {
+   reg = <0x0 0xfd3fe000 0x00001000>;
+   no-map;
+  };
+
+  bldr_log_reserved: bldr-log-reserved@fd800000 {
+   reg = <0x0 0xfd800000 0x00100000>;
+   no-map;
+  };
+
+  bldr_log_hist_reserved: bldr-log-hist-reserved@fd900000 {
+   reg = <0x0 0xfd900000 0x00002000>;
+   no-map;
+  };
+ };
+
+ soc: soc@0 {
+  compatible = "simple-bus";
+  #address-cells = <1>;
+  #size-cells = <1>;
+  ranges = <0x0 0x0 0x0 0x40000000>;
+
+  cmu_misc: clock-controller@10010000 {
+   compatible = "google,gs101-cmu-misc";
+   reg = <0x10010000 0x8000>;
+   #clock-cells = <1>;
+   clocks = <&cmu_top 126>,
+     <&cmu_top 127>;
+   clock-names = "bus", "sss";
+  };
+
+  timer@10050000 {
+   compatible = "google,gs101-mct",
+         "samsung,exynos4210-mct";
+   reg = <0x10050000 0x800>;
+   clocks = <&ext_24_5m>, <&cmu_misc 25>;
+   clock-names = "fin_pll", "mct";
+   interrupts = <0 753 4 0>,
+         <0 754 4 0>,
+         <0 755 4 0>,
+         <0 756 4 0>,
+         <0 757 4 0>,
+         <0 758 4 0>,
+         <0 759 4 0>,
+         <0 760 4 0>,
+         <0 761 4 0>,
+         <0 762 4 0>,
+         <0 763 4 0>,
+         <0 764 4 0>;
+  };
+
+  watchdog_cl0: watchdog@10060000 {
+   compatible = "google,gs101-wdt";
+   reg = <0x10060000 0x100>;
+   clocks = <&cmu_misc 72>,
+     <&ext_24_5m>;
+   clock-names = "watchdog", "watchdog_src";
+   interrupts = <0 765 4 0>;
+   samsung,syscon-phandle = <&pmu_system_controller>;
+   samsung,cluster-index = <0>;
+   status = "disabled";
+  };
+
+  watchdog_cl1: watchdog@10070000 {
+   compatible = "google,gs101-wdt";
+   reg = <0x10070000 0x100>;
+   clocks = <&cmu_misc 73>,
+     <&ext_24_5m>;
+   clock-names = "watchdog", "watchdog_src";
+   interrupts = <0 766 4 0>;
+   samsung,syscon-phandle = <&pmu_system_controller>;
+   samsung,cluster-index = <1>;
+   status = "disabled";
+  };
+
+  gic: interrupt-controller@10400000 {
+   compatible = "arm,gic-v3";
+   #interrupt-cells = <4>;
+   interrupt-controller;
+   reg = <0x10400000 0x10000>,
+         <0x10440000 0x100000>;
+   interrupts = <1 9 4 0>;
+
+   ppi-partitions {
+    ppi_cluster0: interrupt-partition-0 {
+     affinity = <&cpu0 &cpu1 &cpu2 &cpu3>;
+    };
+
+    ppi_cluster1: interrupt-partition-1 {
+     affinity = <&cpu4 &cpu5>;
+    };
+
+    ppi_cluster2: interrupt-partition-2 {
+     affinity = <&cpu6 &cpu7>;
+    };
+   };
+  };
+
+  cmu_peric0: clock-controller@10800000 {
+   compatible = "google,gs101-cmu-peric0";
+   reg = <0x10800000 0x4000>;
+   #clock-cells = <1>;
+   clocks = <&ext_24_5m>,
+     <&cmu_top 131>,
+     <&cmu_top 132>;
+   clock-names = "oscclk", "bus", "ip";
+  };
+
+  sysreg_peric0: syscon@10820000 {
+   compatible = "google,gs101-peric0-sysreg", "syscon";
+   reg = <0x10820000 0x10000>;
+   clocks = <&cmu_peric0 79>;
+  };
+
+  pinctrl_peric0: pinctrl@10840000 {
+   compatible = "google,gs101-pinctrl";
+   reg = <0x10840000 0x00001000>;
+   clocks = <&cmu_peric0 29>;
+   clock-names = "pclk";
+   interrupts = <0 625 4 0>;
+  };
+
+  usi1: usi@109000c0 {
+   compatible = "google,gs101-usi", "samsung,exynos850-usi";
+   reg = <0x109000c0 0x20>;
+   ranges;
+   #address-cells = <1>;
+   #size-cells = <1>;
+   clocks = <&cmu_peric0 47>,
+     <&cmu_peric0 31>;
+   clock-names = "pclk", "ipclk";
+   samsung,sysreg = <&sysreg_peric0 0x1000>;
+   status = "disabled";
+
+   hsi2c_1: i2c@10900000 {
+    compatible = "google,gs101-hsi2c",
+          "samsung,exynosautov9-hsi2c";
+    reg = <0x10900000 0xc0>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric0 31>,
+      <&cmu_peric0 47>;
+    clock-names = "hsi2c", "hsi2c_pclk";
+    interrupts = <0 635 4 0>;
+    pinctrl-0 = <&hsi2c1_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+
+   serial_1: serial@10900000 {
+    compatible = "google,gs101-uart";
+    reg = <0x10900000 0xc0>;
+    clocks = <&cmu_peric0 47>,
+      <&cmu_peric0 31>;
+    clock-names = "uart", "clk_uart_baud0";
+    interrupts = <0 635 4 0>;
+    pinctrl-0 = <&uart1_bus_single>;
+    pinctrl-names = "default";
+    samsung,uart-fifosize = <64>;
+    status = "disabled";
+   };
+
+   spi_1: spi@10900000 {
+    compatible = "google,gs101-spi";
+    reg = <0x10900000 0x30>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric0 47>,
+      <&cmu_peric0 31>;
+    clock-names = "spi", "spi_busclk0";
+    interrupts = <0 635 4 0>;
+    pinctrl-0 = <&spi1_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+  };
+
+  usi2: usi@109100c0 {
+   compatible = "google,gs101-usi", "samsung,exynos850-usi";
+   reg = <0x109100c0 0x20>;
+   ranges;
+   #address-cells = <1>;
+   #size-cells = <1>;
+   clocks = <&cmu_peric0 48>,
+     <&cmu_peric0 32>;
+   clock-names = "pclk", "ipclk";
+   samsung,sysreg = <&sysreg_peric0 0x1004>;
+   status = "disabled";
+
+   hsi2c_2: i2c@10910000 {
+    compatible = "google,gs101-hsi2c",
+          "samsung,exynosautov9-hsi2c";
+    reg = <0x10910000 0xc0>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric0 32>,
+      <&cmu_peric0 48>;
+    clock-names = "hsi2c", "hsi2c_pclk";
+    interrupts = <0 636 4 0>;
+    pinctrl-0 = <&hsi2c2_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+
+   serial_2: serial@10910000 {
+    compatible = "google,gs101-uart";
+    reg = <0x10910000 0xc0>;
+    clocks = <&cmu_peric0 48>,
+      <&cmu_peric0 32>;
+    clock-names = "uart", "clk_uart_baud0";
+    interrupts = <0 636 4 0>;
+    pinctrl-0 = <&uart2_bus_single>;
+    pinctrl-names = "default";
+    samsung,uart-fifosize = <64>;
+    status = "disabled";
+   };
+
+   spi_2: spi@10910000 {
+    compatible = "google,gs101-spi";
+    reg = <0x10910000 0x30>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric0 48>,
+      <&cmu_peric0 32>;
+    clock-names = "spi", "spi_busclk0";
+    interrupts = <0 636 4 0>;
+    pinctrl-0 = <&spi2_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+  };
+
+  usi3: usi@109200c0 {
+   compatible = "google,gs101-usi", "samsung,exynos850-usi";
+   reg = <0x109200c0 0x20>;
+   ranges;
+   #address-cells = <1>;
+   #size-cells = <1>;
+   clocks = <&cmu_peric0 55>,
+     <&cmu_peric0 39>;
+   clock-names = "pclk", "ipclk";
+   samsung,sysreg = <&sysreg_peric0 0x1008>;
+   status = "disabled";
+
+   hsi2c_3: i2c@10920000 {
+    compatible = "google,gs101-hsi2c",
+          "samsung,exynosautov9-hsi2c";
+    reg = <0x10920000 0xc0>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric0 39>,
+      <&cmu_peric0 55>;
+    clock-names = "hsi2c", "hsi2c_pclk";
+    interrupts = <0 637 4 0>;
+    pinctrl-0 = <&hsi2c3_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+
+   serial_3: serial@10920000 {
+    compatible = "google,gs101-uart";
+    reg = <0x10920000 0xc0>;
+    clocks = <&cmu_peric0 55>,
+      <&cmu_peric0 39>;
+    clock-names = "uart", "clk_uart_baud0";
+    interrupts = <0 637 4 0>;
+    pinctrl-0 = <&uart3_bus_single>;
+    pinctrl-names = "default";
+    samsung,uart-fifosize = <64>;
+    status = "disabled";
+   };
+
+   spi_3: spi@10920000 {
+    compatible = "google,gs101-spi";
+    reg = <0x10920000 0x30>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric0 55>,
+      <&cmu_peric0 39>;
+    clock-names = "spi", "spi_busclk0";
+    interrupts = <0 637 4 0>;
+    pinctrl-0 = <&spi3_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+  };
+
+  usi4: usi@109300c0 {
+   compatible = "google,gs101-usi", "samsung,exynos850-usi";
+   reg = <0x109300c0 0x20>;
+   ranges;
+   #address-cells = <1>;
+   #size-cells = <1>;
+   clocks = <&cmu_peric0 56>,
+     <&cmu_peric0 40>;
+   clock-names = "pclk", "ipclk";
+   samsung,sysreg = <&sysreg_peric0 0x100c>;
+   status = "disabled";
+
+   hsi2c_4: i2c@10930000 {
+    compatible = "google,gs101-hsi2c",
+          "samsung,exynosautov9-hsi2c";
+    reg = <0x10930000 0xc0>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric0 40>,
+      <&cmu_peric0 56>;
+    clock-names = "hsi2c", "hsi2c_pclk";
+    interrupts = <0 638 4 0>;
+    pinctrl-0 = <&hsi2c4_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+
+   serial_4: serial@10930000 {
+    compatible = "google,gs101-uart";
+    reg = <0x10930000 0xc0>;
+    clocks = <&cmu_peric0 56>,
+      <&cmu_peric0 40>;
+    clock-names = "uart", "clk_uart_baud0";
+    interrupts = <0 638 4 0>;
+    pinctrl-0 = <&uart4_bus_single>;
+    pinctrl-names = "default";
+    samsung,uart-fifosize = <64>;
+    status = "disabled";
+   };
+
+   spi_4: spi@10930000 {
+    compatible = "google,gs101-spi";
+    reg = <0x10930000 0x30>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric0 56>,
+      <&cmu_peric0 40>;
+    clock-names = "spi", "spi_busclk0";
+    interrupts = <0 638 4 0>;
+    pinctrl-0 = <&spi4_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+  };
+
+  usi5: usi@109400c0 {
+   compatible = "google,gs101-usi", "samsung,exynos850-usi";
+   reg = <0x109400c0 0x20>;
+   ranges;
+   #address-cells = <1>;
+   #size-cells = <1>;
+   clocks = <&cmu_peric0 57>,
+     <&cmu_peric0 41>;
+   clock-names = "pclk", "ipclk";
+   samsung,sysreg = <&sysreg_peric0 0x1010>;
+   status = "disabled";
+
+   hsi2c_5: i2c@10940000 {
+    compatible = "google,gs101-hsi2c",
+          "samsung,exynosautov9-hsi2c";
+    reg = <0x10940000 0xc0>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric0 41>,
+      <&cmu_peric0 57>;
+    clock-names = "hsi2c", "hsi2c_pclk";
+    interrupts = <0 639 4 0>;
+    pinctrl-0 = <&hsi2c5_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+
+   serial_5: serial@10940000 {
+    compatible = "google,gs101-uart";
+    reg = <0x10940000 0xc0>;
+    clocks = <&cmu_peric0 57>,
+      <&cmu_peric0 41>;
+    clock-names = "uart", "clk_uart_baud0";
+    interrupts = <0 639 4 0>;
+    pinctrl-0 = <&uart5_bus_single>;
+    pinctrl-names = "default";
+    samsung,uart-fifosize = <64>;
+    status = "disabled";
+   };
+
+   spi_5: spi@10940000 {
+    compatible = "google,gs101-spi";
+    reg = <0x10940000 0x30>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric0 57>,
+      <&cmu_peric0 41>;
+    clock-names = "spi", "spi_busclk0";
+    interrupts = <0 639 4 0>;
+    pinctrl-0 = <&spi5_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+  };
+
+  usi6: usi@109500c0 {
+   compatible = "google,gs101-usi", "samsung,exynos850-usi";
+   reg = <0x109500c0 0x20>;
+   ranges;
+   #address-cells = <1>;
+   #size-cells = <1>;
+   clocks = <&cmu_peric0 58>,
+     <&cmu_peric0 42>;
+   clock-names = "pclk", "ipclk";
+   samsung,sysreg = <&sysreg_peric0 0x1014>;
+   status = "disabled";
+
+   hsi2c_6: i2c@10950000 {
+    compatible = "google,gs101-hsi2c",
+          "samsung,exynosautov9-hsi2c";
+    reg = <0x10950000 0xc0>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric0 42>,
+      <&cmu_peric0 58>;
+    clock-names = "hsi2c", "hsi2c_pclk";
+    interrupts = <0 640 4 0>;
+    pinctrl-0 = <&hsi2c6_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+
+   serial_6: serial@10950000 {
+    compatible = "google,gs101-uart";
+    reg = <0x10950000 0xc0>;
+    clocks = <&cmu_peric0 58>,
+      <&cmu_peric0 42>;
+    clock-names = "uart", "clk_uart_baud0";
+    interrupts = <0 640 4 0>;
+    pinctrl-0 = <&uart6_bus_single>;
+    pinctrl-names = "default";
+    samsung,uart-fifosize = <64>;
+    status = "disabled";
+   };
+
+   spi_6: spi@10950000 {
+    compatible = "google,gs101-spi";
+    reg = <0x10950000 0x30>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric0 58>,
+      <&cmu_peric0 42>;
+    clock-names = "spi", "spi_busclk0";
+    interrupts = <0 640 4 0>;
+    pinctrl-0 = <&spi6_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+  };
+
+  usi7: usi@109600c0 {
+   compatible = "google,gs101-usi", "samsung,exynos850-usi";
+   reg = <0x109600c0 0x20>;
+   ranges;
+   #address-cells = <1>;
+   #size-cells = <1>;
+   clocks = <&cmu_peric0 59>,
+     <&cmu_peric0 43>;
+   clock-names = "pclk", "ipclk";
+   samsung,sysreg = <&sysreg_peric0 0x1018>;
+   status = "disabled";
+
+   hsi2c_7: i2c@10960000 {
+    compatible = "google,gs101-hsi2c",
+          "samsung,exynosautov9-hsi2c";
+    reg = <0x10960000 0xc0>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric0 43>,
+      <&cmu_peric0 59>;
+    clock-names = "hsi2c", "hsi2c_pclk";
+    interrupts = <0 641 4 0>;
+    pinctrl-0 = <&hsi2c7_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+
+   serial_7: serial@10960000 {
+    compatible = "google,gs101-uart";
+    reg = <0x10960000 0xc0>;
+    clocks = <&cmu_peric0 59>,
+      <&cmu_peric0 43>;
+    clock-names = "uart", "clk_uart_baud0";
+    interrupts = <0 641 4 0>;
+    pinctrl-0 = <&uart7_bus_single>;
+    pinctrl-names = "default";
+    samsung,uart-fifosize = <64>;
+    status = "disabled";
+   };
+
+   spi_7: spi@10960000 {
+    compatible = "google,gs101-spi";
+    reg = <0x10960000 0x30>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric0 59>,
+      <&cmu_peric0 43>;
+    clock-names = "spi", "spi_busclk0";
+    interrupts = <0 641 4 0>;
+    pinctrl-0 = <&spi7_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+  };
+
+  usi8: usi@109700c0 {
+   compatible = "google,gs101-usi", "samsung,exynos850-usi";
+   reg = <0x109700c0 0x20>;
+   ranges;
+   #address-cells = <1>;
+   #size-cells = <1>;
+   clocks = <&cmu_peric0 60>,
+     <&cmu_peric0 44>;
+   clock-names = "pclk", "ipclk";
+   samsung,sysreg = <&sysreg_peric0 0x101c>;
+   status = "disabled";
+
+   hsi2c_8: i2c@10970000 {
+    compatible = "google,gs101-hsi2c",
+          "samsung,exynosautov9-hsi2c";
+    reg = <0x10970000 0xc0>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric0 44>,
+      <&cmu_peric0 60>;
+    clock-names = "hsi2c", "hsi2c_pclk";
+    interrupts = <0 642 4 0>;
+    pinctrl-0 = <&hsi2c8_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+
+   serial_8: serial@10970000 {
+    compatible = "google,gs101-uart";
+    reg = <0x10970000 0xc0>;
+    clocks = <&cmu_peric0 60>,
+      <&cmu_peric0 44>;
+    clock-names = "uart", "clk_uart_baud0";
+    interrupts = <0 642 4 0>;
+    pinctrl-0 = <&uart8_bus_single>;
+    pinctrl-names = "default";
+    samsung,uart-fifosize = <64>;
+    status = "disabled";
+   };
+
+   spi_8: spi@10970000 {
+    compatible = "google,gs101-spi";
+    reg = <0x10970000 0x30>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric0 60>,
+      <&cmu_peric0 44>;
+    clock-names = "spi", "spi_busclk0";
+    interrupts = <0 642 4 0>;
+    pinctrl-0 = <&spi8_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+  };
+
+  usi_uart: usi@10a000c0 {
+   compatible = "google,gs101-usi", "samsung,exynos850-usi";
+   reg = <0x10a000c0 0x20>;
+   ranges;
+   #address-cells = <1>;
+   #size-cells = <1>;
+   clocks = <&cmu_peric0 65>,
+     <&cmu_peric0 63>;
+   clock-names = "pclk", "ipclk";
+   samsung,sysreg = <&sysreg_peric0 0x1020>;
+   samsung,mode = <1>;
+   status = "disabled";
+
+   serial_0: serial@10a00000 {
+    compatible = "google,gs101-uart";
+    reg = <0x10a00000 0xc0>;
+    clocks = <&cmu_peric0 65>,
+      <&cmu_peric0 63>;
+    clock-names = "uart", "clk_uart_baud0";
+    interrupts = <0 634 4 0>;
+    pinctrl-0 = <&uart0_bus>;
+    pinctrl-names = "default";
+    samsung,uart-fifosize = <256>;
+    status = "disabled";
+   };
+  };
+
+  usi14: usi@10a200c0 {
+   compatible = "google,gs101-usi", "samsung,exynos850-usi";
+   reg = <0x10a200c0 0x20>;
+   ranges;
+   #address-cells = <1>;
+   #size-cells = <1>;
+   clocks = <&cmu_peric0 66>,
+     <&cmu_peric0 64>;
+   clock-names = "pclk", "ipclk";
+   samsung,sysreg = <&sysreg_peric0 0x1028>;
+   status = "disabled";
+
+   hsi2c_14: i2c@10a20000 {
+    compatible = "google,gs101-hsi2c",
+          "samsung,exynosautov9-hsi2c";
+    reg = <0x10a20000 0xc0>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric0 64>,
+      <&cmu_peric0 66>;
+    clock-names = "hsi2c", "hsi2c_pclk";
+    interrupts = <0 643 4 0>;
+    pinctrl-0 = <&hsi2c14_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+
+   serial_14: serial@10a20000 {
+    compatible = "google,gs101-uart";
+    reg = <0x10a20000 0xc0>;
+    clocks = <&cmu_peric0 66>,
+      <&cmu_peric0 64>;
+    clock-names = "uart", "clk_uart_baud0";
+    interrupts = <0 643 4 0>;
+    pinctrl-0 = <&uart14_bus_single>;
+    pinctrl-names = "default";
+    samsung,uart-fifosize = <64>;
+    status = "disabled";
+   };
+
+   spi_14: spi@10a20000 {
+    compatible = "google,gs101-spi";
+    reg = <0x10a20000 0x30>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric0 66>,
+      <&cmu_peric0 64>;
+    clock-names = "spi", "spi_busclk0";
+    interrupts = <0 643 4 0>;
+    pinctrl-0 = <&spi14_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+  };
+
+  cmu_peric1: clock-controller@10c00000 {
+   compatible = "google,gs101-cmu-peric1";
+   reg = <0x10c00000 0x4000>;
+   #clock-cells = <1>;
+   clocks = <&ext_24_5m>,
+     <&cmu_top 133>,
+     <&cmu_top 134>;
+   clock-names = "oscclk", "bus", "ip";
+  };
+
+  sysreg_peric1: syscon@10c20000 {
+   compatible = "google,gs101-peric1-sysreg", "syscon";
+   reg = <0x10c20000 0x10000>;
+   clocks = <&cmu_peric1 46>;
+  };
+
+  pinctrl_peric1: pinctrl@10c40000 {
+   compatible = "google,gs101-pinctrl";
+   reg = <0x10c40000 0x00001000>;
+   clocks = <&cmu_peric1 22>;
+   clock-names = "pclk";
+   interrupts = <0 644 4 0>;
+  };
+
+  usi0: usi@10d100c0 {
+   compatible = "google,gs101-usi", "samsung,exynos850-usi";
+   reg = <0x10d100c0 0x20>;
+   ranges;
+   #address-cells = <1>;
+   #size-cells = <1>;
+   clocks = <&cmu_peric1 31>,
+     <&cmu_peric1 24>;
+   clock-names = "pclk", "ipclk";
+   samsung,sysreg = <&sysreg_peric1 0x1000>;
+   status = "disabled";
+
+   hsi2c_0: i2c@10d10000 {
+    compatible = "google,gs101-hsi2c",
+          "samsung,exynosautov9-hsi2c";
+    reg = <0x10d10000 0xc0>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric1 24>,
+      <&cmu_peric1 31>;
+    clock-names = "hsi2c", "hsi2c_pclk";
+    interrupts = <0 651 4 0>;
+    pinctrl-0 = <&hsi2c0_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+
+   serial_usi0: serial@10d10000 {
+    compatible = "google,gs101-uart";
+    reg = <0x10d10000 0xc0>;
+    clocks = <&cmu_peric1 31>,
+      <&cmu_peric1 24>;
+    clock-names = "uart", "clk_uart_baud0";
+    interrupts = <0 651 4 0>;
+    pinctrl-0 = <&uart0_bus_single>;
+    pinctrl-names = "default";
+    samsung,uart-fifosize = <64>;
+    status = "disabled";
+   };
+
+   spi_0: spi@10d10000 {
+    compatible = "google,gs101-spi";
+    reg = <0x10d10000 0x30>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric1 31>,
+      <&cmu_peric1 24>;
+    clock-names = "spi", "spi_busclk0";
+    interrupts = <0 651 4 0>;
+    pinctrl-0 = <&spi0_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+  };
+
+  usi9: usi@10d200c0 {
+   compatible = "google,gs101-usi", "samsung,exynos850-usi";
+   reg = <0x10d200c0 0x20>;
+   ranges;
+   #address-cells = <1>;
+   #size-cells = <1>;
+   clocks = <&cmu_peric1 33>,
+     <&cmu_peric1 25>;
+   clock-names = "pclk", "ipclk";
+   samsung,sysreg = <&sysreg_peric1 0x1004>;
+   status = "disabled";
+
+   hsi2c_9: i2c@10d20000 {
+    compatible = "google,gs101-hsi2c",
+          "samsung,exynosautov9-hsi2c";
+    reg = <0x10d20000 0xc0>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric1 25>,
+      <&cmu_peric1 33>;
+    clock-names = "hsi2c", "hsi2c_pclk";
+    interrupts = <0 652 4 0>;
+    pinctrl-0 = <&hsi2c9_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+
+   serial_9: serial@10d20000 {
+    compatible = "google,gs101-uart";
+    reg = <0x10d20000 0xc0>;
+    clocks = <&cmu_peric1 33>,
+      <&cmu_peric1 25>;
+    clock-names = "uart", "clk_uart_baud0";
+    interrupts = <0 652 4 0>;
+    pinctrl-0 = <&uart9_bus_single>;
+    pinctrl-names = "default";
+    samsung,uart-fifosize = <64>;
+    status = "disabled";
+   };
+
+   spi_9: spi@10d20000 {
+    compatible = "google,gs101-spi";
+    reg = <0x10d20000 0x30>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric1 33>,
+      <&cmu_peric1 25>;
+    clock-names = "spi", "spi_busclk0";
+    interrupts = <0 652 4 0>;
+    pinctrl-0 = <&spi9_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+  };
+
+  usi10: usi@10d300c0 {
+   compatible = "google,gs101-usi", "samsung,exynos850-usi";
+   reg = <0x10d300c0 0x20>;
+   ranges;
+   #address-cells = <1>;
+   #size-cells = <1>;
+   clocks = <&cmu_peric1 34>,
+     <&cmu_peric1 26>;
+   clock-names = "pclk", "ipclk";
+   samsung,sysreg = <&sysreg_peric1 0x1008>;
+   status = "disabled";
+
+   hsi2c_10: i2c@10d30000 {
+    compatible = "google,gs101-hsi2c",
+          "samsung,exynosautov9-hsi2c";
+    reg = <0x10d30000 0xc0>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric1 26>,
+      <&cmu_peric1 34>;
+    clock-names = "hsi2c", "hsi2c_pclk";
+    interrupts = <0 653 4 0>;
+    pinctrl-0 = <&hsi2c10_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+
+   serial_10: serial@10d30000 {
+    compatible = "google,gs101-uart";
+    reg = <0x10d30000 0xc0>;
+    clocks = <&cmu_peric1 34>,
+      <&cmu_peric1 26>;
+    clock-names = "uart", "clk_uart_baud0";
+    interrupts = <0 653 4 0>;
+    pinctrl-0 = <&uart10_bus_single>;
+    pinctrl-names = "default";
+    samsung,uart-fifosize = <64>;
+    status = "disabled";
+   };
+
+   spi_10: spi@10d30000 {
+    compatible = "google,gs101-spi";
+    reg = <0x10d30000 0x30>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric1 34>,
+      <&cmu_peric1 26>;
+    clock-names = "spi", "spi_busclk0";
+    interrupts = <0 653 4 0>;
+    pinctrl-0 = <&spi10_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+  };
+
+  usi11: usi@10d400c0 {
+   compatible = "google,gs101-usi", "samsung,exynos850-usi";
+   reg = <0x10d400c0 0x20>;
+   ranges;
+   #address-cells = <1>;
+   #size-cells = <1>;
+   clocks = <&cmu_peric1 35>,
+     <&cmu_peric1 27>;
+   clock-names = "pclk", "ipclk";
+   samsung,sysreg = <&sysreg_peric1 0x100c>;
+   status = "disabled";
+
+   hsi2c_11: i2c@10d40000 {
+    compatible = "google,gs101-hsi2c",
+          "samsung,exynosautov9-hsi2c";
+    reg = <0x10d40000 0xc0>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric1 27>,
+      <&cmu_peric1 35>;
+    clock-names = "hsi2c", "hsi2c_pclk";
+    interrupts = <0 654 4 0>;
+    pinctrl-0 = <&hsi2c11_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+
+   serial_11: serial@10d40000 {
+    compatible = "google,gs101-uart";
+    reg = <0x10d40000 0xc0>;
+    clocks = <&cmu_peric1 35>,
+      <&cmu_peric1 27>;
+    clock-names = "uart", "clk_uart_baud0";
+    interrupts = <0 654 4 0>;
+    pinctrl-0 = <&uart11_bus_single>;
+    pinctrl-names = "default";
+    samsung,uart-fifosize = <64>;
+    status = "disabled";
+   };
+
+   spi_11: spi@10d40000 {
+    compatible = "google,gs101-spi";
+    reg = <0x10d40000 0x30>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric1 35>,
+      <&cmu_peric1 27>;
+    clock-names = "spi", "spi_busclk0";
+    interrupts = <0 654 4 0>;
+    pinctrl-0 = <&spi11_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+  };
+
+  usi12: usi@10d500c0 {
+   compatible = "google,gs101-usi", "samsung,exynos850-usi";
+   reg = <0x10d500c0 0x20>;
+   ranges;
+   #address-cells = <1>;
+   #size-cells = <1>;
+   clocks = <&cmu_peric1 36>,
+     <&cmu_peric1 28>;
+   clock-names = "pclk", "ipclk";
+   samsung,sysreg = <&sysreg_peric1 0x1010>;
+   status = "disabled";
+
+   hsi2c_12: i2c@10d50000 {
+    compatible = "google,gs101-hsi2c",
+          "samsung,exynosautov9-hsi2c";
+    reg = <0x10d50000 0xc0>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric1 28>,
+      <&cmu_peric1 36>;
+    clock-names = "hsi2c", "hsi2c_pclk";
+    interrupts = <0 655 4 0>;
+    pinctrl-0 = <&hsi2c12_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+
+   serial_12: serial@10d50000 {
+    compatible = "google,gs101-uart";
+    reg = <0x10d50000 0xc0>;
+    clocks = <&cmu_peric1 36>,
+      <&cmu_peric1 28>;
+    clock-names = "uart", "clk_uart_baud0";
+    interrupts = <0 655 4 0>;
+    pinctrl-0 = <&uart12_bus_single>;
+    pinctrl-names = "default";
+    samsung,uart-fifosize = <64>;
+    status = "disabled";
+   };
+
+   spi_12: spi@10d50000 {
+    compatible = "google,gs101-spi";
+    reg = <0x10d50000 0x30>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric1 36>,
+      <&cmu_peric1 28>;
+    clock-names = "spi", "spi_busclk0";
+    interrupts = <0 655 4 0>;
+    pinctrl-0 = <&spi12_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+  };
+
+  usi13: usi@10d600c0 {
+   compatible = "google,gs101-usi", "samsung,exynos850-usi";
+   reg = <0x10d600c0 0x20>;
+   ranges;
+   #address-cells = <1>;
+   #size-cells = <1>;
+   clocks = <&cmu_peric1 37>,
+     <&cmu_peric1 29>;
+   clock-names = "pclk", "ipclk";
+   samsung,sysreg = <&sysreg_peric1 0x1014>;
+   status = "disabled";
+
+   hsi2c_13: i2c@10d60000 {
+    compatible = "google,gs101-hsi2c",
+          "samsung,exynosautov9-hsi2c";
+    reg = <0x10d60000 0xc0>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric1 29>,
+      <&cmu_peric1 37>;
+    clock-names = "hsi2c", "hsi2c_pclk";
+    interrupts = <0 656 4 0>;
+    pinctrl-0 = <&hsi2c13_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+
+   serial_13: serial@10d60000 {
+    compatible = "google,gs101-uart";
+    reg = <0x10d60000 0xc0>;
+    clocks = <&cmu_peric1 37>,
+      <&cmu_peric1 29>;
+    clock-names = "uart", "clk_uart_baud0";
+    interrupts = <0 656 4 0>;
+    pinctrl-0 = <&uart13_bus_single>;
+    pinctrl-names = "default";
+    samsung,uart-fifosize = <64>;
+    status = "disabled";
+   };
+
+   spi_13: spi@10d60000 {
+    compatible = "google,gs101-spi";
+    reg = <0x10d60000 0x30>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clocks = <&cmu_peric1 37>,
+      <&cmu_peric1 29>;
+    clock-names = "spi", "spi_busclk0";
+    interrupts = <0 656 4 0>;
+    pinctrl-0 = <&spi13_bus>;
+    pinctrl-names = "default";
+    status = "disabled";
+   };
+  };
+
+  cmu_hsi0: clock-controller@11000000 {
+   compatible = "google,gs101-cmu-hsi0";
+   reg = <0x11000000 0x4000>;
+   #clock-cells = <1>;
+
+   clocks = <&ext_24_5m>,
+     <&cmu_top 110>,
+     <&cmu_top 111>,
+     <&cmu_top 112>,
+     <&cmu_top 113>;
+   clock-names = "oscclk", "bus", "dpgtc", "usb31drd",
+          "usbdpdbg";
+  };
+
+  usbdrd31_phy: phy@11100000 {
+   compatible = "google,gs101-usb31drd-phy";
+   reg = <0x11100000 0x0200>,
+         <0x110f0000 0x0800>,
+         <0x110e0000 0x2800>;
+   reg-names = "phy", "pcs", "pma";
+   clocks = <&cmu_hsi0 41>,
+     <&cmu_hsi0 43>,
+     <&cmu_hsi0 37>,
+     <&cmu_hsi0 38>,
+     <&cmu_hsi0 46>;
+   clock-names = "phy", "ref", "ctrl_aclk", "ctrl_pclk", "scl_pclk";
+   #phy-cells = <1>;
+   samsung,pmu-syscon = <&pmu_system_controller>;
+   status = "disabled";
+  };
+
+  usbdrd31: usb@11110000 {
+   compatible = "google,gs101-dwusb3";
+   ranges = <0x0 0x11110000 0x10000>;
+   clocks = <&cmu_hsi0 42>,
+    <&cmu_hsi0 15>,
+    <&cmu_hsi0 39>,
+    <&cmu_hsi0 40>;
+   clock-names = "bus_early", "susp_clk", "link_aclk", "link_pclk";
+   #address-cells = <1>;
+   #size-cells = <1>;
+   status = "disabled";
+
+   usbdrd31_dwc3: usb@0 {
+    compatible = "snps,dwc3";
+    reg = <0x0 0x10000>;
+    clocks = <&cmu_hsi0 44>;
+    clock-names = "ref";
+    interrupts = <0 463 4 0>;
+    phys = <&usbdrd31_phy 0>, <&usbdrd31_phy 1>;
+    phy-names = "usb2-phy", "usb3-phy";
+    snps,has-lpm-erratum;
+    snps,dis_u2_susphy_quirk;
+    snps,dis_u3_susphy_quirk;
+    status = "disabled";
+   };
+  };
+
+  pinctrl_hsi1: pinctrl@11840000 {
+   compatible = "google,gs101-pinctrl";
+   reg = <0x11840000 0x00001000>;
+
+   clocks = <0>;
+   clock-names = "pclk";
+   interrupts = <0 471 4 0>;
+  };
+
+  cmu_hsi2: clock-controller@14400000 {
+   compatible = "google,gs101-cmu-hsi2";
+   reg = <0x14400000 0x4000>;
+   #clock-cells = <1>;
+   clocks = <&ext_24_5m>,
+     <&cmu_top 116>,
+     <&cmu_top 118>,
+     <&cmu_top 119>,
+     <&cmu_top 117>;
+   clock-names = "oscclk", "bus", "pcie", "ufs", "mmc";
+  };
+
+  sysreg_hsi2: syscon@14420000 {
+   compatible = "google,gs101-hsi2-sysreg", "syscon";
+   reg = <0x14420000 0x10000>;
+   clocks = <&cmu_hsi2 47>;
+  };
+
+  pinctrl_hsi2: pinctrl@14440000 {
+   compatible = "google,gs101-pinctrl";
+   reg = <0x14440000 0x00001000>;
+   clocks = <&cmu_hsi2 13>;
+   clock-names = "pclk";
+   interrupts = <0 503 4 0>;
+  };
+
+  ufs_0: ufs@14700000 {
+   compatible = "google,gs101-ufs";
+   reg = <0x14700000 0x200>,
+         <0x14701100 0x200>,
+         <0x14780000 0xa000>,
+         <0x14600000 0x100>;
+   reg-names = "hci", "vs_hci", "unipro", "ufsp";
+   interrupts = <0 532 4 0>;
+   clocks = <&cmu_hsi2 56>,
+     <&cmu_hsi2 57>,
+     <&cmu_hsi2 58>,
+     <&cmu_hsi2 40>,
+     <&cmu_hsi2 41>,
+     <&cmu_hsi2 47>;
+   clock-names = "core_clk", "sclk_unipro_main", "fmp",
+          "aclk", "pclk", "sysreg";
+   freq-table-hz = <0 0>, <0 0>, <0 0>, <0 0>, <0 0>, <0 0>;
+   pinctrl-0 = <&ufs_rst_n &ufs_refclk_out>;
+   pinctrl-names = "default";
+   phys = <&ufs_0_phy>;
+   phy-names = "ufs-phy";
+   samsung,sysreg = <&sysreg_hsi2 0x710>;
+   status = "disabled";
+  };
+
+  ufs_0_phy: phy@14704000 {
+   compatible = "google,gs101-ufs-phy";
+   reg = <0x14704000 0x3000>;
+   reg-names = "phy-pma";
+   samsung,pmu-syscon = <&pmu_system_controller>;
+   #phy-cells = <0>;
+   clocks = <&ext_24_5m>;
+   clock-names = "ref_clk";
+   status = "disabled";
+  };
+
+  cmu_apm: clock-controller@17400000 {
+   compatible = "google,gs101-cmu-apm";
+   reg = <0x17400000 0x8000>;
+   #clock-cells = <1>;
+
+   clocks = <&ext_24_5m>;
+   clock-names = "oscclk";
+  };
+
+  sysreg_apm: syscon@174204e0 {
+   compatible = "google,gs101-apm-sysreg", "syscon";
+   reg = <0x174204e0 0x1000>;
+  };
+
+  pmu_system_controller: system-controller@17460000 {
+   compatible = "google,gs101-pmu", "syscon";
+   reg = <0x17460000 0x10000>;
+
+   poweroff: syscon-poweroff {
+    compatible = "syscon-poweroff";
+    regmap = <&pmu_system_controller>;
+    offset = <0x3e9c>;
+    mask = <0x100>;
+   };
+
+   reboot: syscon-reboot {
+    compatible = "syscon-reboot";
+    regmap = <&pmu_system_controller>;
+    offset = <0x3a00>;
+    mask = <0x2>;
+    value = <0x2>;
+   };
+  };
+
+  pinctrl_gpio_alive: pinctrl@174d0000 {
+   compatible = "google,gs101-pinctrl";
+   reg = <0x174d0000 0x00001000>;
+   clocks = <&cmu_apm 12>;
+   clock-names = "pclk";
+
+   wakeup-interrupt-controller {
+    compatible = "google,gs101-wakeup-eint",
+          "samsung,exynos850-wakeup-eint",
+          "samsung,exynos7-wakeup-eint";
+   };
+  };
+
+  pinctrl_far_alive: pinctrl@174e0000 {
+   compatible = "google,gs101-pinctrl";
+   reg = <0x174e0000 0x00001000>;
+   clocks = <&cmu_apm 13>;
+   clock-names = "pclk";
+
+   wakeup-interrupt-controller {
+    compatible = "google,gs101-wakeup-eint",
+          "samsung,exynos850-wakeup-eint",
+          "samsung,exynos7-wakeup-eint";
+   };
+  };
+
+  pinctrl_gsactrl: pinctrl@17940000 {
+   compatible = "google,gs101-pinctrl";
+   reg = <0x17940000 0x00001000>;
+
+   clocks = <0>;
+   clock-names = "pclk";
+  };
+
+  pinctrl_gsacore: pinctrl@17a80000 {
+   compatible = "google,gs101-pinctrl";
+   reg = <0x17a80000 0x00001000>;
+
+   clocks = <0>;
+   clock-names = "pclk";
+   status = "disabled";
+  };
+
+  cmu_top: clock-controller@1e080000 {
+   compatible = "google,gs101-cmu-top";
+   reg = <0x1e080000 0x8000>;
+   #clock-cells = <1>;
+
+   clocks = <&ext_24_5m>;
+   clock-names = "oscclk";
+  };
+ };
+
+ timer {
+  compatible = "arm,armv8-timer";
+  interrupts =
+     <1 13 ((((1 << (8)) - 1) << 8) | 8) 0>,
+     <1 14 ((((1 << (8)) - 1) << 8) | 8) 0>,
+     <1 11 ((((1 << (8)) - 1) << 8) | 8) 0>,
+     <1 10 ((((1 << (8)) - 1) << 8) | 8) 0>;
+ };
+};
+
+# 1 "arch/arm64/boot/dts/exynos/google/gs101-pinctrl.dtsi" 1
+# 11 "arch/arm64/boot/dts/exynos/google/gs101-pinctrl.dtsi"
+&pinctrl_gpio_alive {
+ gpa0: gpa0-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+  interrupt-parent = <&gic>;
+  interrupts = <0 0 4 0>,
+        <0 1 4 0>,
+        <0 2 4 0>,
+        <0 3 4 0>,
+        <0 4 4 0>,
+        <0 5 4 0>,
+        <0 6 4 0>,
+        <0 7 4 0>;
+ };
+
+ gpa1: gpa1-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+  interrupt-parent = <&gic>;
+  interrupts = <0 8 4 0>,
+        <0 9 4 0>,
+        <0 10 4 0>,
+        <0 11 4 0>,
+        <0 12 4 0>,
+        <0 13 4 0>,
+        <0 14 4 0>;
+ };
+
+ gpa2: gpa2-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+  interrupt-parent = <&gic>;
+  interrupts = <0 15 4 0>,
+        <0 16 4 0>,
+        <0 17 4 0>,
+        <0 18 4 0>,
+        <0 19 4 0>;
+ };
+
+ gpa3: gpa3-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+  interrupt-parent = <&gic>;
+  interrupts = <0 20 4 0>,
+        <0 21 4 0>,
+        <0 22 4 0>,
+        <0 23 4 0>;
+ };
+
+ gpa4: gpa4-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+  interrupt-parent = <&gic>;
+  interrupts = <0 24 4 0>,
+        <0 25 4 0>,
+        <0 26 4 0>,
+        <0 27 4 0>;
+ };
+
+ gpa5: gpa5-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+  interrupts = <0 28 4 0>,
+        <0 29 4 0>,
+        <0 30 4 0>,
+        <0 31 4 0>,
+        <0 32 4 0>,
+        <0 33 4 0>,
+        <0 34 4 0>;
+ };
+
+ gpa9: gpa9-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+  interrupts = <0 35 4 0>,
+        <0 36 4 0>,
+        <0 37 4 0>,
+        <0 38 4 0>,
+        <0 39 4 0>,
+        <0 40 4 0>,
+        <0 41 4 0>,
+        <0 42 4 0>;
+ };
+
+ gpa10: gpa10-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+  interrupts = <0 43 4 0>,
+        <0 44 4 0>;
+ };
+
+ uart15_bus: uart15-bus-pins {
+  samsung,pins = "gpa2-3", "gpa2-4";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+ };
+
+ uart16_bus: uart16-bus-pins {
+  samsung,pins = "gpa3-0", "gpa3-1", "gpa3-2", "gpa3-3";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+ };
+
+ uart17_bus: uart17-bus-pins {
+  samsung,pins = "gpa4-0", "gpa4-1", "gpa4-2", "gpa4-3";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+ };
+
+ spi15_bus: spi15-bus-pins {
+  samsung,pins = "gpa4-0", "gpa4-1", "gpa4-2";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi15_cs: spi15-cs-pins {
+  samsung,pins = "gpa4-3";
+  samsung,pin-function = <1>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+};
+
+&pinctrl_far_alive {
+ gpa6: gpa6-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+  interrupt-parent = <&gic>;
+  interrupts = <0 45 4 0>,
+        <0 46 4 0>,
+        <0 47 4 0>,
+        <0 48 4 0>,
+        <0 49 4 0>,
+        <0 50 4 0>,
+        <0 51 4 0>,
+        <0 52 4 0>;
+ };
+
+ gpa7: gpa7-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+  interrupt-parent = <&gic>;
+  interrupts = <0 53 4 0>,
+        <0 54 4 0>,
+        <0 55 4 0>,
+        <0 56 4 0>;
+ };
+
+ gpa8: gpa8-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+  interrupt-parent = <&gic>;
+  interrupts = <0 57 4 0>,
+        <0 58 4 0>,
+        <0 59 4 0>,
+        <0 60 4 0>,
+        <0 61 4 0>,
+        <0 62 4 0>,
+        <0 63 4 0>,
+        <0 64 4 0>;
+ };
+
+ gpa11: gpa11-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+  interrupt-parent = <&gic>;
+  interrupts = <0 65 4 0>,
+        <0 66 4 0>;
+ };
+};
+
+&pinctrl_gsacore {
+ gps0: gps0-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gps1: gps1-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gps2: gps2-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+};
+
+&pinctrl_gsactrl {
+ gps3: gps3-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+};
+
+&pinctrl_hsi1 {
+ gph0: gph0-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gph1: gph1-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ pcie0_clkreq: pcie0-clkreq-pins {
+  samsung,pins = "gph0-1";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <3>;
+  samsung,pin-drv = <3>;
+  samsung,pin-con-pdn = <3>;
+  samsung,pin-pud-pdn = <3>;
+ };
+
+ pcie0_perst: pcie0-perst-pins {
+  samsung,pins = "gph0-0";
+  samsung,pin-function = <1>;
+  samsung,pin-drv = <3>;
+  samsung,pin-con-pdn = <3>;
+ };
+};
+
+&pinctrl_hsi2 {
+ gph2: gph2-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gph3: gph3-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gph4: gph4-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ sd2_clk: sd2-clk-pins {
+  samsung,pins = "gph4-0";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <2>;
+ };
+
+ sd2_cmd: sd2-cmd-pins {
+  samsung,pins = "gph4-1";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <3>;
+  samsung,pin-drv = <2>;
+ };
+
+ sd2_bus1: sd2-bus-width1-pins {
+  samsung,pins = "gph4-2";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <3>;
+  samsung,pin-drv = <2>;
+ };
+
+ sd2_bus4: sd2-bus-width4-pins {
+  samsung,pins = "gph4-3", "gph4-4", "gph4-5";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <3>;
+  samsung,pin-drv = <2>;
+ };
+
+ sd2_clk_fast_slew_rate_1x: sd2-clk-fast-slew-rate-1x-pins {
+  samsung,pins = "gph4-0";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ sd2_clk_fast_slew_rate_2x: sd2-clk-fast-slew-rate-2x-pins {
+  samsung,pins = "gph4-0";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <1>;
+ };
+
+ sd2_clk_fast_slew_rate_3x: sd2-clk-fast-slew-rate-3x-pins {
+  samsung,pins = "gph4-0";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <2>;
+ };
+
+ sd2_clk_fast_slew_rate_4x: sd2-clk-fast-slew-rate-4x-pins {
+  samsung,pins = "gph4-0";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <3>;
+ };
+
+ ufs_rst_n: ufs-rst-n-pins {
+  samsung,pins = "gph3-1";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-con-pdn = <3>;
+  samsung,pin-pud-pdn = <0>;
+ };
+
+ ufs_refclk_out: ufs-refclk-out-pins {
+  samsung,pins = "gph3-0";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-con-pdn = <3>;
+  samsung,pin-pud-pdn = <0>;
+ };
+
+ pcie1_clkreq: pcie1-clkreq-pins {
+  samsung,pins = "gph2-1";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <3>;
+  samsung,pin-drv = <3>;
+  samsung,pin-con-pdn = <3>;
+  samsung,pin-pud-pdn = <3>;
+ };
+
+ pcie1_perst: pcie1-perst-pins {
+  samsung,pins = "gph2-0";
+  samsung,pin-function = <1>;
+  samsung,pin-drv = <3>;
+  samsung,pin-con-pdn = <3>;
+ };
+};
+
+&pinctrl_peric0 {
+ gpp0: gpp0-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp1: gpp1-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp2: gpp2-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp3: gpp3-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp4: gpp4-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp5: gpp5-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp6: gpp6-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp7: gpp7-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp8: gpp8-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp9: gpp9-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp10: gpp10-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp11: gpp11-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp12: gpp12-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp13: gpp13-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp14: gpp14-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp15: gpp15-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp16: gpp16-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp17: gpp17-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp18: gpp18-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp19: gpp19-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+
+ uart0_bus: uart0-bus-pins {
+  samsung,pins = "gpp1-2", "gpp1-3";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+ };
+
+ disp_te_pri_on: disp-te-pri-on-pins {
+  samsung,pins = "gpp0-3";
+  samsung,pin-function = <0xf>;
+ };
+
+ disp_te_pri_off: disp-te-pri-off-pins {
+  samsung,pins = "gpp0-3";
+  samsung,pin-function = <0>;
+ };
+
+ disp_te_sec_on: disp-te-sec-on-pins {
+  samsung,pins = "gpp0-4";
+  samsung,pin-function = <0xf>;
+ };
+
+ disp_te_sec_off: disp-te-sec-off-pins {
+  samsung,pins = "gpp0-4";
+  samsung,pin-function = <0>;
+ };
+
+ sensor_mclk1_out: sensor-mclk1-out-pins {
+  samsung,pins = "gpp3-0";
+  samsung,pin-function = <1>;
+  samsung,pin-pud = <1>;
+  samsung,pin-drv = <1>;
+ };
+
+ sensor_mclk1_fn: sensor-mclk1-fn-pins {
+  samsung,pins = "gpp3-0";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <1>;
+ };
+
+ sensor_mclk2_out: sensor-mclk2-out-pins {
+  samsung,pins = "gpp5-0";
+  samsung,pin-function = <1>;
+  samsung,pin-pud = <1>;
+  samsung,pin-drv = <1>;
+ };
+
+ sensor_mclk2_fn: sensor-mclk2-fn-pins {
+  samsung,pins = "gpp5-0";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <1>;
+ };
+
+ sensor_mclk3_out: sensor-mclk3-out-pins {
+  samsung,pins = "gpp7-0";
+  samsung,pin-function = <1>;
+  samsung,pin-pud = <1>;
+  samsung,pin-drv = <1>;
+ };
+
+ sensor_mclk3_fn: sensor-mclk3-fn-pins {
+  samsung,pins = "gpp7-0";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <1>;
+ };
+
+ sensor_mclk4_out: sensor-mclk4-out-pins {
+  samsung,pins = "gpp9-0";
+  samsung,pin-function = <1>;
+  samsung,pin-pud = <1>;
+  samsung,pin-drv = <1>;
+ };
+
+ sensor_mclk4_fn: sensor-mclk4-fn-pins {
+  samsung,pins = "gpp9-0";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <1>;
+ };
+
+ sensor_mclk5_out: sensor-mclk5-out-pins {
+  samsung,pins = "gpp11-0";
+  samsung,pin-function = <1>;
+  samsung,pin-pud = <1>;
+  samsung,pin-drv = <1>;
+ };
+
+ sensor_mclk5_fn: sensor-mclk5-fn-pins {
+  samsung,pins = "gpp11-0";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <1>;
+ };
+
+ sensor_mclk6_out: sensor-mclk6-out-pins {
+  samsung,pins = "gpp13-0";
+  samsung,pin-function = <1>;
+  samsung,pin-pud = <1>;
+  samsung,pin-drv = <1>;
+ };
+
+ sensor_mclk6_fn: sensor-mclk6-fn-pins {
+  samsung,pins = "gpp13-0";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <1>;
+ };
+
+ sensor_mclk7_out: sensor-mclk7-out-pins {
+  samsung,pins = "gpp15-0";
+  samsung,pin-function = <1>;
+  samsung,pin-pud = <1>;
+  samsung,pin-drv = <1>;
+ };
+
+ sensor_mclk7_fn: sensor-mclk7-fn-pins {
+  samsung,pins = "gpp15-0";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <1>;
+ };
+
+ sensor_mclk8_out: sensor-mclk8-out-pins {
+  samsung,pins = "gpp17-0";
+  samsung,pin-function = <1>;
+  samsung,pin-pud = <1>;
+  samsung,pin-drv = <1>;
+ };
+
+ sensor_mclk8_fn: sensor-mclk8-fn-pins {
+  samsung,pins = "gpp17-0";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <1>;
+ };
+
+ hsi2c14_bus: hsi2c14-bus-pins {
+  samsung,pins = "gpp18-0", "gpp18-1";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ uart14_bus_single: uart14-bus-pins {
+  samsung,pins = "gpp18-0", "gpp18-1",
+          "gpp18-2", "gpp18-3";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+ };
+
+ spi14_bus: spi14-bus-pins {
+  samsung,pins = "gpp18-0", "gpp18-1", "gpp18-2";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi14_cs: spi14-cs-pins {
+  samsung,pins = "gpp18-3";
+  samsung,pin-function = <1>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi14_cs_func: spi14-cs-func-pins {
+  samsung,pins = "gpp18-3";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ hsi2c8_bus: hsi2c8-bus-pins {
+  samsung,pins = "gpp16-0", "gpp16-1";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+  samsung,pin-pud-pdn = <0>;
+ };
+
+ uart8_bus_single: uart8-bus-pins {
+  samsung,pins = "gpp16-0", "gpp16-1", "gpp16-2",
+          "gpp16-3";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+ };
+
+ spi8_bus: spi8-bus-pins {
+  samsung,pins = "gpp16-0", "gpp16-1", "gpp16-2";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi8_cs: spi8-cs-pins {
+  samsung,pins = "gpp16-3";
+  samsung,pin-function = <1>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi8_cs_func: spi8-cs-func-pins {
+  samsung,pins = "gpp16-3";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ hsi2c7_bus: hsi2c7-bus-pins {
+  samsung,pins = "gpp14-0", "gpp14-1";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ uart7_bus_single: uart7-bus-pins {
+  samsung,pins = "gpp14-0", "gpp14-1",
+          "gpp14-2", "gpp14-3";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+ };
+
+ spi7_bus: spi7-bus-pins {
+  samsung,pins = "gpp14-0", "gpp14-1", "gpp14-2";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi7_cs: spi7-cs-pins {
+  samsung,pins = "gpp14-3";
+  samsung,pin-function = <1>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi7_cs_func: spi7-cs-func-pins {
+  samsung,pins = "gpp14-3";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ hsi2c6_bus: hsi2c6-bus-pins {
+  samsung,pins = "gpp12-0", "gpp12-1";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ uart6_bus_single: uart6-bus-pins {
+  samsung,pins = "gpp12-0", "gpp12-1",
+          "gpp12-2", "gpp12-3";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+ };
+
+ spi6_bus: spi6-bus-pins {
+  samsung,pins = "gpp12-0", "gpp12-1", "gpp12-2";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi6_cs: spi6-cs-pins {
+  samsung,pins = "gpp12-3";
+  samsung,pin-function = <1>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi6_cs_func: spi6-cs-func-pins {
+  samsung,pins = "gpp12-3";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ hsi2c5_bus: hsi2c5-bus-pins {
+  samsung,pins = "gpp10-0", "gpp10-1";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ uart5_bus_single: uart5-bus-pins {
+  samsung,pins = "gpp10-0", "gpp10-1",
+          "gpp10-2", "gpp10-3";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+ };
+
+ spi5_bus: spi5-bus-pins {
+  samsung,pins = "gpp10-0", "gpp10-1", "gpp10-2";
+  samsung,pin-drv = <0>;
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-con-pdn = <3>;
+  samsung,pin-pud-pdn = <0>;
+ };
+
+ spi5_cs_func: spi5-cs-func-pins {
+  samsung,pins = "gpp10-3";
+  samsung,pin-drv = <0>;
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-con-pdn = <3>;
+  samsung,pin-pud-pdn = <0>;
+ };
+
+ hsi2c4_bus: hsi2c4-bus-pins {
+  samsung,pins = "gpp8-0", "gpp8-1";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ uart4_bus_single: uart4-bus-pins {
+  samsung,pins = "gpp8-0", "gpp8-1",
+          "gpp8-2", "gpp8-3";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+ };
+
+ spi4_bus: spi4-bus-pins {
+  samsung,pins = "gpp8-0", "gpp8-1", "gpp8-2";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi4_cs: spi4-cs-pins {
+  samsung,pins = "gpp8-3";
+  samsung,pin-function = <1>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi4_cs_func: spi4-cs-func-pins {
+  samsung,pins = "gpp8-3";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ hsi2c3_bus: hsi2c3-bus-pins {
+  samsung,pins = "gpp6-0", "gpp6-1";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ uart3_bus_single: uart3-bus-pins {
+  samsung,pins = "gpp6-0", "gpp6-1",
+          "gpp6-2", "gpp6-3";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+ };
+
+ spi3_bus: spi3-bus-pins {
+  samsung,pins = "gpp6-0", "gpp6-1", "gpp6-2";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi3_cs: spi3-cs-pins {
+  samsung,pins = "gpp6-3";
+  samsung,pin-function = <1>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi3_cs_func: spi3-cs-func-pins {
+  samsung,pins = "gpp6-3";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ hsi2c2_bus: hsi2c2-bus-pins {
+  samsung,pins = "gpp4-0", "gpp4-1";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ uart2_bus_single: uart2-bus-pins {
+  samsung,pins = "gpp4-0", "gpp4-1",
+          "gpp4-2", "gpp4-3";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+ };
+
+ spi2_bus: spi2-bus-pins {
+  samsung,pins = "gpp4-0", "gpp4-1", "gpp4-2";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi2_cs: spi2-cs-pins {
+  samsung,pins = "gpp4-3";
+  samsung,pin-function = <1>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi2_cs_func: spi2-cs-func-pins {
+  samsung,pins = "gpp4-3";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ hsi2c1_bus: hsi2c1-bus-pins {
+  samsung,pins = "gpp2-0", "gpp2-1";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ uart1_bus_single: uart1-bus-pins {
+  samsung,pins = "gpp2-0", "gpp2-1",
+          "gpp2-2", "gpp2-3";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+ };
+
+ spi1_bus: spi1-bus-pins {
+  samsung,pins = "gpp2-0", "gpp2-1", "gpp2-2";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi1_cs: spi1-cs-pins {
+  samsung,pins = "gpp2-3";
+  samsung,pin-function = <1>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi1_cs_func: spi1-cs-func-pins {
+  samsung,pins = "gpp2-3";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+};
+
+&pinctrl_peric1 {
+ gpp20: gpp20-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp21: gpp21-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp22: gpp22-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp23: gpp23-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp24: gpp24-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp25: gpp25-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp26: gpp26-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp27: gpp27-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ hsi2c13_bus: hsi2c13-bus-pins {
+  samsung,pins = "gpp25-0", "gpp25-1";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ uart13_bus_single: uart13-bus-pins {
+  samsung,pins = "gpp25-0", "gpp25-1",
+          "gpp25-2", "gpp25-3";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+ };
+
+ spi13_bus: spi13-bus-pins {
+  samsung,pins = "gpp25-0", "gpp25-1", "gpp25-2";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi13_cs: spi13-cs-pins {
+  samsung,pins = "gpp25-3";
+  samsung,pin-function = <1>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi13_cs_func: spi13-cs-func-pins {
+  samsung,pins = "gpp25-3";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ hsi2c12_bus: hsi2c12-bus-pins {
+  samsung,pins = "gpp23-4", "gpp23-5";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ uart12_bus_single: uart12-bus-pins {
+  samsung,pins = "gpp23-4", "gpp23-5",
+          "gpp23-6", "gpp23-7";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+ };
+
+ spi12_bus: spi12-bus-pins {
+  samsung,pins = "gpp23-4", "gpp23-5", "gpp23-6";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi14_cs2: spi14-cs2-pins {
+  samsung,pins = "gpp23-6";
+  samsung,pin-function = <1>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi12_cs: spi12-cs-pins {
+  samsung,pins = "gpp23-7";
+  samsung,pin-function = <1>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi12_cs_func: spi12-cs-func-pins {
+  samsung,pins = "gpp23-7";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ hsi2c11_bus: hsi2c11-bus-pins {
+  samsung,pins = "gpp23-0", "gpp23-1";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ uart11_bus_single: uart11-bus-pins {
+  samsung,pins = "gpp23-0", "gpp23-1",
+          "gpp23-2", "gpp23-3";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+ };
+
+ spi11_bus: spi11-bus-pins {
+  samsung,pins = "gpp23-0", "gpp23-1", "gpp23-2";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi11_cs: spi11-cs-pins {
+  samsung,pins = "gpp23-3";
+  samsung,pin-function = <1>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi11_cs_func: spi11-cs-func-pins {
+  samsung,pins = "gpp23-3";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ hsi2c10_bus: hsi2c10-bus-pins {
+  samsung,pins = "gpp21-0", "gpp21-1";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ uart10_bus_single: uart10-bus-pins {
+  samsung,pins = "gpp21-0", "gpp21-1",
+          "gpp21-2", "gpp21-3";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+ };
+
+ spi10_bus: spi10-bus-pins {
+  samsung,pins = "gpp21-0", "gpp21-1", "gpp21-2";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi10_cs: spi10-cs-pins {
+  samsung,pins = "gpp21-3";
+  samsung,pin-function = <1>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi10_cs_func: spi10-cs-func-pins {
+  samsung,pins = "gpp21-3";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ hsi2c9_bus: hsi2c9-bus-pins {
+  samsung,pins = "gpp20-4", "gpp20-5";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ uart9_bus_single: uart9-bus-pins {
+  samsung,pins = "gpp20-4", "gpp20-5",
+          "gpp20-6", "gpp20-7";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+ };
+
+ spi9_bus: spi9-bus-pins {
+  samsung,pins = "gpp20-4", "gpp20-5", "gpp20-6";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi9_cs: spi9-cs-pins {
+  samsung,pins = "gpp20-7";
+  samsung,pin-function = <1>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi9_cs_func: spi9-cs-func-pins {
+  samsung,pins = "gpp20-7";
+  samsung,pin-function = <2>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ hsi2c0_bus: hsi2c0-bus-pins {
+  samsung,pins = "gpp20-0", "gpp20-1";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ uart0_bus_single: uart0-bus-pins {
+  samsung,pins = "gpp20-0", "gpp20-1",
+          "gpp20-2", "gpp20-3";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+ };
+
+ spi0_bus: spi0-bus-pins {
+  samsung,pins = "gpp20-0", "gpp20-1", "gpp20-2";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi0_cs: spi0-cs-pins {
+  samsung,pins = "gpp20-3";
+  samsung,pin-function = <1>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ spi0_cs_func: spi0-cs-func-pins {
+  samsung,pins = "gpp20-3";
+  samsung,pin-function = <3>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+};
+# 1481 "arch/arm64/boot/dts/exynos/google/gs101.dtsi" 2
+# 16 "arch/arm64/boot/dts/exynos/google/gs101-oriole.dts" 2
+
+/ {
+ model = "Oriole";
+ compatible = "google,gs101-oriole", "google,gs101";
+
+ aliases {
+  serial0 = &serial_0;
+ };
+
+ chosen {
+
+  bootargs = "";
+  stdout-path = &serial_0;
+ };
+
+ gpio-keys {
+  compatible = "gpio-keys";
+  pinctrl-0 = <&key_voldown>, <&key_volup>, <&key_power>;
+  pinctrl-names = "default";
+
+  button-vol-down {
+   label = "KEY_VOLUMEDOWN";
+   linux,code = <114>;
+   gpios = <&gpa7 3 1>;
+   wakeup-source;
+  };
+
+  button-vol-up {
+   label = "KEY_VOLUMEUP";
+   linux,code = <115>;
+   gpios = <&gpa8 1 1>;
+   wakeup-source;
+  };
+
+  button-power {
+   label = "KEY_POWER";
+   linux,code = <116>;
+   gpios = <&gpa10 1 1>;
+   wakeup-source;
+  };
+ };
+
+
+ reg_placeholder: regulator-0 {
+  compatible = "regulator-fixed";
+  regulator-name = "placeholder_reg";
+ };
+
+
+ ufs_0_fixed_vcc_reg: regulator-1 {
+  compatible = "regulator-fixed";
+  regulator-name = "ufs-vcc";
+  gpio = <&gpp0 1 0>;
+  regulator-boot-on;
+  enable-active-high;
+ };
+};
+
+&ext_24_5m {
+ clock-frequency = <24576000>;
+};
+
+&ext_200m {
+ clock-frequency = <200000000>;
+};
+
+&hsi2c_8 {
+ status = "okay";
+
+ eeprom: eeprom@50 {
+  compatible = "atmel,24c08";
+  reg = <0x50>;
+ };
+};
+
+&hsi2c_12 {
+ status = "okay";
+
+
+ usb-typec@25 {
+  compatible = "maxim,max77759-tcpci", "maxim,max33359";
+  reg = <0x25>;
+  interrupts-extended = <&gpa8 2 8>;
+  pinctrl-0 = <&typec_int>;
+  pinctrl-names = "default";
+
+  connector {
+   compatible = "usb-c-connector";
+   label = "USB-C";
+   data-role = "dual";
+   power-role = "dual";
+   self-powered;
+   try-power-role = "sink";
+   op-sink-microwatt = <2600000>;
+   slow-charger-loop;
+
+
+
+
+
+   source-pdos = <(((0) << 30) | (((1 << 28) | (1 << 26) | (1 << 25) | (1 << 29))) | ((((5000) / 50) & 0x3ff) << 10) | ((((900) / 10) & 0x3ff) << 0))>;
+
+
+
+
+   sink-pdos = <(((0) << 30) | (((1 << 25) | (1 << 26) | (1 << 28) | (1 << 29))) | ((((5000) / 50) & 0x3ff) << 10) | ((((3000) / 10) & 0x3ff) << 0))
+
+
+
+
+         (((0) << 30) | (0) | ((((9000) / 50) & 0x3ff) << 10) | ((((2200) / 10) & 0x3ff) << 0))
+         (((3) << 30) | ((0) << 28) | ((((5000) / 100) & 0xff) << 8) | ((((11000) / 100) & 0xff) << 17) | ((((3000) / 50) & 0x7f) << 0))>;
+   sink-vdos = <((1) << 31 | (1) << 30 | ((2) & 0x7) << 27 | (0) << 26 | ((2) & 0x7) << 23 | ((2) & 0x3) << 21 | ((0x18d1) & 0xffff))
+
+         ((0x0) & 0xffffffff)
+         (((0x4ee1) & 0xffff) << 16 | ((0x0) & 0xffff))
+         (((2) & 0x7) << 29 | ((((1 << 0) | (1 << 2))) & 0xf) << 24 | ((2) & 0x3) << 22 | ((0) & 0x7) << 8 | (0) << 7 | (0) << 6 | ((0) & 0x7) << 3 | ((1) & 0x7))
+
+
+
+
+
+
+                       0
+         (((1) & 0x7) << 29 | ((((1 << 0) | (1 << 1))) & 0x7) << 24 | ((2) & 0x3) << 22 | ((0) & 0x1f))>;
+
+
+
+   sink-vdos-v1 = <((1) << 31 | (1) << 30 | ((2) & 0x7) << 27 | (0) << 26 | ((0) & 0x7) << 23 | ((0) & 0x3) << 21 | ((0x18d1) & 0xffff))
+
+     ((0x0) & 0xffffffff)
+     (((0x4ee1) & 0xffff) << 16 | ((0x0) & 0xffff))>;
+
+
+
+
+   pd-disable;
+   typec-power-opmode = "default";
+
+   ports {
+    #address-cells = <1>;
+    #size-cells = <0>;
+
+    port@0 {
+     reg = <0>;
+
+     usbc0_orien_sw: endpoint {
+      remote-endpoint = <&usbdrd31_phy_orien_switch>;
+     };
+    };
+
+    port@1 {
+     reg = <1>;
+
+     usbc0_role_sw: endpoint {
+      remote-endpoint = <&usbdrd31_dwc3_role_switch>;
+     };
+    };
+   };
+  };
+ };
+};
+
+&pinctrl_far_alive {
+ key_voldown: key-voldown-pins {
+  samsung,pins = "gpa7-3";
+  samsung,pin-function = <0xf>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ key_volup: key-volup-pins {
+  samsung,pins = "gpa8-1";
+  samsung,pin-function = <0xf>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+
+ typec_int: typec-int-pins {
+  samsung,pins = "gpa8-2";
+  samsung,pin-function = <0xf>;
+  samsung,pin-pud = <3>;
+  samsung,pin-drv = <0>;
+ };
+};
+
+&pinctrl_gpio_alive {
+ key_power: key-power-pins {
+  samsung,pins = "gpa10-1";
+  samsung,pin-function = <0xf>;
+  samsung,pin-pud = <0>;
+  samsung,pin-drv = <0>;
+ };
+};
+
+&serial_0 {
+ status = "okay";
+};
+
+&ufs_0 {
+ status = "okay";
+ vcc-supply = <&ufs_0_fixed_vcc_reg>;
+};
+
+&ufs_0_phy {
+ status = "okay";
+};
+
+&usbdrd31 {
+ vdd10-supply = <&reg_placeholder>;
+ vdd33-supply = <&reg_placeholder>;
+ status = "okay";
+};
+
+&usbdrd31_dwc3 {
+ dr_mode = "otg";
+ usb-role-switch;
+ role-switch-default-mode = "peripheral";
+ maximum-speed = "super-speed-plus";
+ status = "okay";
+
+ port {
+  usbdrd31_dwc3_role_switch: endpoint {
+   remote-endpoint = <&usbc0_role_sw>;
+  };
+ };
+};
+
+&usbdrd31_phy {
+ orientation-switch;
+
+ pll-supply = <&reg_placeholder>;
+ dvdd-usb20-supply = <&reg_placeholder>;
+ vddh-usb20-supply = <&reg_placeholder>;
+ vdd33-usb20-supply = <&reg_placeholder>;
+ vdda-usbdp-supply = <&reg_placeholder>;
+ vddh-usbdp-supply = <&reg_placeholder>;
+ status = "okay";
+
+ port {
+  usbdrd31_phy_orien_switch: endpoint {
+   remote-endpoint = <&usbc0_orien_sw>;
+  };
+ };
+};
+
+&usi_uart {
+ samsung,clkreq-on;
+ status = "okay";
+};
+
+&usi8 {
+ samsung,mode = <3>;
+ status = "okay";
+};
+
+&usi12 {
+ samsung,mode = <3>;
+ status = "okay";
+};
+
+&watchdog_cl0 {
+ timeout-sec = <30>;
+ status = "okay";
+};

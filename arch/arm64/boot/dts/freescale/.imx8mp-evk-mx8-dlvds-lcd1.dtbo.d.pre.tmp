@@ -1,0 +1,2 @@
+imx8mp-evk-mx8-dlvds-lcd1.o: \
+ arch/arm64/boot/dts/freescale/imx8mp-evk-mx8-dlvds-lcd1.dtso

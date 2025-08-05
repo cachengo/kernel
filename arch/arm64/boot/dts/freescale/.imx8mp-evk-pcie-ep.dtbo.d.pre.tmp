@@ -1,0 +1,2 @@
+imx8mp-evk-pcie-ep.o: \
+ arch/arm64/boot/dts/freescale/imx8mp-evk-pcie-ep.dtso

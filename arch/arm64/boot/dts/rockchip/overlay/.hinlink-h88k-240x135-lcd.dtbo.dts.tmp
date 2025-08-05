@@ -1,0 +1,71 @@
+# 0 "arch/arm64/boot/dts/rockchip/overlay/hinlink-h88k-240x135-lcd.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/rockchip/overlay/hinlink-h88k-240x135-lcd.dtso"
+/dts-v1/;
+/plugin/;
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/clock/rockchip,rk3588-cru.h" 1
+# 4 "arch/arm64/boot/dts/rockchip/overlay/hinlink-h88k-240x135-lcd.dtso" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h" 1
+# 5 "arch/arm64/boot/dts/rockchip/overlay/hinlink-h88k-240x135-lcd.dtso" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/pinctrl/rockchip.h" 1
+# 6 "arch/arm64/boot/dts/rockchip/overlay/hinlink-h88k-240x135-lcd.dtso" 2
+
+/ {
+ fragment@0 {
+  target = <&spi4>;
+  __overlay__ {
+   #address-cells = <1>;
+   #size-cells = <0>;
+   assigned-clocks = <&cru 155>;
+   assigned-clock-rates = <200000000>;
+   num-cs = <1>;
+   pinctrl-names = "default";
+   pinctrl-0 = <&spi4_custom_pins &spi4m2_cs0>;
+   status = "okay";
+
+   panel: panel@0 {
+    compatible = "hinlink-h88k-240x135-lcd", "panel-mipi-dbi-spi";
+    reg = <0>;
+
+    spi-max-frequency = <2000000>;
+
+    width-mm = <25>;
+    height-mm = <15>;
+
+    dc-gpios = <&gpio1 4 0>;
+
+    write-only;
+
+    timing: panel-timing {
+     hactive = <240>;
+     vactive = <135>;
+     hback-porch = <40>;
+     vback-porch = <52>;
+
+     clock-frequency = <0>;
+     hfront-porch = <0>;
+     hsync-len = <0>;
+     vfront-porch = <0>;
+     vsync-len = <0>;
+    };
+   };
+  };
+ };
+ fragment@1 {
+  target = <&pinctrl>;
+  __overlay__ {
+   lcd {
+    spi4_custom_pins: spi4-custom-pins {
+     rockchip,pins =
+
+     <1 2 8 &pcfg_pull_up_drv_level_6>,
+
+     <1 1 8 &pcfg_pull_up_drv_level_6>,
+
+     <1 16 8 &pcfg_pull_up_drv_level_6>;
+    };
+   };
+  };
+ };
+};

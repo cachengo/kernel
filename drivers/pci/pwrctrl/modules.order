@@ -1,0 +1,2 @@
+drivers/pci/pwrctrl/pci-pwrctrl-core.o
+drivers/pci/pwrctrl/pci-pwrctrl-pwrseq.o

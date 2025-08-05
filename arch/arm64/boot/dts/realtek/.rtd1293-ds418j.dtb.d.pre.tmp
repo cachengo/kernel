@@ -1,0 +1,6 @@
+rtd1293-ds418j.o: arch/arm64/boot/dts/realtek/rtd1293-ds418j.dts \
+ arch/arm64/boot/dts/realtek/rtd1293.dtsi \
+ arch/arm64/boot/dts/realtek/rtd129x.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h \
+ scripts/dtc/include-prefixes/dt-bindings/reset/realtek,rtd1295.h

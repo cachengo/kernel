@@ -33,6 +33,17 @@ struct a6xx_hfi_queue {
 	spinlock_t lock;
 	u32 *data;
 	atomic_t seqnum;
+
+	/*
+	 * Tracking for the start index of the last N messages in the
+	 * queue, for the benefit of devcore dump / crashdec (since
+	 * parsing in the reverse direction to decode the last N
+	 * messages is difficult to do and would rely on heuristics
+	 * which are not guaranteed to be correct)
+	 */
+#define HFI_HISTORY_SZ 8
+	s32 history[HFI_HISTORY_SZ];
+	u8  history_idx;
 };
 
 /* This is the outgoing queue to the GMU */
@@ -161,6 +172,11 @@ struct a6xx_hfi_gx_bw_perf_vote_cmd {
 	u32 freq;
 	u32 bw;
 };
+
+#define AB_VOTE_MASK		GENMASK(31, 16)
+#define MAX_AB_VOTE		(FIELD_MAX(AB_VOTE_MASK) - 1)
+#define AB_VOTE(vote)		FIELD_PREP(AB_VOTE_MASK, (vote))
+#define AB_VOTE_ENABLE		BIT(8)
 
 #define HFI_H2F_MSG_PREPARE_SLUMBER 33
 

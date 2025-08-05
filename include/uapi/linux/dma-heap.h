@@ -19,7 +19,7 @@
 #define DMA_HEAP_VALID_FD_FLAGS (O_CLOEXEC | O_ACCMODE)
 
 /* Currently no heap flags */
-#define DMA_HEAP_VALID_HEAP_FLAGS (0)
+#define DMA_HEAP_VALID_HEAP_FLAGS (0ULL)
 
 /**
  * struct dma_heap_allocation_data - metadata passed from userspace for
@@ -39,11 +39,6 @@ struct dma_heap_allocation_data {
 	__u64 heap_flags;
 };
 
-struct dma_heap_phys_data {
-	__u64 paddr;
-	__u32 fd;
-};
-
 #define DMA_HEAP_IOC_MAGIC		'H'
 
 /**
@@ -54,8 +49,5 @@ struct dma_heap_phys_data {
  */
 #define DMA_HEAP_IOCTL_ALLOC	_IOWR(DMA_HEAP_IOC_MAGIC, 0x0,\
 				      struct dma_heap_allocation_data)
-
-#define DMA_HEAP_IOCTL_GET_PHYS	_IOWR(DMA_HEAP_IOC_MAGIC, 0x1, \
-				      struct dma_heap_phys_data)
 
 #endif /* _UAPI_LINUX_DMABUF_POOL_H */

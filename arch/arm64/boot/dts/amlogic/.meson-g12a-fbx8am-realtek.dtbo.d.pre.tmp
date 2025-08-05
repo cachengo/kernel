@@ -1,0 +1,4 @@
+meson-g12a-fbx8am-realtek.o: \
+ arch/arm64/boot/dts/amlogic/meson-g12a-fbx8am-realtek.dtso \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/meson-g12a-gpio.h

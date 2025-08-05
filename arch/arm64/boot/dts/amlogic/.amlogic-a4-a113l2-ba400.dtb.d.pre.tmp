@@ -1,0 +1,8 @@
+amlogic-a4-a113l2-ba400.o: \
+ arch/arm64/boot/dts/amlogic/amlogic-a4-a113l2-ba400.dts \
+ arch/arm64/boot/dts/amlogic/amlogic-a4.dtsi \
+ arch/arm64/boot/dts/amlogic/amlogic-a4-common.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ scripts/dtc/include-prefixes/dt-bindings/power/amlogic,a4-pwrc.h

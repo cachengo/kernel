@@ -1,0 +1,5 @@
+k3-am654-base-board-rocktech-rk101-panel.o: \
+ arch/arm64/boot/dts/ti/k3-am654-base-board-rocktech-rk101-panel.dtso \
+ scripts/dtc/include-prefixes/dt-bindings/pwm/pwm.h \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h

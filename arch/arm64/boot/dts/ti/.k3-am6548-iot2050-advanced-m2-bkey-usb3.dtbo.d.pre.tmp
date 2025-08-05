@@ -1,0 +1,4 @@
+k3-am6548-iot2050-advanced-m2-bkey-usb3.o: \
+ arch/arm64/boot/dts/ti/k3-am6548-iot2050-advanced-m2-bkey-usb3.dtso \
+ scripts/dtc/include-prefixes/dt-bindings/phy/phy.h \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h

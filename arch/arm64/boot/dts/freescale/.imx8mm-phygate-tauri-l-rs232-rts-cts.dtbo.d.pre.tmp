@@ -1,0 +1,4 @@
+imx8mm-phygate-tauri-l-rs232-rts-cts.o: \
+ arch/arm64/boot/dts/freescale/imx8mm-phygate-tauri-l-rs232-rts-cts.dtso \
+ scripts/dtc/include-prefixes/dt-bindings/clock/imx8mm-clock.h \
+ arch/arm64/boot/dts/freescale/imx8mm-pinfunc.h

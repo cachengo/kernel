@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/broadcom/northstar2/dtbs-list := {   echo arch/arm64/boot/dts/broadcom/northstar2/ns2-svk.dtb;   echo arch/arm64/boot/dts/broadcom/northstar2/ns2-xmc.dtb; :; } > arch/arm64/boot/dts/broadcom/northstar2/dtbs-list

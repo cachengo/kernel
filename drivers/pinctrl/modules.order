@@ -1,0 +1,11 @@
+drivers/pinctrl/qcom/pinctrl-sc7280-lpass-lpi.o
+drivers/pinctrl/qcom/pinctrl-sm6115-lpass-lpi.o
+drivers/pinctrl/qcom/pinctrl-sm8250-lpass-lpi.o
+drivers/pinctrl/qcom/pinctrl-sm8350-lpass-lpi.o
+drivers/pinctrl/qcom/pinctrl-sm8450-lpass-lpi.o
+drivers/pinctrl/qcom/pinctrl-sm8550-lpass-lpi.o
+drivers/pinctrl/qcom/pinctrl-sm8650-lpass-lpi.o
+drivers/pinctrl/qcom/pinctrl-sc8280xp-lpass-lpi.o
+drivers/pinctrl/qcom/pinctrl-lpass-lpi.o
+drivers/pinctrl/pinctrl-da9062.o
+drivers/pinctrl/pinctrl-tps6594.o

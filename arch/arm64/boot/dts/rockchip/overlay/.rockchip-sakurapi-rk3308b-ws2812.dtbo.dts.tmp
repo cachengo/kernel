@@ -1,0 +1,58 @@
+# 0 "arch/arm64/boot/dts/rockchip/overlay/rockchip-sakurapi-rk3308b-ws2812.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/rockchip/overlay/rockchip-sakurapi-rk3308b-ws2812.dtso"
+# 10 "arch/arm64/boot/dts/rockchip/overlay/rockchip-sakurapi-rk3308b-ws2812.dtso"
+/dts-v1/;
+/plugin/;
+
+/ {
+ fragment@0 {
+  target = <&spi1>;
+  __overlay__ {
+
+   status = "okay";
+
+   ws2812@0 {
+    compatible = "ws2812-vleds";
+    reg = <0>;
+
+
+    spi-max-frequency = <6750000>;
+
+    leds {
+
+
+     ws_led3: vled3 {
+      label = "ws-led3";
+      default-state = "off";
+      color-value = "#69b3f2";
+     };
+
+
+     ws_led2: vled2 {
+      label = "ws-led2";
+      default-state = "off";
+      color-value = "#9376c8";
+     };
+
+
+     ws_led1: vled1 {
+      label = "ws-led1";
+      default-state = "off";
+      color-value = "#b66bc3";
+     };
+
+
+     ws_led0: vled0 {
+      label = "ws-led0";
+      default-state = "on";
+      linux,default-trigger = "mmc1";
+      color-value = "#eb698f";
+     };
+
+    };
+   };
+  };
+ };
+};

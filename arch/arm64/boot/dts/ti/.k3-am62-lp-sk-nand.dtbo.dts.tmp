@@ -1,0 +1,123 @@
+# 0 "arch/arm64/boot/dts/ti/k3-am62-lp-sk-nand.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/ti/k3-am62-lp-sk-nand.dtso"
+
+
+
+
+
+/dts-v1/;
+/plugin/;
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h" 1
+# 9 "arch/arm64/boot/dts/ti/k3-am62-lp-sk-nand.dtso" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h" 1
+# 10 "arch/arm64/boot/dts/ti/k3-am62-lp-sk-nand.dtso" 2
+# 1 "arch/arm64/boot/dts/ti/k3-pinctrl.h" 1
+# 11 "arch/arm64/boot/dts/ti/k3-am62-lp-sk-nand.dtso" 2
+
+&mcasp1 {
+ status = "disabled";
+};
+
+&main_pmx0 {
+ gpmc0_pins_default: gpmc0-pins-default {
+  pinctrl-single,pins = <
+   (((0x003c) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (0))
+   (((0x0040) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (0))
+   (((0x0044) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (0))
+   (((0x0048) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (0))
+   (((0x004c) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (0))
+   (((0x0050) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (0))
+   (((0x0054) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (0))
+   (((0x0058) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (0))
+   (((0x0098) & 0x1fff)) ((((1 << (18)) | (1 << (16)))) | (0))
+   (((0x00a8) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (0))
+   (((0x0084) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (0))
+   (((0x0088) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (0))
+   (((0x008c) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (0))
+   (((0x0090) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (0))
+   (((0x00a0) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (0))
+  >;
+ };
+};
+
+&elm0 {
+ status = "okay";
+};
+
+&gpmc0 {
+ status = "okay";
+ pinctrl-names = "default";
+ pinctrl-0 = <&gpmc0_pins_default>;
+ #address-cells = <2>;
+ #size-cells = <1>;
+
+ nand@0,0 {
+  compatible = "ti,am64-nand";
+  reg = <0 0 64>;
+  interrupt-parent = <&gpmc0>;
+  interrupts = <0 0>,
+        <1 0>;
+  rb-gpios = <&gpmc0 0 0>;
+  ti,nand-xfer-type = "prefetch-polled";
+  ti,nand-ecc-opt = "bch8";
+  ti,elm-id = <&elm0>;
+  nand-bus-width = <8>;
+  gpmc,device-width = <1>;
+  gpmc,sync-clk-ps = <0>;
+  gpmc,cs-on-ns = <0>;
+  gpmc,cs-rd-off-ns = <40>;
+  gpmc,cs-wr-off-ns = <40>;
+  gpmc,adv-on-ns = <0>;
+  gpmc,adv-rd-off-ns = <25>;
+  gpmc,adv-wr-off-ns = <25>;
+  gpmc,we-on-ns = <0>;
+  gpmc,we-off-ns = <20>;
+  gpmc,oe-on-ns = <3>;
+  gpmc,oe-off-ns = <30>;
+  gpmc,access-ns = <30>;
+  gpmc,rd-cycle-ns = <40>;
+  gpmc,wr-cycle-ns = <40>;
+  gpmc,bus-turnaround-ns = <0>;
+  gpmc,cycle2cycle-delay-ns = <0>;
+  gpmc,clk-activation-ns = <0>;
+  gpmc,wr-access-ns = <40>;
+  gpmc,wr-data-mux-bus-ns = <0>;
+
+  partitions {
+   compatible = "fixed-partitions";
+   #address-cells = <1>;
+   #size-cells = <1>;
+
+   partition@0 {
+    label = "NAND.tiboot3";
+    reg = <0x00000000 0x00200000>;
+   };
+   partition@200000 {
+    label = "NAND.tispl";
+    reg = <0x00200000 0x00200000>;
+   };
+   partition@400000 {
+    label = "NAND.tiboot3.backup";
+    reg = <0x00400000 0x00200000>;
+   };
+   partition@600000 {
+    label = "NAND.u-boot";
+    reg = <0x00600000 0x00400000>;
+   };
+   partition@a00000 {
+    label = "NAND.u-boot-env";
+    reg = <0x00a00000 0x00040000>;
+   };
+   partition@a40000 {
+    label = "NAND.u-boot-env.backup";
+    reg = <0x00a40000 0x00040000>;
+   };
+   partition@a80000 {
+    label = "NAND.file-system";
+    reg = <0x00a80000 0x3f580000>;
+   };
+  };
+ };
+};

@@ -1,0 +1,3 @@
+drivers/phy/ti/phy-omap-usb2.o
+drivers/phy/ti/phy-am654-serdes.o
+drivers/phy/ti/phy-j721e-wiz.o

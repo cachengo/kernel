@@ -1,0 +1,2 @@
+lib/crypto/libarc4.o
+lib/crypto/libcurve25519-generic.o

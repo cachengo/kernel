@@ -1,0 +1,5 @@
+k3-j721e-evm-gesi-exp-board.o: \
+ arch/arm64/boot/dts/ti/k3-j721e-evm-gesi-exp-board.dtso \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ scripts/dtc/include-prefixes/dt-bindings/net/ti-dp83867.h \
+ arch/arm64/boot/dts/ti/k3-pinctrl.h

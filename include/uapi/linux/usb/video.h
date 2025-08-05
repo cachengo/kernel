@@ -179,6 +179,36 @@
 #define UVC_CONTROL_CAP_AUTOUPDATE			(1 << 3)
 #define UVC_CONTROL_CAP_ASYNCHRONOUS			(1 << 4)
 
+/* 3.9.2.6 Color Matching Descriptor Values */
+enum uvc_color_primaries_values {
+	UVC_COLOR_PRIMARIES_UNSPECIFIED,
+	UVC_COLOR_PRIMARIES_BT_709_SRGB,
+	UVC_COLOR_PRIMARIES_BT_470_2_M,
+	UVC_COLOR_PRIMARIES_BT_470_2_B_G,
+	UVC_COLOR_PRIMARIES_SMPTE_170M,
+	UVC_COLOR_PRIMARIES_SMPTE_240M,
+};
+
+enum uvc_transfer_characteristics_values {
+	UVC_TRANSFER_CHARACTERISTICS_UNSPECIFIED,
+	UVC_TRANSFER_CHARACTERISTICS_BT_709,
+	UVC_TRANSFER_CHARACTERISTICS_BT_470_2_M,
+	UVC_TRANSFER_CHARACTERISTICS_BT_470_2_B_G,
+	UVC_TRANSFER_CHARACTERISTICS_SMPTE_170M,
+	UVC_TRANSFER_CHARACTERISTICS_SMPTE_240M,
+	UVC_TRANSFER_CHARACTERISTICS_LINEAR,
+	UVC_TRANSFER_CHARACTERISTICS_SRGB,
+};
+
+enum uvc_matrix_coefficients {
+	UVC_MATRIX_COEFFICIENTS_UNSPECIFIED,
+	UVC_MATRIX_COEFFICIENTS_BT_709,
+	UVC_MATRIX_COEFFICIENTS_FCC,
+	UVC_MATRIX_COEFFICIENTS_BT_470_2_B_G,
+	UVC_MATRIX_COEFFICIENTS_SMPTE_170M,
+	UVC_MATRIX_COEFFICIENTS_SMPTE_240M,
+};
+
 /* ------------------------------------------------------------------------
  * UVC structures
  */
@@ -466,7 +496,7 @@ struct uvc_format_uncompressed {
 	__u8  bDefaultFrameIndex;
 	__u8  bAspectRatioX;
 	__u8  bAspectRatioY;
-	__u8  bmInterfaceFlags;
+	__u8  bmInterlaceFlags;
 	__u8  bCopyProtect;
 } __attribute__((__packed__));
 
@@ -522,7 +552,7 @@ struct uvc_format_mjpeg {
 	__u8  bDefaultFrameIndex;
 	__u8  bAspectRatioX;
 	__u8  bAspectRatioY;
-	__u8  bmInterfaceFlags;
+	__u8  bmInterlaceFlags;
 	__u8  bCopyProtect;
 } __attribute__((__packed__));
 
@@ -584,7 +614,7 @@ struct uvc_format_framebased {
 	__u8  bVariableSize;
 } __attribute__((__packed__));
 
-#define UVC_DT_FORMAT_FRAMEBASED_SIZE			28
+#define UVC_DT_FORMAT_FRAMEBASED_SIZE                  28
 
 /* Frame Based Payload - 3.1.2. Frame Based Video Frame Descriptor */
 struct uvc_frame_framebased {
@@ -608,21 +638,21 @@ struct uvc_frame_framebased {
 #define UVC_FRAME_FRAMEBASED(n) \
 	uvc_frame_framebased_##n
 
-#define DECLARE_UVC_FRAME_FRAMEBASED(n)		\
-struct UVC_FRAME_FRAMEBASED(n) {		\
-	__u8  bLength;				\
-	__u8  bDescriptorType;			\
-	__u8  bDescriptorSubType;		\
-	__u8  bFrameIndex;			\
-	__u8  bmCapabilities;			\
-	__u16 wWidth;				\
-	__u16 wHeight;				\
-	__u32 dwMinBitRate;			\
-	__u32 dwMaxBitRate;			\
-	__u32 dwDefaultFrameInterval;		\
-	__u8  bFrameIntervalType;		\
-	__u32 dwBytesPerLine;			\
-	__u32 dwFrameInterval[n];		\
+#define DECLARE_UVC_FRAME_FRAMEBASED(n)			\
+struct UVC_FRAME_FRAMEBASED(n) {			\
+	__u8  bLength;					\
+	__u8  bDescriptorType;				\
+	__u8  bDescriptorSubType;                       \
+	__u8  bFrameIndex;                              \
+	__u8  bmCapabilities;                           \
+	__u16 wWidth;                                   \
+	__u16 wHeight;                                  \
+	__u32 dwMinBitRate;                             \
+	__u32 dwMaxBitRate;                             \
+	__u32 dwDefaultFrameInterval;                   \
+	__u8  bFrameIntervalType;                       \
+	__u32 dwBytesPerLine;                           \
+	__u32 dwFrameInterval[n];                       \
 } __attribute__ ((packed))
 
 #endif /* __LINUX_USB_VIDEO_H */

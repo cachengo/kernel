@@ -1,0 +1,1 @@
+savedcmd_drivers/pinctrl/stm32/built-in.a := rm -f drivers/pinctrl/stm32/built-in.a;  printf "drivers/pinctrl/stm32/%s " pinctrl-stm32.o pinctrl-stm32mp257.o | xargs ar cDPrST drivers/pinctrl/stm32/built-in.a

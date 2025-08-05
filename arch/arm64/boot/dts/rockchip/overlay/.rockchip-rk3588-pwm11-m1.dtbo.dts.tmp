@@ -1,0 +1,25 @@
+# 0 "arch/arm64/boot/dts/rockchip/overlay/rockchip-rk3588-pwm11-m1.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/rockchip/overlay/rockchip-rk3588-pwm11-m1.dtso"
+/dts-v1/;
+/plugin/;
+
+/ {
+ metadata {
+  title = "Enable PWM11-M1";
+  compatible = "radxa,rock-5a";
+  category = "misc";
+  exclusive = "GPIO4_B4";
+  description = "Enable PWM11-M1.\nOn Radxa ROCK 5A this is pin 15.";
+ };
+
+ fragment@0 {
+  target = <&pwm11>;
+
+  __overlay__ {
+   status = "okay";
+   pinctrl-0 = <&pwm11m1_pins>;
+  };
+ };
+};

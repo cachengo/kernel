@@ -1,0 +1,24 @@
+!<thin>
+//                                              246       `
+pinctrl-sunxi.o/
+pinctrl-sun50i-a64.o/
+pinctrl-sun50i-a64-r.o/
+pinctrl-sun50i-a100.o/
+pinctrl-sun50i-a100-r.o/
+pinctrl-sun8i-h3-r.o/
+pinctrl-sun50i-h5.o/
+pinctrl-sun50i-h6.o/
+pinctrl-sun50i-h6-r.o/
+pinctrl-sun50i-h616.o/
+pinctrl-sun50i-h616-r.o/
+/0              0           0     0     644     130304    `
+/17             0           0     0     644     51072     `
+/39             0           0     0     644     17808     `
+/63             0           0     0     644     59016     `
+/86             0           0     0     644     18928     `
+/111            0           0     0     644     17408     `
+/133            0           0     0     644     49408     `
+/154            0           0     0     644     53096     `
+/175            0           0     0     644     19024     `
+/198            0           0     0     644     70200     `
+/221            0           0     0     644     13856     `

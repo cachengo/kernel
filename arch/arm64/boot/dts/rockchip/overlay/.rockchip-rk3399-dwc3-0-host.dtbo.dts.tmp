@@ -1,0 +1,17 @@
+# 0 "arch/arm64/boot/dts/rockchip/overlay/rockchip-rk3399-dwc3-0-host.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/rockchip/overlay/rockchip-rk3399-dwc3-0-host.dtso"
+/dts-v1/;
+/plugin/;
+
+/ {
+ compatible = "rockchip,rk3399";
+
+ fragment@0 {
+  target = <&usbdrd_dwc3_0>;
+  __overlay__ {
+   dr_mode = "host";
+  };
+ };
+};

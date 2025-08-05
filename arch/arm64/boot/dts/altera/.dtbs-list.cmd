@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/altera/dtbs-list := {   echo arch/arm64/boot/dts/altera/socfpga_stratix10_socdk.dtb;   echo arch/arm64/boot/dts/altera/socfpga_stratix10_socdk_nand.dtb;   echo arch/arm64/boot/dts/altera/socfpga_stratix10_swvp.dtb; :; } > arch/arm64/boot/dts/altera/dtbs-list

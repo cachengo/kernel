@@ -1,0 +1,53 @@
+# 0 "arch/arm64/boot/dts/rockchip/overlay/rk3308-s0-ext-antenna.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/rockchip/overlay/rk3308-s0-ext-antenna.dtso"
+
+
+
+/dts-v1/;
+/plugin/;
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h" 1
+# 7 "arch/arm64/boot/dts/rockchip/overlay/rk3308-s0-ext-antenna.dtso" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/pinctrl/rockchip.h" 1
+# 8 "arch/arm64/boot/dts/rockchip/overlay/rk3308-s0-ext-antenna.dtso" 2
+
+/ {
+ fragment@0 {
+  target-path = "/";
+
+  __overlay__ {
+   ext_antenna: ext-antenna {
+    status = "okay";
+    compatible = "regulator-fixed";
+    enable-active-low;
+    gpio = <&gpio0 6 1>;
+    regulator-always-on;
+    regulator-boot-on;
+    pinctrl-0 = <&ant_2>;
+    pinctrl-names = "default";
+    regulator-name = "ext_antenna";
+   };
+  };
+ };
+
+ fragment@1 {
+  target = <&board_antenna>;
+
+  __overlay__ {
+   status = "disabled";
+  };
+ };
+
+ fragment@2 {
+  target = <&pinctrl>;
+
+  __overlay__ {
+   antenna {
+    ant_2: ant-2 {
+     rockchip,pins = <0 6 0 &pcfg_pull_down>;
+    };
+   };
+  };
+ };
+};

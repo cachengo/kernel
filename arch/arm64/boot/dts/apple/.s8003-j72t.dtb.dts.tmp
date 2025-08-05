@@ -1,0 +1,244 @@
+# 0 "arch/arm64/boot/dts/apple/s8003-j72t.dts"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/apple/s8003-j72t.dts"
+
+
+
+
+
+
+/dts-v1/;
+
+# 1 "arch/arm64/boot/dts/apple/s8003.dtsi" 1
+# 10 "arch/arm64/boot/dts/apple/s8003.dtsi"
+# 1 "arch/arm64/boot/dts/apple/s8000.dtsi" 1
+# 10 "arch/arm64/boot/dts/apple/s8000.dtsi"
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h" 1
+# 11 "arch/arm64/boot/dts/apple/s8000.dtsi" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/apple-aic.h" 1
+
+
+
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h" 1
+# 6 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/apple-aic.h" 2
+# 12 "arch/arm64/boot/dts/apple/s8000.dtsi" 2
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/pinctrl/apple.h" 1
+# 14 "arch/arm64/boot/dts/apple/s8000.dtsi" 2
+
+/ {
+ interrupt-parent = <&aic>;
+ #address-cells = <2>;
+ #size-cells = <2>;
+
+ clkref: clock-ref {
+  compatible = "fixed-clock";
+  #clock-cells = <0>;
+  clock-frequency = <24000000>;
+  clock-output-names = "clkref";
+ };
+
+ cpus {
+  #address-cells = <2>;
+  #size-cells = <0>;
+
+  cpu0: cpu@0 {
+   compatible = "apple,twister";
+   reg = <0x0 0x0>;
+   cpu-release-addr = <0 0>;
+   enable-method = "spin-table";
+   device_type = "cpu";
+  };
+
+  cpu1: cpu@1 {
+   compatible = "apple,twister";
+   reg = <0x0 0x1>;
+   cpu-release-addr = <0 0>;
+   enable-method = "spin-table";
+   device_type = "cpu";
+  };
+ };
+
+ soc {
+  compatible = "simple-bus";
+  #address-cells = <2>;
+  #size-cells = <2>;
+  nonposted-mmio;
+  ranges;
+
+  serial0: serial@20a0c0000 {
+   compatible = "apple,s5l-uart";
+   reg = <0x2 0x0a0c0000 0x0 0x4000>;
+   reg-io-width = <4>;
+   interrupt-parent = <&aic>;
+   interrupts = <0 192 4>;
+
+   clocks = <&clkref>, <&clkref>;
+   clock-names = "uart", "clk_uart_baud0";
+   status = "disabled";
+  };
+
+  aic: interrupt-controller@20e100000 {
+   compatible = "apple,s8000-aic", "apple,aic";
+   reg = <0x2 0x0e100000 0x0 0x100000>;
+   #interrupt-cells = <3>;
+   interrupt-controller;
+  };
+
+  pinctrl_ap: pinctrl@20f100000 {
+   compatible = "apple,s8000-pinctrl", "apple,pinctrl";
+   reg = <0x2 0x0f100000 0x0 0x100000>;
+
+   gpio-controller;
+   #gpio-cells = <2>;
+   gpio-ranges = <&pinctrl_ap 0 0 208>;
+   apple,npins = <208>;
+
+   interrupt-controller;
+   #interrupt-cells = <2>;
+   interrupt-parent = <&aic>;
+   interrupts = <0 42 4>,
+         <0 43 4>,
+         <0 44 4>,
+         <0 45 4>,
+         <0 46 4>,
+         <0 47 4>,
+         <0 48 4>;
+  };
+
+  pinctrl_aop: pinctrl@2100f0000 {
+   compatible = "apple,s8000-pinctrl", "apple,pinctrl";
+   reg = <0x2 0x100f0000 0x0 0x100000>;
+
+   gpio-controller;
+   #gpio-cells = <2>;
+   gpio-ranges = <&pinctrl_aop 0 0 42>;
+   apple,npins = <42>;
+
+   interrupt-controller;
+   #interrupt-cells = <2>;
+   interrupt-parent = <&aic>;
+   interrupts = <0 113 4>,
+         <0 114 4>,
+         <0 115 4>,
+         <0 116 4>,
+         <0 117 4>,
+         <0 118 4>,
+         <0 119 4>;
+  };
+
+  wdt: watchdog@2102b0000 {
+   compatible = "apple,s8000-wdt", "apple,wdt";
+   reg = <0x2 0x102b0000 0x0 0x4000>;
+   clocks = <&clkref>;
+   interrupt-parent = <&aic>;
+   interrupts = <0 4 4>;
+  };
+ };
+
+ timer {
+  compatible = "arm,armv8-timer";
+  interrupt-parent = <&aic>;
+  interrupt-names = "phys", "virt";
+
+  interrupts = <1 2 4>,
+        <1 3 4>;
+ };
+};
+# 11 "arch/arm64/boot/dts/apple/s8003.dtsi" 2
+# 10 "arch/arm64/boot/dts/apple/s8003-j72t.dts" 2
+# 1 "arch/arm64/boot/dts/apple/s800x-ipad5.dtsi" 1
+
+
+
+
+
+
+
+# 1 "arch/arm64/boot/dts/apple/s800-0-3-common.dtsi" 1
+# 12 "arch/arm64/boot/dts/apple/s800-0-3-common.dtsi"
+/ {
+ aliases {
+  serial0 = &serial0;
+ };
+
+ chosen {
+  #address-cells = <2>;
+  #size-cells = <2>;
+  ranges;
+
+  stdout-path = "serial0";
+
+  framebuffer0: framebuffer@0 {
+   compatible = "apple,simple-framebuffer", "simple-framebuffer";
+   reg = <0 0 0 0>;
+
+   status = "disabled";
+  };
+ };
+
+ memory@800000000 {
+  device_type = "memory";
+  reg = <0x8 0 0 0>;
+ };
+
+ reserved-memory {
+  #address-cells = <2>;
+  #size-cells = <2>;
+  ranges;
+
+
+ };
+};
+
+&serial0 {
+ status = "okay";
+};
+# 9 "arch/arm64/boot/dts/apple/s800x-ipad5.dtsi" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/input/input.h" 1
+# 13 "./scripts/dtc/include-prefixes/dt-bindings/input/input.h"
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/input/linux-event-codes.h" 1
+# 14 "./scripts/dtc/include-prefixes/dt-bindings/input/input.h" 2
+# 10 "arch/arm64/boot/dts/apple/s800x-ipad5.dtsi" 2
+
+/ {
+ chassis-type = "tablet";
+
+ gpio-keys {
+  compatible = "gpio-keys";
+
+  button-home {
+   label = "Home Button";
+   gpios = <&pinctrl_ap 96 1>;
+   linux,code = <172>;
+   wakeup-source;
+  };
+
+  button-power {
+   label = "Power Button";
+   gpios = <&pinctrl_ap 97 1>;
+   linux,code = <116>;
+   wakeup-source;
+  };
+
+  button-voldown {
+   label = "Volume Down";
+   gpios = <&pinctrl_ap 143 1>;
+   linux,code = <114>;
+  };
+
+  button-volup {
+   label = "Volume Up";
+   gpios = <&pinctrl_ap 144 1>;
+   linux,code = <115>;
+  };
+ };
+};
+# 11 "arch/arm64/boot/dts/apple/s8003-j72t.dts" 2
+
+/ {
+ compatible = "apple,j72t", "apple,s8003", "apple,arm-platform";
+ model = "Apple iPad 5 (Cellular) (TSMC)";
+};

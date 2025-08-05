@@ -26,13 +26,6 @@
  * definition of synth info records
  */
 
-/* sysex buffer */
-struct seq_oss_synth_sysex {
-	int len;
-	int skip;
-	unsigned char buf[MAX_SYSEX_BUFLEN];
-};
-
 /* synth info */
 struct seq_oss_synth {
 	int seq_device;
@@ -107,7 +100,7 @@ snd_seq_oss_synth_probe(struct device *_dev)
 	snd_use_lock_init(&rec->use_lock);
 
 	/* copy and truncate the name of synth device */
-	strlcpy(rec->name, dev->name, sizeof(rec->name));
+	strscpy(rec->name, dev->name, sizeof(rec->name));
 
 	/* registration */
 	spin_lock_irqsave(&register_lock, flags);
@@ -318,8 +311,6 @@ snd_seq_oss_synth_cleanup(struct seq_oss_devinfo *dp)
 			}
 			snd_use_lock_free(&rec->use_lock);
 		}
-		kfree(info->sysex);
-		info->sysex = NULL;
 		kfree(info->ch);
 		info->ch = NULL;
 	}
@@ -395,8 +386,6 @@ snd_seq_oss_synth_reset(struct seq_oss_devinfo *dp, int dev)
 	info = get_synthinfo_nospec(dp, dev);
 	if (!info || !info->opened)
 		return;
-	if (info->sysex)
-		info->sysex->len = 0; /* reset sysex */
 	reset_channels(info);
 	if (info->is_midi) {
 		if (midi_synth_dev.opened <= 0)
@@ -408,8 +397,6 @@ snd_seq_oss_synth_reset(struct seq_oss_devinfo *dp, int dev)
 					  dp->file_mode) < 0) {
 			midi_synth_dev.opened--;
 			info->opened = 0;
-			kfree(info->sysex);
-			info->sysex = NULL;
 			kfree(info->ch);
 			info->ch = NULL;
 		}
@@ -451,7 +438,8 @@ snd_seq_oss_synth_load_patch(struct seq_oss_devinfo *dp, int dev, int fmt,
 
 	if (info->is_midi)
 		return 0;
-	if ((rec = get_synthdev(dp, dev)) == NULL)
+	rec = get_synthdev(dp, dev);
+	if (!rec)
 		return -ENXIO;
 
 	if (rec->oper.load_patch == NULL)
@@ -481,63 +469,26 @@ snd_seq_oss_synth_info(struct seq_oss_devinfo *dp, int dev)
 
 /*
  * receive OSS 6 byte sysex packet:
- * the full sysex message will be sent if it reaches to the end of data
- * (0xff).
+ * the event is filled and prepared for sending immediately
+ * (i.e. sysex messages are fragmented)
  */
 int
 snd_seq_oss_synth_sysex(struct seq_oss_devinfo *dp, int dev, unsigned char *buf, struct snd_seq_event *ev)
 {
-	int i, send;
-	unsigned char *dest;
-	struct seq_oss_synth_sysex *sysex;
-	struct seq_oss_synthinfo *info;
+	unsigned char *p;
+	int len = 6;
 
-	info = snd_seq_oss_synth_info(dp, dev);
-	if (!info)
-		return -ENXIO;
+	p = memchr(buf, 0xff, 6);
+	if (p)
+		len = p - buf + 1;
 
-	sysex = info->sysex;
-	if (sysex == NULL) {
-		sysex = kzalloc(sizeof(*sysex), GFP_KERNEL);
-		if (sysex == NULL)
-			return -ENOMEM;
-		info->sysex = sysex;
-	}
-
-	send = 0;
-	dest = sysex->buf + sysex->len;
-	/* copy 6 byte packet to the buffer */
-	for (i = 0; i < 6; i++) {
-		if (buf[i] == 0xff) {
-			send = 1;
-			break;
-		}
-		dest[i] = buf[i];
-		sysex->len++;
-		if (sysex->len >= MAX_SYSEX_BUFLEN) {
-			sysex->len = 0;
-			sysex->skip = 1;
-			break;
-		}
-	}
-
-	if (sysex->len && send) {
-		if (sysex->skip) {
-			sysex->skip = 0;
-			sysex->len = 0;
-			return -EINVAL; /* skip */
-		}
-		/* copy the data to event record and send it */
-		ev->flags = SNDRV_SEQ_EVENT_LENGTH_VARIABLE;
-		if (snd_seq_oss_synth_addr(dp, dev, ev))
-			return -EINVAL;
-		ev->data.ext.len = sysex->len;
-		ev->data.ext.ptr = sysex->buf;
-		sysex->len = 0;
-		return 0;
-	}
-
-	return -EINVAL; /* skip */
+	/* copy the data to event record and send it */
+	if (snd_seq_oss_synth_addr(dp, dev, ev))
+		return -EINVAL;
+	ev->flags = SNDRV_SEQ_EVENT_LENGTH_VARIABLE;
+	ev->data.ext.len = len;
+	ev->data.ext.ptr = buf;
+	return 0;
 }
 
 /*
@@ -569,7 +520,8 @@ snd_seq_oss_synth_ioctl(struct seq_oss_devinfo *dp, int dev, unsigned int cmd, u
 	info = get_synthinfo_nospec(dp, dev);
 	if (!info || info->is_midi)
 		return -ENXIO;
-	if ((rec = get_synthdev(dp, dev)) == NULL)
+	rec = get_synthdev(dp, dev);
+	if (!rec)
 		return -ENXIO;
 	if (rec->oper.ioctl == NULL)
 		rc = -ENXIO;
@@ -617,15 +569,16 @@ snd_seq_oss_synth_make_info(struct seq_oss_devinfo *dp, int dev, struct synth_in
 		inf->synth_subtype = 0;
 		inf->nr_voices = 16;
 		inf->device = dev;
-		strlcpy(inf->name, minf.name, sizeof(inf->name));
+		strscpy(inf->name, minf.name, sizeof(inf->name));
 	} else {
-		if ((rec = get_synthdev(dp, dev)) == NULL)
+		rec = get_synthdev(dp, dev);
+		if (!rec)
 			return -ENXIO;
 		inf->synth_type = rec->synth_type;
 		inf->synth_subtype = rec->synth_subtype;
 		inf->nr_voices = rec->nr_voices;
 		inf->device = dev;
-		strlcpy(inf->name, rec->name, sizeof(inf->name));
+		strscpy(inf->name, rec->name, sizeof(inf->name));
 		snd_use_lock_free(&rec->use_lock);
 	}
 	return 0;
@@ -655,8 +608,8 @@ snd_seq_oss_synth_info_read(struct snd_info_buffer *buf)
 			    rec->synth_type, rec->synth_subtype,
 			    rec->nr_voices);
 		snd_iprintf(buf, "  capabilities : ioctl %s / load_patch %s\n",
-			    enabled_str((long)rec->oper.ioctl),
-			    enabled_str((long)rec->oper.load_patch));
+			    str_enabled_disabled((long)rec->oper.ioctl),
+			    str_enabled_disabled((long)rec->oper.load_patch));
 		snd_use_lock_free(&rec->use_lock);
 	}
 }

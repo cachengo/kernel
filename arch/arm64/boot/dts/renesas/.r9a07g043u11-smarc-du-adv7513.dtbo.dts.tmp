@@ -1,0 +1,130 @@
+# 0 "arch/arm64/boot/dts/renesas/r9a07g043u11-smarc-du-adv7513.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/renesas/r9a07g043u11-smarc-du-adv7513.dtso"
+# 9 "arch/arm64/boot/dts/renesas/r9a07g043u11-smarc-du-adv7513.dtso"
+/dts-v1/;
+/plugin/;
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/pinctrl/rzg2l-pinctrl.h" 1
+# 13 "arch/arm64/boot/dts/renesas/r9a07g043u11-smarc-du-adv7513.dtso" 2
+
+
+# 1 "arch/arm64/boot/dts/renesas/rz-smarc-du-adv7513.dtsi" 1
+# 9 "arch/arm64/boot/dts/renesas/rz-smarc-du-adv7513.dtsi"
+&{/} {
+ hdmi-out {
+  compatible = "hdmi-connector";
+  type = "d";
+
+  port {
+   hdmi_con_out: endpoint {
+    remote-endpoint = <&adv7513_out>;
+   };
+  };
+ };
+};
+
+&du {
+ pinctrl-0 = <&du_pins>;
+ pinctrl-names = "default";
+
+ status = "okay";
+
+ ports {
+  port@0 {
+   du_out_rgb: endpoint {
+    remote-endpoint = <&adv7513_in>;
+   };
+  };
+ };
+};
+
+&i2c1 {
+ #address-cells = <1>;
+ #size-cells = <0>;
+
+ adv7513: adv7513@39 {
+  compatible = "adi,adv7513";
+  reg = <0x39>;
+
+  adi,input-depth = <8>;
+  adi,input-colorspace = "rgb";
+  adi,input-clock = "1x";
+
+  avdd-supply = <&reg_1p8v>;
+  dvdd-supply = <&reg_1p8v>;
+  pvdd-supply = <&reg_1p8v>;
+  dvdd-3v-supply = <&reg_3p3v>;
+  bgvdd-supply = <&reg_1p8v>;
+
+  ports {
+   #address-cells = <1>;
+   #size-cells = <0>;
+
+   port@0 {
+    reg = <0>;
+
+    adv7513_in: endpoint {
+     remote-endpoint = <&du_out_rgb>;
+    };
+   };
+
+   port@1 {
+    reg = <1>;
+
+    adv7513_out: endpoint {
+     remote-endpoint = <&hdmi_con_out>;
+    };
+   };
+  };
+ };
+};
+# 16 "arch/arm64/boot/dts/renesas/r9a07g043u11-smarc-du-adv7513.dtso" 2
+
+&pinctrl {
+ du_pins: du {
+  data {
+   pinmux = <((11) * 8 + (2) | ((6) << 16))>,
+     <((13) * 8 + (1) | ((6) << 16))>,
+     <((13) * 8 + (0) | ((6) << 16))>,
+     <((13) * 8 + (4) | ((6) << 16))>,
+     <((13) * 8 + (3) | ((6) << 16))>,
+     <((12) * 8 + (1) | ((6) << 16))>,
+     <((13) * 8 + (2) | ((6) << 16))>,
+     <((14) * 8 + (0) | ((6) << 16))>,
+     <((14) * 8 + (2) | ((6) << 16))>,
+     <((14) * 8 + (1) | ((6) << 16))>,
+     <((16) * 8 + (0) | ((6) << 16))>,
+     <((15) * 8 + (0) | ((6) << 16))>,
+     <((16) * 8 + (1) | ((6) << 16))>,
+     <((15) * 8 + (1) | ((6) << 16))>,
+     <((15) * 8 + (3) | ((6) << 16))>,
+     <((18) * 8 + (0) | ((6) << 16))>,
+     <((15) * 8 + (2) | ((6) << 16))>,
+     <((17) * 8 + (0) | ((6) << 16))>,
+     <((17) * 8 + (2) | ((6) << 16))>,
+     <((17) * 8 + (1) | ((6) << 16))>,
+     <((18) * 8 + (1) | ((6) << 16))>,
+     <((18) * 8 + (2) | ((6) << 16))>,
+     <((17) * 8 + (3) | ((6) << 16))>,
+     <((18) * 8 + (3) | ((6) << 16))>;
+   drive-strength = <2>;
+  };
+
+  sync {
+   pinmux = <((11) * 8 + (0) | ((6) << 16))>,
+     <((12) * 8 + (0) | ((6) << 16))>;
+   drive-strength = <2>;
+  };
+
+  de {
+   pinmux = <((11) * 8 + (1) | ((6) << 16))>;
+   drive-strength = <2>;
+  };
+
+  clk {
+   pinmux = <((11) * 8 + (3) | ((6) << 16))>;
+  };
+ };
+};

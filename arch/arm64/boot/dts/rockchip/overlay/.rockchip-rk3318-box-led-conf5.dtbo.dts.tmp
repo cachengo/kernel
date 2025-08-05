@@ -1,0 +1,99 @@
+# 0 "arch/arm64/boot/dts/rockchip/overlay/rockchip-rk3318-box-led-conf5.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/rockchip/overlay/rockchip-rk3318-box-led-conf5.dtso"
+/dts-v1/;
+/plugin/;
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h" 1
+# 5 "arch/arm64/boot/dts/rockchip/overlay/rockchip-rk3318-box-led-conf5.dtso" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/input/input.h" 1
+# 13 "./scripts/dtc/include-prefixes/dt-bindings/input/input.h"
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/input/linux-event-codes.h" 1
+# 14 "./scripts/dtc/include-prefixes/dt-bindings/input/input.h" 2
+# 6 "arch/arm64/boot/dts/rockchip/overlay/rockchip-rk3318-box-led-conf5.dtso" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/pinctrl/rockchip.h" 1
+# 7 "arch/arm64/boot/dts/rockchip/overlay/rockchip-rk3318-box-led-conf5.dtso" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/leds/common.h" 1
+# 8 "arch/arm64/boot/dts/rockchip/overlay/rockchip-rk3318-box-led-conf5.dtso" 2
+
+
+
+
+
+&gpio_led {
+
+ working {
+  gpios = <&gpio2 23 0>;
+  linux,default-trigger = "timer";
+ };
+
+};
+
+&{/} {
+
+ i2c_aux_display: i2c-aux-display {
+
+  compatible = "i2c-gpio";
+  sda-gpios = <&gpio2 21 (0|(2 | 4))>;
+  scl-gpios = <&gpio2 22 (0|(2 | 4))>;
+  i2c-gpio,delay-us = <2>;
+  i2c-gpio,sda-output-only;
+  i2c-gpio,scl-output-only;
+  #address-cells = <1>;
+  #size-cells = <0>;
+
+  aux-display-controller@24 {
+   compatible = "fdhisi,fd6551";
+   reg = <0x24>;
+
+   tm16xx,digits = [04 03 02 01];
+   tm16xx,segment-mapping = [00 01 02 03 04 05 06];
+
+   #address-cells = <2>;
+   #size-cells = <0>;
+
+   led@0,0 {
+    reg = <0 0>;
+    function = "alarm";
+   };
+
+   led@0,1 {
+    reg = <0 1>;
+    function = "usb";
+    linux,default-trigger = "usb-host";
+   };
+
+   led@0,2 {
+    reg = <0 2>;
+    function = "pause";
+    linux,default-trigger = "mmc2";
+   };
+
+   led@0,3 {
+    reg = <0 3>;
+    function = "play";
+    linux,default-trigger = "mmc0";
+   };
+
+   led@0,4 {
+    reg = <0 4>;
+    function = "colon";
+   };
+
+   led@0,5 {
+    reg = <0 5>;
+    function = "lan";
+    linux,default-trigger = "stmmac-0:00:link";
+   };
+
+   led@0,6 {
+    reg = <0 6>;
+    function = "wlan";
+    linux,default-trigger = "mmc1";
+   };
+
+  };
+ };
+
+};

@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/broadcom/stingray/dtbs-list := {   echo arch/arm64/boot/dts/broadcom/stingray/bcm958742k.dtb;   echo arch/arm64/boot/dts/broadcom/stingray/bcm958742t.dtb;   echo arch/arm64/boot/dts/broadcom/stingray/bcm958802a802x.dtb; :; } > arch/arm64/boot/dts/broadcom/stingray/dtbs-list

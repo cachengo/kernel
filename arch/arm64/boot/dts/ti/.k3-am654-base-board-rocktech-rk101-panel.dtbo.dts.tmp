@@ -1,0 +1,70 @@
+# 0 "arch/arm64/boot/dts/ti/k3-am654-base-board-rocktech-rk101-panel.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/ti/k3-am654-base-board-rocktech-rk101-panel.dtso"
+# 10 "arch/arm64/boot/dts/ti/k3-am654-base-board-rocktech-rk101-panel.dtso"
+/dts-v1/;
+/plugin/;
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/pwm/pwm.h" 1
+# 14 "arch/arm64/boot/dts/ti/k3-am654-base-board-rocktech-rk101-panel.dtso" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h" 1
+# 15 "arch/arm64/boot/dts/ti/k3-am654-base-board-rocktech-rk101-panel.dtso" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h" 1
+# 16 "arch/arm64/boot/dts/ti/k3-am654-base-board-rocktech-rk101-panel.dtso" 2
+
+&{/} {
+ display0 {
+  compatible = "rocktech,rk101ii01d-ct";
+  backlight = <&lcd_bl>;
+  enable-gpios = <&pca9555 8 0>;
+  port {
+   lcd_in0: endpoint {
+    remote-endpoint = <&oldi_out0>;
+   };
+  };
+ };
+
+ lcd_bl: backlight {
+  compatible = "pwm-backlight";
+  pwms = <&ecap0 0 50000 (1 << 0)>;
+  brightness-levels =
+   <0 32 64 96 128 160 192 224 255>;
+  default-brightness-level = <8>;
+ };
+};
+
+&dss {
+ status = "okay";
+};
+
+&dss_ports {
+ #address-cells = <1>;
+ #size-cells = <0>;
+
+ port@0 {
+  reg = <0>;
+
+  oldi_out0: endpoint {
+   remote-endpoint = <&lcd_in0>;
+  };
+ };
+};
+
+&main_i2c1 {
+ #address-cells = <1>;
+ #size-cells = <0>;
+
+ touchscreen@14 {
+  compatible = "goodix,gt928";
+  reg = <0x14>;
+
+  interrupt-parent = <&pca9554>;
+  interrupts = <3 2>;
+  touchscreen-size-x = <1280>;
+  touchscreen-size-y = <800>;
+
+  reset-gpios = <&pca9555 9 0>;
+  irq-gpios = <&pca9554 3 0>;
+ };
+};

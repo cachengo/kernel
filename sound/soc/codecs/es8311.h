@@ -1,69 +1,162 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+/* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * ES8311.h  --  ES8311 ALSA SoC Audio Codec
+ * es8311.c -- es8311 ALSA SoC audio driver
  *
- * Authors:
+ * Copyright (C) 2024 Matteo Martelli <matteomartelli3@gmail.com>
  *
- * Based on ES8374.h by David Yang
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
+ * Author: Matteo Martelli <matteomartelli3@gmail.com>
  */
 
 #ifndef _ES8311_H
 #define _ES8311_H
 
-/*
- * ES8311_REGISTER NAME_REG_REGISTER ADDRESS
- */
-#define ES8311_RESET_REG00			0x00  /*reset digital,csm,clock manager etc.*/
+#include <linux/bitops.h>
 
-/*
- * Clock Scheme Register definition
- */
-#define ES8311_CLK_MANAGER_REG01		0x01 /* select clk src for mclk, enable clock for codec */
-#define ES8311_CLK_MANAGER_REG02		0x02 /* clk divider and clk multiplier */
-#define ES8311_CLK_MANAGER_REG03		0x03 /* adc fsmode and osr  */
-#define ES8311_CLK_MANAGER_REG04		0x04 /* dac osr */
-#define ES8311_CLK_MANAGER_REG05		0x05 /* clk divier for adc and dac */
-#define ES8311_CLK_MANAGER_REG06		0x06 /* bclk inverter and divider */
-#define ES8311_CLK_MANAGER_REG07		0x07 /* tri-state, lrck divider */
-#define ES8311_CLK_MANAGER_REG08		0x08 /* lrck divider */
-#define ES8311_SDPIN_REG09			0x09 /* dac serial digital port */
-#define ES8311_SDPOUT_REG0A			0x0A /* adc serial digital port */
-#define ES8311_SYSTEM_REG0B			0x0B /* system */
-#define ES8311_SYSTEM_REG0C			0x0C /* system */
-#define ES8311_SYSTEM_REG0D			0x0D /* system, power up/down */
-#define ES8311_SYSTEM_REG0E			0x0E /* system, power up/down */
-#define ES8311_SYSTEM_REG0F			0x0F /* system, low power */
-#define ES8311_SYSTEM_REG10			0x10 /* system */
-#define ES8311_SYSTEM_REG11			0x11 /* system */
-#define ES8311_SYSTEM_REG12			0x12 /* system, Enable DAC */
-#define ES8311_SYSTEM_REG13			0x13 /* system */
-#define ES8311_SYSTEM_REG14			0x14 /* system, select DMIC, select analog pga gain */
-#define ES8311_ADC_REG15			0x15 /* ADC, adc ramp rate, dmic sense */
-#define ES8311_ADC_REG16			0x16 /* ADC */
-#define ES8311_ADC_REG17			0x17 /* ADC, volume */
-#define ES8311_ADC_REG18			0x18 /* ADC, alc enable and winsize */
-#define ES8311_ADC_REG19			0x19 /* ADC, alc maxlevel */
-#define ES8311_ADC_REG1A			0x1A /* ADC, alc automute */
-#define ES8311_ADC_REG1B			0x1B /* ADC, alc automute, adc hpf s1 */
-#define ES8311_ADC_REG1C			0x1C /* ADC, equalizer, hpf s2 */
-#define ES8311_DAC_REG31			0x31 /* DAC, mute */
-#define ES8311_DAC_REG32			0x32 /* DAC, volume */
-#define ES8311_DAC_REG33			0x33 /* DAC, offset */
-#define ES8311_DAC_REG34			0x34 /* DAC, drc enable, drc winsize */
-#define ES8311_DAC_REG35			0x35 /* DAC, drc maxlevel, minilevel */
-#define ES8311_DAC_REG37			0x37 /* DAC, ramprate */
-#define ES8311_GPIO_REG44			0x44 /* GPIO, dac2adc for test */
-#define ES8311_GP_REG45				0x45 /* GP CONTROL */
-#define ES8311_I2C_REGFA			0xFA /* I2C_RETIME and INI_REG */
-#define ES8311_CHD1_REGFD			0xFD /* CHIP ID1 */
-#define ES8311_CHD2_REGFE			0xFE /* CHIP ID2 */
-#define ES8311_CHVER_REGFF			0xFF /* VERSION */
-#define ES8311_CHD1_REGFD			0xFD /* CHIP ID1 */
+#define ES8311_RESET 0x00
+#define ES8311_RESET_CSM_ON BIT(7)
+#define ES8311_RESET_MSC BIT(6)
+#define ES8311_RESET_RST_MASK GENMASK(4, 0)
 
-#define ES8311_MAX_REGISTER			0xFF
+/* Clock Manager Registers */
+#define ES8311_CLKMGR1 0x01
+#define ES8311_CLKMGR1_MCLK_SEL BIT(7)
+#define ES8311_CLKMGR1_MCLK_ON BIT(5)
+#define ES8311_CLKMGR1_BCLK_ON BIT(4)
+#define ES8311_CLKMGR1_CLKADC_ON_SHIFT 3
+#define ES8311_CLKMGR1_CLKDAC_ON_SHIFT 2
+#define ES8311_CLKMGR1_ANACLKADC_ON_SHIFT 1
+#define ES8311_CLKMGR1_ANACLKDAC_ON_SHIFT 0
+#define ES8311_CLKMGR2 0x02
+#define ES8311_CLKMGR2_DIV_PRE_MASK GENMASK(7, 5)
+#define ES8311_CLKMGR2_DIV_PRE_SHIFT 5
+#define ES8311_CLKMGR2_DIV_PRE_MAX 0x07
+#define ES8311_CLKMGR2_MULT_PRE_MASK GENMASK(4, 3)
+#define ES8311_CLKMGR2_MULT_PRE_SHIFT 3
+#define ES8311_CLKMGR3 0x03
+#define ES8311_CLKMGR4 0x04
+#define ES8311_CLKMGR5 0x05
+#define ES8311_CLKMGR5_ADC_DIV_MASK GENMASK(7, 4)
+#define ES8311_CLKMGR5_ADC_DIV_SHIFT 4
+#define ES8311_CLKMGR5_DAC_DIV_MASK GENMASK(3, 0)
+#define ES8311_CLKMGR5_DAC_DIV_SHIFT 0
+#define ES8311_CLKMGR6 0x06
+#define ES8311_CLKMGR6_BCLK_INV BIT(5)
+#define ES8311_CLKMGR6_DIV_BCLK_MASK GENMASK(4, 0)
+#define ES8311_CLKMGR7 0x07
+#define ES8311_CLKMGR7_LRCLK_DIV_H_MASK GENMASK(3, 0)
+#define ES8311_CLKMGR8 0x08
+#define ES8311_CLKMGR_LRCLK_DIV_MAX 0x0FFF
+
+/* SDP Mode Registers */
+#define ES8311_SDP_IN 0x09
+#define ES8311_SDP_IN_SEL_SHIFT 7
+#define ES8311_SDP_OUT 0x0A
+/* Following values are the same for both SPD_IN and SDP_OUT */
+#define ES8311_SDP_MUTE_SHIFT 6
+#define ES8311_SDP_LRP BIT(5)
+#define ES8311_SDP_WL_MASK GENMASK(4, 2)
+#define ES8311_SDP_WL_SHIFT 2
+#define ES8311_SDP_WL_24 0x00
+#define ES8311_SDP_WL_20 0x01
+#define ES8311_SDP_WL_18 0x02
+#define ES8311_SDP_WL_16 0x03
+#define ES8311_SDP_WL_32 0x04
+#define ES8311_SDP_FMT_MASK GENMASK(1, 0)
+#define ES8311_SDP_FMT_I2S 0x00
+#define ES8311_SDP_FMT_LEFT_J 0x01
+#define ES8311_SDP_FMT_DSP 0x03
+
+/* System registers */
+#define ES8311_SYS1 0x0B
+#define ES8311_SYS2 0x0C
+#define ES8311_SYS3 0x0D
+#define ES8311_SYS3_PDN_ANA_SHIFT 7
+#define ES8311_SYS3_PDN_IBIASGEN_SHIFT 6
+#define ES8311_SYS3_PDN_ADCBIASGEN_SHIFT 5
+#define ES8311_SYS3_PDN_ADCVREFGEN_SHIFT 4
+#define ES8311_SYS3_PDN_DACVREFGEN_SHIFT 3
+#define ES8311_SYS3_PDN_VREF_SHIFT 2
+#define ES8311_SYS3_PDN_VMIDSEL_MASK GENMASK(1, 0)
+#define ES8311_SYS3_PDN_VMIDSEL_POWER_DOWN 0
+#define ES8311_SYS3_PDN_VMIDSEL_STARTUP_NORMAL_SPEED 1
+#define ES8311_SYS3_PDN_VMIDSEL_NORMAL_OPERATION 2
+#define ES8311_SYS3_PDN_VMIDSEL_STARTUP_FAST_SPEED 3
+#define ES8311_SYS4 0x0E
+#define ES8311_SYS4_PDN_PGA_SHIFT 6
+#define ES8311_SYS4_PDN_MOD_SHIFT 5
+#define ES8311_SYS5 0x0F
+#define ES8311_SYS6 0x10
+#define ES8311_SYS7 0x11
+#define ES8311_SYS8 0x12
+#define ES8311_SYS8_PDN_DAC_SHIFT 1
+#define ES8311_SYS9 0x13
+#define ES8311_SYS9_HPSW_SHIFT 4
+#define ES8311_SYS10 0x14
+#define ES8311_SYS10_DMIC_ON_SHIFT 6
+#define ES8311_SYS10_LINESEL_SHIFT 4
+#define ES8311_SYS10_PGAGAIN_SHIFT 0
+#define ES8311_SYS10_PGAGAIN_MAX 0x0A
+
+/* ADC Registers*/
+#define ES8311_ADC1 0x15
+#define ES8311_ADC1_RAMPRATE_SHIFT 4
+#define ES8311_ADC2 0x16
+#define ES8311_ADC2_INV_SHIFT 4
+#define ES8311_ADC2_SCALE_SHIFT 0
+#define ES8311_ADC2_SCALE_MAX 0x07
+#define ES8311_ADC3 0x17
+#define ES8311_ADC3_VOLUME_SHIFT 0
+#define ES8311_ADC3_VOLUME_MAX 0xFF
+#define ES8311_ADC4 0x18
+#define ES8311_ADC4_ALC_EN_SHIFT 7
+#define ES8311_ADC4_AUTOMUTE_EN_SHIFT 6
+#define ES8311_ADC4_ALC_WINSIZE_SHIFT 0
+#define ES8311_ADC5 0x19
+#define ES8311_ADC5_ALC_MAXLEVEL_SHIFT 4
+#define ES8311_ADC5_ALC_MAXLEVEL_MAX 0x0F
+#define ES8311_ADC5_ALC_MINLEVEL_SHIFT 0
+#define ES8311_ADC5_ALC_MINLEVEL_MAX 0x0F
+#define ES8311_ADC6 0x1A
+#define ES8311_ADC6_AUTOMUTE_WS_SHIFT 4
+#define ES8311_ADC6_AUTOMUTE_NG_SHIFT 0
+#define ES8311_ADC6_AUTOMUTE_NG_MAX 0x0F
+
+#define ES8311_ADC7 0x1B
+#define ES8311_ADC7_AUTOMUTE_VOL_SHIFT 5
+#define ES8311_ADC7_AUTOMUTE_VOL_MAX 0x07
+#define ES8311_ADC8 0x1C
+#define ES8311_ADC8_EQBYPASS_SHIFT 6
+#define ES8311_ADC8_HPF_SHIFT 5
+
+/* DAC Registers */
+#define ES8311_DAC1 0x31
+#define ES8311_DAC1_DAC_DSMMUTE BIT(6)
+#define ES8311_DAC1_DAC_DEMMUTE BIT(5)
+#define ES8311_DAC2 0x32
+#define ES8311_DAC2_VOLUME_MAX 0xFF
+#define ES8311_DAC3 0x33
+#define ES8311_DAC4 0x34
+#define ES8311_DAC4_DRC_EN_SHIFT 7
+#define ES8311_DAC4_DRC_WINSIZE_SHIFT 0
+#define ES8311_DAC5 0x35
+#define ES8311_DAC5_DRC_MAXLEVEL_SHIFT 4
+#define ES8311_DAC5_DRC_MAXLEVEL_MAX 0x0F
+#define ES8311_DAC5_DRC_MINLEVEL_SHIFT 0
+#define ES8311_DAC5_DRC_MINLEVEL_MAX 0x0F
+#define ES8311_DAC6 0x37
+#define ES8311_DAC6_RAMPRATE_SHIFT 4
+#define ES8311_DAC6_EQBYPASS_SHIFT 3
+
+/* GPIO Registers */
+#define ES8311_GPIO 0x44
+#define ES8311_GPIO_ADC2DAC_SEL_SHIFT 7
+#define ES8311_GPIO_ADCDAT_SEL_SHIFT 4
+
+/* Chip Info Registers */
+#define ES8311_CHIPID1 0xFD /* 0x83 */
+#define ES8311_CHIPID2 0xFE /* 0x11 */
+#define ES8311_CHIPVER 0xFF
+
+#define ES8311_REG_MAX 0xFF
 
 #endif

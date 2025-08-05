@@ -1,51 +1,68 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
-/*
- * Copyright (c) 2023 Rockchip Electronics Co., Ltd.
- * Copyright (c) 2023 Radxa Limited
- *
- */
 
 /dts-v1/;
 
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/leds/common.h>
-#include <dt-bindings/pwm/pwm.h>
-#include <dt-bindings/pinctrl/rockchip.h>
-#include <dt-bindings/input/rk-input.h>
-#include <dt-bindings/display/drm_mipi_dsi.h>
-#include <dt-bindings/display/rockchip_vop.h>
-#include <dt-bindings/sensor-dev.h>
-#include "dt-bindings/usb/pd.h"
+#include <dt-bindings/soc/rockchip,vop2.h>
 #include "rk3588.dtsi"
-#include "rk3588-rk806-single.dtsi"
-#include "rk3588-linux.dtsi"
 
 / {
-	model = "Radxa ZAKU2 V1.2";
+    model = "Radxa ZAKU2 V1.2";
 	compatible = "radxa,zaku2", "rockchip,rk3588";
 
-	/delete-node/ chosen;
-
-	vcc12v_dcin: vcc12v-dcin {
-		compatible = "regulator-fixed";
-		regulator-name = "vcc12v_dcin";
-		regulator-always-on;
-		regulator-boot-on;
-		regulator-min-microvolt = <12000000>;
-		regulator-max-microvolt = <12000000>;
+    aliases {
+		mmc0 = &sdhci;
+		mmc1 = &sdmmc;
+		mmc2 = &sdio;
 	};
 
-	vcc5v0_sys: vcc5v0-sys {
+    chosen {
+		stdout-path = "serial2:1500000n8";
+	};
+    
+    // Double check
+    vcc3v3_pcie2x1l0: regulator-vcc3v3-pcie2x1l0 {
+		compatible = "regulator-fixed"; 				
+		enable-active-high;										
+		gpios = <&gpio1 RK_PD2 GPIO_ACTIVE_HIGH>;							
+		pinctrl-names = "default";						// ?	
+		pinctrl-0 = <&pcie2_0_vcc3v3_en>;				// +-			
+		regulator-name = "vcc3v3_pcie2x1l0";						
+		regulator-always-on;							
+		regulator-boot-on;								
+		regulator-min-microvolt = <3300000>;							
+		regulator-max-microvolt = <3300000>;								
+		startup-delay-us = <50000>;								
+		vin-supply = <&vcc5v0_sys>;							
+	};
+
+    // Doubble check
+    vcc3v3_pcie30: regulator-vcc3v3-pcie30 {
+		compatible = "regulator-fixed";
+		enable-active-high;
+		gpios = <&gpio1 RK_PA4 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pcie3_vcc3v3_en>;
+		regulator-name = "vcc3v3_pcie30";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		startup-delay-us = <5000>;
+		vin-supply = <&vcc5v0_sys>;
+		regulator-boot-on;   // New flag for rock-5b
+		regulator-always-on; // New flag for rock-5b
+	};
+
+    vcc5v0_sys: regulator-vcc5v0-sys {
 		compatible = "regulator-fixed";
 		regulator-name = "vcc5v0_sys";
 		regulator-always-on;
 		regulator-boot-on;
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
-		vin-supply = <&vcc12v_dcin>;
 	};
 
-	vcc_1v1_nldo_s3: vcc-1v1-nldo-s3 {
+    vcc_1v1_nldo_s3: regulator-vcc-1v1-nldo-s3 {
 		compatible = "regulator-fixed";
 		regulator-name = "vcc_1v1_nldo_s3";
 		regulator-always-on;
@@ -55,46 +72,27 @@
 		vin-supply = <&vcc5v0_sys>;
 	};
 
-	vcc3v3_pcie30x2: vcc3v3-pcie2x1l2 {
-		compatible = "regulator-fixed";
-		regulator-name = "vcc3v3_pcie2x1l2";
-		regulator-min-microvolt = <3300000>;
+    // M2 slot x2
+    // Add new nodes vcc3v3_pcie30x2: vcc3v3-pcie2x1l2
+    // ++
+    vcc3v3_pcie30x2: regulator-vcc3v3-pcie2x1l2 {
+        compatible = "regulator-fixed";
+        regulator-name = "vcc3v3_pcie2x1l2";
+        regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
-		enable-active-high;
-		regulator-boot-on;
-		regulator-always-on;
-		gpios = <&gpio1 RK_PB7 GPIO_ACTIVE_HIGH>;
-		startup-delay-us = <5000>;
-		vin-supply = <&vcc5v0_sys>;
-	};
+        enable-active-high;
+        regulator-boot-on;
+        regulator-always-on;
+        gpios = <&gpio1 RK_PB7 GPIO_ACTIVE_HIGH>;
+        startup-delay-us = <5000>;
+        vin-supply = <&vcc5v0_sys>;
+        // pinctrl-names = "default";     // ??? new fields
+		// pinctrl-0 = <&pci3x2_vcc3v3_en>;// ??? new fields
+    };
 
-	vcc3v3_pcie2x1l0: vcc3v3-pcie2x1l0 {
-		compatible = "regulator-fixed";
-		regulator-name = "vcc3v3_pcie2x1l0";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		enable-active-high;
-		regulator-boot-on;
-		regulator-always-on;
-		gpios = <&gpio1 RK_PD2 GPIO_ACTIVE_HIGH>;
-		startup-delay-us = <50000>;
-		vin-supply = <&vcc5v0_sys>;
-	};
-
-	vcc3v3_pcie30: vcc3v3-pcie30 {
-		compatible = "regulator-fixed";
-		regulator-name = "vcc3v3_pcie30";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		enable-active-high;
-		regulator-boot-on;
-		regulator-always-on;
-		gpios = <&gpio1 RK_PA4 GPIO_ACTIVE_HIGH>;
-		startup-delay-us = <5000>;
-		vin-supply = <&vcc5v0_sys>;
-	};
-
-	leds {
+    // Add new LEDs for ZAKU2
+    // ++
+    leds {
 		compatible = "gpio-leds";
 		pinctrl-names = "default";
 		pinctrl-0 = <&led_rgb_b>;
@@ -108,27 +106,54 @@
 	};
 };
 
-&cpu_l0 {
-	cpu-supply = <&vdd_cpu_lit_s0>;
-	mem-supply = <&vdd_cpu_lit_mem_s0>;
+&combphy0_ps {
+	status = "okay";
 };
 
+&combphy1_ps {
+	status = "okay";
+};
+
+// Double check cpu, but I think it same
 &cpu_b0 {
 	cpu-supply = <&vdd_cpu_big0_s0>;
-	mem-supply = <&vdd_cpu_big0_mem_s0>;
+};
+
+&cpu_b1 {
+	cpu-supply = <&vdd_cpu_big0_s0>;
 };
 
 &cpu_b2 {
 	cpu-supply = <&vdd_cpu_big1_s0>;
-	mem-supply = <&vdd_cpu_big1_mem_s0>;
 };
 
+&cpu_b3 {
+	cpu-supply = <&vdd_cpu_big1_s0>;
+};
+
+&cpu_l0 {
+	cpu-supply = <&vdd_cpu_lit_s0>;
+};
+
+&cpu_l1 {
+	cpu-supply = <&vdd_cpu_lit_s0>;
+};
+
+&cpu_l2 {
+	cpu-supply = <&vdd_cpu_lit_s0>;
+};
+
+&cpu_l3 {
+	cpu-supply = <&vdd_cpu_lit_s0>;
+};
+
+// ++
 &gpu {
 	mali-supply = <&vdd_gpu_s0>;
-	mem-supply = <&vdd_gpu_mem_s0>;
 	status = "okay";
 };
-//Ethernet gmac1
+
+// Add &mdio1
 &mdio1 {
 	rgmii_phy1: phy@1 {
 		compatible = "ethernet-phy-ieee802.3-c22";
@@ -136,6 +161,8 @@
 	};
 };
 
+// Add &gmac1
+// Reveiw it
 &gmac1 {
 	status = "okay";
 	phy-mode = "rgmii";
@@ -159,238 +186,565 @@
 	phy-handle = <&rgmii_phy1>;
 };
 
-&rknpu {
-	rknpu-supply = <&vdd_npu_s0>;
-	mem-supply = <&vdd_npu_mem_s0>;
-	status = "okay";
+// Add &usb2phy0_grf
+
+// Add &pcie3x2
+// ++
+&pcie3x2 {
+    // pinctrl-names = "default";
+    // pinctrl-0 = <&pcie3_rst>; // reveiw it
+    reset-gpios = <&gpio4 RK_PB0 GPIO_ACTIVE_HIGH>;
+	vpcie3v3-supply = <&vcc3v3_pcie30x2>;
+    status = "okay";
 };
 
-&rknpu_mmu {
-	status = "okay";
-};
+// Not exist in new kernel
+// Can work without it?
+// ??? rknpu
+// ??? rknpu_mmu
+// ??? dmc
+// ??? dfi
+// ??? i2c1
+// ??? iep
+// ??? iep_mmu
+// ??? jpegd
+// ??? jpegd_mmu
+// ??? jpege_ccu
+// ??? jpege0
+// ??? jpege0_mmu
+// ??? jpege1
+// ??? jpege1_mmu
+// ??? jpege2
+// ??? jpege2_mmu
+// ??? jpege3
+// ??? jpege3_mmu
+// ??? vdpu
+// ??? vdpu_mmu
+// ??? mpp_srv
+// ??? rga3_core0
+// ??? rga3_0_mmu
+// ??? rga3_core1
+// ??? rga3_1_mmu
+// ??? rga2
+// ??? rkvdec_ccu
+// ??? rkvdec0
+// ??? rkvdec0_mmu
+// ??? rkvdec1
+// ??? rkvdec1_mmu
+// ??? rkvenc_ccu
+// ??? rkvenc0
+// ??? rkvenc0_mmu
+// ??? rkvenc1
+// ??? rkvenc1_mmu
+// ??? u2phy0
+// ??? u2phy0_otg
+// ??? usbdp_phy0
+// ??? usbdp_phy0_u3
+// ??? usbdrd3_0
+// ??? usbdrd_dwc3_0
+// ??? usbhost3_0
+// ??? usbhost_dwc3_0
+// ??? spdif_tx2
 
+
+// Double check it 
+// Will check
 &i2c0 {
-	status = "okay";
 	pinctrl-names = "default";
 	pinctrl-0 = <&i2c0m2_xfer>;
+	status = "okay";
 
-	vdd_cpu_big0_s0: vdd_cpu_big0_mem_s0: rk8602@42 {
+	vdd_cpu_big0_s0: regulator@42 {
 		compatible = "rockchip,rk8602";
 		reg = <0x42>;
-		vin-supply = <&vcc5v0_sys>;
-		regulator-compatible = "rk860x-reg";
+		fcs,suspend-voltage-selector = <1>;
 		regulator-name = "vdd_cpu_big0_s0";
+		regulator-always-on;
+		regulator-boot-on;
 		regulator-min-microvolt = <550000>;
 		regulator-max-microvolt = <1050000>;
 		regulator-ramp-delay = <2300>;
-		rockchip,suspend-voltage-selector = <1>;
-		regulator-boot-on;
-		regulator-always-on;
+		vin-supply = <&vcc5v0_sys>;
+
 		regulator-state-mem {
 			regulator-off-in-suspend;
 		};
 	};
 
-	vdd_cpu_big1_s0: vdd_cpu_big1_mem_s0: rk8603@43 {
-		compatible = "rockchip,rk8603";
+	vdd_cpu_big1_s0: regulator@43 {
+		compatible = "rockchip,rk8603", "rockchip,rk8602";
 		reg = <0x43>;
-		vin-supply = <&vcc5v0_sys>;
-		regulator-compatible = "rk860x-reg";
+		fcs,suspend-voltage-selector = <1>;
 		regulator-name = "vdd_cpu_big1_s0";
+		regulator-always-on;
+		regulator-boot-on;
 		regulator-min-microvolt = <550000>;
 		regulator-max-microvolt = <1050000>;
 		regulator-ramp-delay = <2300>;
-		rockchip,suspend-voltage-selector = <1>;
-		regulator-boot-on;
-		regulator-always-on;
-		regulator-state-mem {
-			regulator-off-in-suspend;
-		};
-	};
-};
-
-&dmc {
-	center-supply = <&vdd_ddr_s0>;
-	mem-supply = <&vdd_log_s0>;
-	status = "okay";
-};
-
-&dfi {
-	status = "okay";
-};
-
-&i2c1 {
-	status = "okay";
-	pinctrl-names = "default";
-	pinctrl-0 = <&i2c1m2_xfer>;
-
-	vdd_npu_s0: vdd_npu_mem_s0: rk8602@42 {
-		compatible = "rockchip,rk8602";
-		reg = <0x42>;
 		vin-supply = <&vcc5v0_sys>;
-		regulator-compatible = "rk860x-reg";
-		regulator-name = "vdd_npu_s0";
-		regulator-min-microvolt = <550000>;
-		regulator-max-microvolt = <950000>;
-		regulator-ramp-delay = <2300>;
-		rockchip,suspend-voltage-selector = <1>;
-		regulator-boot-on;
-		regulator-always-on;
+
 		regulator-state-mem {
 			regulator-off-in-suspend;
 		};
 	};
 };
 
-&iep {
+// Check pinctrl-0 field that it cofigure 
+&pcie2x1l0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pcie2_0_rst>; // check
+	reset-gpios = <&gpio4 RK_PA5 GPIO_ACTIVE_HIGH>;
+	vpcie3v3-supply = <&vcc3v3_pcie2x1l0>;
 	status = "okay";
 };
 
-&iep_mmu {
+// Check
+// ???
+&pcie30phy {
+    // FIX IT
+	// rockchip,pcie30-phymode = <PHY_MODE_PCIE_NANBNB>; // New property for ZAKU2, double check it
+    // Nee
 	status = "okay";
 };
 
-&jpegd {
+// Diff node check comment property
+&pcie3x4 {
+	num-lanes = <2>; // New property for ZAKU2, double check it
+	pinctrl-names = "default";
+	pinctrl-0 = <&pcie3_rst>;
+	reset-gpios = <&gpio4 RK_PB6 GPIO_ACTIVE_HIGH>;
+	vpcie3v3-supply = <&vcc3v3_pcie30>;
 	status = "okay";
 };
 
-&jpegd_mmu {
-	status = "okay";
+&pinctrl {
+
+    // Double check RGB LED
+    leds {
+        led_rgb_b: led-rgb-b {
+			rockchip,pins = <4 RK_PC1 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+    pcie2 {
+		// Using in ZAKU2 for pcie2x1l0 mod for kernel 6.14
+		pcie2_0_rst: pcie2-0-rst {
+			rockchip,pins = <4 RK_PA5 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+
+		// Using in ZAKU2 for vcc3v3_pcie2x1l2 mod for kernel 6.14
+		pcie2_0_vcc3v3_en: pcie2-0-vcc-en {
+			rockchip,pins = <1 RK_PD2 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+    };
+
+    pcie3 {
+		// Using in ZAKU2 for pcie3x4 mod for kernel 6.14
+		pcie3_rst: pcie3-rst {
+			rockchip,pins = <4 RK_PB6 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+
+		// // Using in ZAKU2 for vcc3v3_pcie30 mod for kernel 6.14
+		pcie3_vcc3v3_en: pcie3-vcc3v3-en {
+			rockchip,pins = <1 RK_PA4 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+
+        // pci3x2_vcc3v3_en: pcie3-vcc3v3-en {
+        //     rockchip,pins = <1 RK_PB7 RK_FUNC_GPIO &pcfg_pull_none>;
+        // };
+	};
 };
 
-&jpege_ccu {
-	status = "okay";
-};
-
-&jpege0 {
-	status = "okay";
-};
-
-&jpege0_mmu {
-	status = "okay";
-};
-
-&jpege1 {
-	status = "okay";
-};
-
-&jpege1_mmu {
-	status = "okay";
-};
-
-&jpege2 {
-	status = "okay";
-};
-
-&jpege2_mmu {
-	status = "okay";
-};
-
-&jpege3 {
-	status = "okay";
-};
-
-&jpege3_mmu {
-	status = "okay";
-};
-
-&vdpu {
-	status = "okay";
-};
-
-&vdpu_mmu {
-	status = "okay";
-};
-
-&mpp_srv {
-	status = "okay";
-};
-
-&rga3_core0 {
-	status = "okay";
-};
-
-&rga3_0_mmu {
-	status = "okay";
-};
-
-&rga3_core1 {
-	status = "okay";
-};
-
-&rga3_1_mmu {
-	status = "okay";
-};
-
-&rga2 {
-	status = "okay";
-};
-
-&rkvdec_ccu {
-	status = "okay";
-};
-
-&rkvdec0 {
-	status = "okay";
-};
-
-&rkvdec0_mmu {
-	status = "okay";
-};
-
-&rkvdec1 {
-	status = "okay";
-};
-
-&rkvdec1_mmu {
-	status = "okay";
-};
-
-&rkvenc_ccu {
-	status = "okay";
-};
-
-&rkvenc0 {
-	status = "okay";
-};
-
-&rkvenc0_mmu {
-	status = "okay";
-};
-
-&rkvenc1 {
-	status = "okay";
-};
-
-&rkvenc1_mmu {
-	status = "okay";
-};
 
 &saradc {
-	status = "okay";
 	vref-supply = <&avcc_1v8_s0>;
+	status = "okay";
 };
 
+// But need double check commented property
 &sdhci {
 	bus-width = <8>;
 	no-sdio;
 	no-sd;
 	non-removable;
-	max-frequency = <200000000>;
+	max-frequency = <150000000>;
 	mmc-hs400-1_8v;
-	//mmc-hs400-enhanced-strobe;
+	// mmc-hs400-enhanced-strobe; // Commented property on ZAKU2
 	status = "okay";
+};
+
+// Double check it
+&sfc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&fspim1_pins>; // differenert for ZAKU2 (was <fspim2_pins> for 5b)
+	status = "okay";
+
+	flash@0 {
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <104000000>;
+		spi-rx-bus-width = <4>;
+		spi-tx-bus-width = <1>;
+	};
 };
 
 &tsadc {
 	status = "okay";
 };
 
-&usb2phy0_grf {
+&spi2 {
+	status = "okay";
+	assigned-clocks = <&cru CLK_SPI2>;
+	assigned-clock-rates = <200000000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&spi2m2_cs0 &spi2m2_pins>;
+	num-cs = <1>;
+
+	pmic@0 {
+		compatible = "rockchip,rk806";
+		spi-max-frequency = <1000000>;
+		reg = <0x0>;
+
+		interrupt-parent = <&gpio0>;
+		interrupts = <7 IRQ_TYPE_LEVEL_LOW>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&pmic_pins>, <&rk806_dvs1_null>,
+			    <&rk806_dvs2_null>, <&rk806_dvs3_null>;
+
+		system-power-controller;
+
+		vcc1-supply = <&vcc5v0_sys>;
+		vcc2-supply = <&vcc5v0_sys>;
+		vcc3-supply = <&vcc5v0_sys>;
+		vcc4-supply = <&vcc5v0_sys>;
+		vcc5-supply = <&vcc5v0_sys>;
+		vcc6-supply = <&vcc5v0_sys>;
+		vcc7-supply = <&vcc5v0_sys>;
+		vcc8-supply = <&vcc5v0_sys>;
+		vcc9-supply = <&vcc5v0_sys>;
+		vcc10-supply = <&vcc5v0_sys>;
+		vcc11-supply = <&vcc_2v0_pldo_s3>;
+		vcc12-supply = <&vcc5v0_sys>;
+		vcc13-supply = <&vcc_1v1_nldo_s3>;
+		vcc14-supply = <&vcc_1v1_nldo_s3>;
+		vcca-supply = <&vcc5v0_sys>;
+
+		gpio-controller;
+		#gpio-cells = <2>;
+
+		// New
+		rk806_dvs1_null: dvs1-null-pins {
+			pins = "gpio_pwrctrl1";
+			function = "pin_fun0";
+		};
+
+		// new
+		rk806_dvs2_null: dvs2-null-pins {
+			pins = "gpio_pwrctrl2";
+			function = "pin_fun0";
+		};
+
+		// new
+		rk806_dvs3_null: dvs3-null-pins {
+			pins = "gpio_pwrctrl3";
+			function = "pin_fun0";
+		};
+
+		// Deffenitions for nodes so won't delete it
+		regulators {
+			// For GPU same for ZAKU2
+			vdd_gpu_s0: vdd_gpu_mem_s0: dcdc-reg1 {
+				regulator-boot-on;
+				regulator-min-microvolt = <550000>;
+				regulator-max-microvolt = <950000>;
+				regulator-ramp-delay = <12500>;
+				regulator-name = "vdd_gpu_s0";
+				regulator-enable-ramp-delay = <400>;
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+			};
+
+			// for cpu_l0 same for ZAKU2
+			vdd_cpu_lit_s0: vdd_cpu_lit_mem_s0: dcdc-reg2 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <550000>;
+				regulator-max-microvolt = <950000>;
+				regulator-ramp-delay = <12500>;
+				regulator-name = "vdd_cpu_lit_s0";
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+			};
+
+			// for dmc not exist in new kernel
+			// Using in ZAKU2
+			// but with diff node with default parameters
+			vdd_log_s0: dcdc-reg3 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <675000>;
+				regulator-max-microvolt = <750000>;
+				regulator-ramp-delay = <12500>;
+				regulator-name = "vdd_log_s0";
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+					regulator-suspend-microvolt = <750000>;
+				};
+			};
+
+			// NEw node
+			vdd_vdenc_s0: vdd_vdenc_mem_s0: dcdc-reg4 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <550000>;
+				regulator-max-microvolt = <950000>;
+				regulator-ramp-delay = <12500>;
+				regulator-name = "vdd_vdenc_s0";
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+			};
+
+			// New but same
+			vdd_ddr_s0: dcdc-reg5 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <675000>;
+				regulator-max-microvolt = <900000>;
+				regulator-ramp-delay = <12500>;
+				regulator-name = "vdd_ddr_s0";
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+					regulator-suspend-microvolt = <850000>;
+				};
+			};
+
+			// new
+			vdd2_ddr_s3: dcdc-reg6 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-name = "vdd2_ddr_s3";
+
+				regulator-state-mem {
+					regulator-on-in-suspend;
+				};
+			};
+
+			// NEw
+			vcc_2v0_pldo_s3: dcdc-reg7 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <2000000>;
+				regulator-max-microvolt = <2000000>;
+				regulator-ramp-delay = <12500>;
+				regulator-name = "vdd_2v0_pldo_s3";
+
+				regulator-state-mem {
+					regulator-on-in-suspend;
+					regulator-suspend-microvolt = <2000000>;
+				};
+			};
+
+			// Not using in Zaku2
+			// But new node
+			// ???
+			// Check new dtsi
+			vcc_3v3_s3: dcdc-reg8 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-name = "vcc_3v3_s3";
+
+				regulator-state-mem {
+					regulator-on-in-suspend;
+					regulator-suspend-microvolt = <3300000>;
+				};
+			};
+
+			// NEw
+			vddq_ddr_s0: dcdc-reg9 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-name = "vddq_ddr_s0";
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+			};
+
+			// New
+			vcc_1v8_s3: dcdc-reg10 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <1800000>;
+				regulator-name = "vcc_1v8_s3";
+
+				regulator-state-mem {
+					regulator-on-in-suspend;
+					regulator-suspend-microvolt = <1800000>;
+				};
+			};
+
+			// Using in ZAKU2
+			avcc_1v8_s0: pldo-reg1 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <1800000>;
+				regulator-name = "avcc_1v8_s0";
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+			};
+
+			vcc_1v8_s0: pldo-reg2 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <1800000>;
+				regulator-name = "vcc_1v8_s0";
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+					regulator-suspend-microvolt = <1800000>;
+				};
+			};
+
+			avdd_1v2_s0: pldo-reg3 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <1200000>;
+				regulator-max-microvolt = <1200000>;
+				regulator-name = "avdd_1v2_s0";
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+			};
+
+			vcc_3v3_s0: pldo-reg4 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-ramp-delay = <12500>;
+				regulator-name = "vcc_3v3_s0";
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+			};
+
+			vccio_sd_s0: pldo-reg5 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-ramp-delay = <12500>;
+				regulator-name = "vccio_sd_s0";
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+			};
+
+			pldo6_s3: pldo-reg6 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <1800000>;
+				regulator-name = "pldo6_s3";
+
+				regulator-state-mem {
+					regulator-on-in-suspend;
+					regulator-suspend-microvolt = <1800000>;
+				};
+			};
+
+			vdd_0v75_s3: nldo-reg1 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <750000>;
+				regulator-max-microvolt = <750000>;
+				regulator-name = "vdd_0v75_s3";
+
+				regulator-state-mem {
+					regulator-on-in-suspend;
+					regulator-suspend-microvolt = <750000>;
+				};
+			};
+
+			// Nit using in zaku2
+			vdd_ddr_pll_s0: nldo-reg2 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <850000>;
+				regulator-max-microvolt = <850000>;
+				regulator-name = "vdd_ddr_pll_s0";
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+					regulator-suspend-microvolt = <850000>;
+				};
+			};
+
+			avdd_0v75_s0: nldo-reg3 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <750000>;
+				regulator-max-microvolt = <750000>;
+				regulator-name = "avdd_0v75_s0";
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+			};
+
+			vdd_0v85_s0: nldo-reg4 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <850000>;
+				regulator-max-microvolt = <850000>;
+				regulator-name = "vdd_0v85_s0";
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+			};
+
+			vdd_0v75_s0: nldo-reg5 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <750000>;
+				regulator-max-microvolt = <750000>;
+				regulator-name = "vdd_0v75_s0";
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+			};
+		};
+	};
+};
+
+&tsadc {
 	status = "okay";
 };
 
-&u2phy0 {
+// Double check it new node from 6.14
+&uart2 {
+	pinctrl-0 = <&uart2m0_xfer>;
 	status = "okay";
 };
 
@@ -398,13 +752,9 @@
 	status = "okay";
 };
 
-&u2phy0_otg {
-	rockchip,sel-pipe-phystatus;
-	rockchip,typec-vbus-det;
-	status = "okay";
-};
-
 &u2phy2_host {
+	/* connected to USB hub, which is powered by vcc5v0_sys */
+	phy-supply = <&vcc5v0_sys>;
 	status = "okay";
 };
 
@@ -416,103 +766,15 @@
 	status = "okay";
 };
 
-&usbdp_phy0 {
+// New node maybe need uncomment it
+// Double check it
+&usb_host1_xhci {
+	dr_mode = "host";
 	status = "okay";
 };
 
-&usbdp_phy0_u3 {
+// New node maybe need uncomment it
+// Double check it
+&usb_host2_xhci {
 	status = "okay";
-};
-
-&usbdrd3_0 {
-	status = "okay";
-};
-
-&usbdrd_dwc3_0 {
-	dr_mode = "otg";
-	extcon = <&u2phy0>;
-	status = "okay";
-};
-
-&usbhost3_0 {
-	status = "okay";
-};
-
-&usbhost_dwc3_0 {
-	status = "okay";
-};
-
-&spdif_tx2 {
-	status = "okay";
-};
-
-&combphy0_ps {
-	status = "okay";
-};
-
-&combphy1_ps {
-	status = "okay";
-};
-
-&pcie2x1l0 {
-	reset-gpios = <&gpio4 RK_PA5 GPIO_ACTIVE_HIGH>;
-	vpcie3v3-supply = <&vcc3v3_pcie2x1l0>;
-	status = "okay";
-};
-
-&pcie30phy {
-	rockchip,pcie30-phymode = <PHY_MODE_PCIE_NANBNB>;
-	status = "okay";
-};
-
-&pcie3x2 {
-	reset-gpios = <&gpio4 RK_PB0 GPIO_ACTIVE_HIGH>;
-	vpcie3v3-supply = <&vcc3v3_pcie30x2>;
-	status = "okay";
-};
-
-&pcie3x4 {
-	num-lanes = <2>;
-	reset-gpios = <&gpio4 RK_PB6 GPIO_ACTIVE_HIGH>;
-	vpcie3v3-supply = <&vcc3v3_pcie30>;
-	status = "okay";
-};
-
-&sfc {
-	status = "okay";
-	max-freq = <50000000>;
-	#address-cells = <1>;
-	#size-cells = <0>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&fspim1_pins>;
-
-	spi_flash: spi-flash@0 {
-		#address-cells = <1>;
-		#size-cells = <0>;
-		compatible = "jedec,spi-nor";
-		reg = <0x0>;
-		spi-max-frequency = <50000000>;
-		spi-tx-bus-width = <1>;
-		spi-rx-bus-width = <4>;
-		status = "okay";
-
-		partitions {
-			compatible = "fixed-partitions";
-			#address-cells = <1>;
-			#size-cells = <1>;
-
-			loader@0 {
-				label = "loader";
-				reg = <0x0 0x1000000>;
-			};
-		};
-	};
-};
-
-&pinctrl {
-	leds {
-		led_rgb_b: led-rgb-b {
-			rockchip,pins = <4 RK_PC1 RK_FUNC_GPIO &pcfg_pull_none>;
-		};
-	};
 };

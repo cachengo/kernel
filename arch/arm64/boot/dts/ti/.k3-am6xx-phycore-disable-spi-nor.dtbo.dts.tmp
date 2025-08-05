@@ -1,0 +1,11 @@
+# 0 "arch/arm64/boot/dts/ti/k3-am6xx-phycore-disable-spi-nor.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/ti/k3-am6xx-phycore-disable-spi-nor.dtso"
+# 10 "arch/arm64/boot/dts/ti/k3-am6xx-phycore-disable-spi-nor.dtso"
+/dts-v1/;
+/plugin/;
+
+&serial_flash {
+ status = "disabled";
+};

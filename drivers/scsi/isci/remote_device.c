@@ -288,8 +288,9 @@ enum sci_status isci_remote_device_terminate_requests(
 * isci_remote_device_not_ready() - This function is called by the ihost when
 *    the remote device is not ready. We mark the isci device as ready (not
 *    "ready_for_io") and signal the waiting proccess.
-* @isci_host: This parameter specifies the isci host object.
-* @isci_device: This parameter specifies the remote device
+* @ihost: This parameter specifies the isci host object.
+* @idev: This parameter specifies the remote device
+* @reason: Reason to switch on
 *
 * sci_lock is held on entrance to this function.
 */
@@ -419,21 +420,6 @@ enum sci_status sci_remote_device_reset(struct isci_remote_device *idev)
 		sci_change_state(sm, SCI_DEV_RESETTING);
 		return SCI_SUCCESS;
 	}
-}
-
-enum sci_status sci_remote_device_reset_complete(struct isci_remote_device *idev)
-{
-	struct sci_base_state_machine *sm = &idev->sm;
-	enum sci_remote_device_states state = sm->current_state_id;
-
-	if (state != SCI_DEV_RESETTING) {
-		dev_warn(scirdev_to_dev(idev), "%s: in wrong state: %s\n",
-			 __func__, dev_state_name(state));
-		return SCI_FAILURE_INVALID_STATE;
-	}
-
-	sci_change_state(sm, SCI_DEV_READY);
-	return SCI_SUCCESS;
 }
 
 enum sci_status sci_remote_device_frame_handler(struct isci_remote_device *idev,
@@ -1000,7 +986,7 @@ static void sci_remote_device_initial_state_enter(struct sci_base_state_machine 
 
 /**
  * sci_remote_device_destruct() - free remote node context and destruct
- * @remote_device: This parameter specifies the remote device to be destructed.
+ * @idev: This parameter specifies the remote device to be destructed.
  *
  * Remote device objects are a limited resource.  As such, they must be
  * protected.  Thus calls to construct and destruct are mutually exclusive and
@@ -1236,8 +1222,8 @@ static const struct sci_base_state sci_remote_device_state_table[] = {
 
 /**
  * sci_remote_device_construct() - common construction
- * @sci_port: SAS/SATA port through which this device is accessed.
- * @sci_dev: remote device to construct
+ * @iport: SAS/SATA port through which this device is accessed.
+ * @idev: remote device to construct
  *
  * This routine just performs benign initialization and does not
  * allocate the remote_node_context which is left to
@@ -1256,7 +1242,7 @@ static void sci_remote_device_construct(struct isci_port *iport,
 					       SCIC_SDS_REMOTE_NODE_CONTEXT_INVALID_INDEX);
 }
 
-/**
+/*
  * sci_remote_device_da_construct() - construct direct attached device.
  *
  * The information (e.g. IAF, Signature FIS, etc.) necessary to build
@@ -1294,7 +1280,7 @@ static enum sci_status sci_remote_device_da_construct(struct isci_port *iport,
 	return SCI_SUCCESS;
 }
 
-/**
+/*
  * sci_remote_device_ea_construct() - construct expander attached device
  *
  * Remote node context(s) is/are a global resource allocated by this
@@ -1384,7 +1370,7 @@ static bool isci_remote_device_test_resume_done(
 	return done;
 }
 
-void isci_remote_device_wait_for_resume_from_abort(
+static void isci_remote_device_wait_for_resume_from_abort(
 	struct isci_host *ihost,
 	struct isci_remote_device *idev)
 {
@@ -1439,7 +1425,7 @@ enum sci_status isci_remote_device_resume_from_abort(
  * sci_remote_device_start() - This method will start the supplied remote
  *    device.  This method enables normal IO requests to flow through to the
  *    remote device.
- * @remote_device: This parameter specifies the device to be started.
+ * @idev: This parameter specifies the device to be started.
  * @timeout: This parameter specifies the number of milliseconds in which the
  *    start operation should complete.
  *
@@ -1501,10 +1487,11 @@ static enum sci_status isci_remote_device_construct(struct isci_port *iport,
 }
 
 /**
+ * isci_remote_device_alloc()
  * This function builds the isci_remote_device when a libsas dev_found message
  *    is received.
- * @isci_host: This parameter specifies the isci host object.
- * @port: This parameter specifies the isci_port connected to this device.
+ * @ihost: This parameter specifies the isci host object.
+ * @iport: This parameter specifies the isci_port connected to this device.
  *
  * pointer to new isci_remote_device.
  */
@@ -1549,8 +1536,8 @@ void isci_remote_device_release(struct kref *kref)
 /**
  * isci_remote_device_stop() - This function is called internally to stop the
  *    remote device.
- * @isci_host: This parameter specifies the isci host object.
- * @isci_device: This parameter specifies the remote device.
+ * @ihost: This parameter specifies the isci host object.
+ * @idev: This parameter specifies the remote device.
  *
  * The status of the ihost request to stop.
  */
@@ -1585,8 +1572,7 @@ enum sci_status isci_remote_device_stop(struct isci_host *ihost, struct isci_rem
 /**
  * isci_remote_device_gone() - This function is called by libsas when a domain
  *    device is removed.
- * @domain_device: This parameter specifies the libsas domain device.
- *
+ * @dev: This parameter specifies the libsas domain device.
  */
 void isci_remote_device_gone(struct domain_device *dev)
 {
@@ -1606,7 +1592,7 @@ void isci_remote_device_gone(struct domain_device *dev)
  *    device is discovered. A remote device object is created and started. the
  *    function then sleeps until the sci core device started message is
  *    received.
- * @domain_device: This parameter specifies the libsas domain device.
+ * @dev: This parameter specifies the libsas domain device.
  *
  * status, zero indicates success.
  */
@@ -1691,20 +1677,6 @@ enum sci_status sci_remote_device_abort_requests_pending_abort(
 	struct isci_remote_device *idev)
 {
 	return sci_remote_device_terminate_reqs_checkabort(idev, 1);
-}
-
-enum sci_status isci_remote_device_reset_complete(
-	struct isci_host *ihost,
-	struct isci_remote_device *idev)
-{
-	unsigned long flags;
-	enum sci_status status;
-
-	spin_lock_irqsave(&ihost->scic_lock, flags);
-	status = sci_remote_device_reset_complete(idev);
-	spin_unlock_irqrestore(&ihost->scic_lock, flags);
-
-	return status;
 }
 
 void isci_dev_set_hang_detection_timeout(

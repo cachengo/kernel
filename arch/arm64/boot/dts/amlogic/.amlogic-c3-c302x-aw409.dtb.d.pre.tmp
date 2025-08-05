@@ -1,0 +1,12 @@
+amlogic-c3-c302x-aw409.o: \
+ arch/arm64/boot/dts/amlogic/amlogic-c3-c302x-aw409.dts \
+ arch/arm64/boot/dts/amlogic/amlogic-c3.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ scripts/dtc/include-prefixes/dt-bindings/reset/amlogic,c3-reset.h \
+ scripts/dtc/include-prefixes/dt-bindings/clock/amlogic,c3-pll-clkc.h \
+ scripts/dtc/include-prefixes/dt-bindings/clock/amlogic,c3-scmi-clkc.h \
+ scripts/dtc/include-prefixes/dt-bindings/clock/amlogic,c3-peripherals-clkc.h \
+ scripts/dtc/include-prefixes/dt-bindings/power/amlogic,c3-pwrc.h \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/amlogic-c3-gpio.h

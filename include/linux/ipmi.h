@@ -72,6 +72,11 @@ struct ipmi_recv_msg {
 	unsigned char   msg_data[IPMI_MAX_MSG_LENGTH];
 };
 
+#define INIT_IPMI_RECV_MSG(done_handler) \
+{					\
+	.done = done_handler		\
+}
+
 /* Allocate and free the receive message. */
 void ipmi_free_recv_msg(struct ipmi_recv_msg *msg);
 
@@ -121,7 +126,7 @@ int ipmi_create_user(unsigned int          if_num,
  * the users before you destroy the callback structures, it should be
  * safe, too.
  */
-int ipmi_destroy_user(struct ipmi_user *user);
+void ipmi_destroy_user(struct ipmi_user *user);
 
 /* Get the IPMI version of the BMC we are talking to. */
 int ipmi_get_version(struct ipmi_user *user,
@@ -334,5 +339,8 @@ struct ipmi_smi_info {
 extern int ipmi_get_smi_info(int if_num, struct ipmi_smi_info *data);
 
 #define GET_DEVICE_ID_MAX_RETRY		5
+
+/* Helper function for computing the IPMB checksum of some data. */
+unsigned char ipmb_checksum(unsigned char *data, int size);
 
 #endif /* __LINUX_IPMI_H */

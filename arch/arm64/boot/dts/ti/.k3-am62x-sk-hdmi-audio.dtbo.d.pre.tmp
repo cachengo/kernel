@@ -1,0 +1,2 @@
+k3-am62x-sk-hdmi-audio.o: \
+ arch/arm64/boot/dts/ti/k3-am62x-sk-hdmi-audio.dtso

@@ -36,28 +36,42 @@ static ssize_t efivarfs_file_write(struct file *file,
 	if (IS_ERR(data))
 		return PTR_ERR(data);
 
+	inode_lock(inode);
+	if (var->removed) {
+		/*
+		 * file got removed; don't allow a set.  Caused by an
+		 * unsuccessful create or successful delete write
+		 * racing with us.
+		 */
+		bytes = -EIO;
+		goto out;
+	}
+
 	bytes = efivar_entry_set_get_size(var, attributes, &datasize,
 					  data, &set);
-	if (!set && bytes) {
+	if (!set) {
 		if (bytes == -ENOENT)
 			bytes = -EIO;
 		goto out;
 	}
 
 	if (bytes == -ENOENT) {
-		drop_nlink(inode);
-		d_delete(file->f_path.dentry);
-		dput(file->f_path.dentry);
+		/*
+		 * FIXME: temporary workaround for fwupdate, signal
+		 * failed write with a 1 to keep created but not
+		 * written files
+		 */
+		i_size_write(inode, 1);
 	} else {
-		inode_lock(inode);
 		i_size_write(inode, datasize + sizeof(attributes));
-		inode->i_mtime = current_time(inode);
-		inode_unlock(inode);
+		inode_set_mtime_to_ts(inode, inode_set_ctime_current(inode));
 	}
 
 	bytes = count;
 
 out:
+	inode_unlock(inode);
+
 	kfree(data);
 
 	return bytes;
@@ -106,86 +120,37 @@ out_free:
 	return size;
 }
 
-static inline unsigned int efivarfs_getflags(struct inode *inode)
+static int efivarfs_file_release(struct inode *inode, struct file *file)
 {
-	unsigned int i_flags;
-	unsigned int flags = 0;
+	struct efivar_entry *var = inode->i_private;
 
-	i_flags = inode->i_flags;
-	if (i_flags & S_IMMUTABLE)
-		flags |= FS_IMMUTABLE_FL;
-	return flags;
-}
+	inode_lock(inode);
+	/* FIXME: temporary work around for fwupdate */
+	var->removed = (--var->open_count == 0 && i_size_read(inode) == 1);
+	inode_unlock(inode);
 
-static int
-efivarfs_ioc_getxflags(struct file *file, void __user *arg)
-{
-	struct inode *inode = file->f_mapping->host;
-	unsigned int flags = efivarfs_getflags(inode);
+	if (var->removed)
+		simple_recursive_removal(file->f_path.dentry, NULL);
 
-	if (copy_to_user(arg, &flags, sizeof(flags)))
-		return -EFAULT;
 	return 0;
 }
 
-static int
-efivarfs_ioc_setxflags(struct file *file, void __user *arg)
+static int efivarfs_file_open(struct inode *inode, struct file *file)
 {
-	struct inode *inode = file->f_mapping->host;
-	unsigned int flags;
-	unsigned int i_flags = 0;
-	unsigned int oldflags = efivarfs_getflags(inode);
-	int error;
+	struct efivar_entry *entry = inode->i_private;
 
-	if (!inode_owner_or_capable(inode))
-		return -EACCES;
-
-	if (copy_from_user(&flags, arg, sizeof(flags)))
-		return -EFAULT;
-
-	if (flags & ~FS_IMMUTABLE_FL)
-		return -EOPNOTSUPP;
-
-	if (flags & FS_IMMUTABLE_FL)
-		i_flags |= S_IMMUTABLE;
-
-
-	error = mnt_want_write_file(file);
-	if (error)
-		return error;
+	file->private_data = entry;
 
 	inode_lock(inode);
-
-	error = vfs_ioc_setflags_prepare(inode, oldflags, flags);
-	if (error)
-		goto out;
-
-	inode_set_flags(inode, i_flags, S_IMMUTABLE);
-out:
+	entry->open_count++;
 	inode_unlock(inode);
-	mnt_drop_write_file(file);
-	return error;
-}
 
-static long
-efivarfs_file_ioctl(struct file *file, unsigned int cmd, unsigned long p)
-{
-	void __user *arg = (void __user *)p;
-
-	switch (cmd) {
-	case FS_IOC_GETFLAGS:
-		return efivarfs_ioc_getxflags(file, arg);
-	case FS_IOC_SETFLAGS:
-		return efivarfs_ioc_setxflags(file, arg);
-	}
-
-	return -ENOTTY;
+	return 0;
 }
 
 const struct file_operations efivarfs_file_operations = {
-	.open	= simple_open,
-	.read	= efivarfs_file_read,
-	.write	= efivarfs_file_write,
-	.llseek	= no_llseek,
-	.unlocked_ioctl = efivarfs_file_ioctl,
+	.open		= efivarfs_file_open,
+	.read		= efivarfs_file_read,
+	.write		= efivarfs_file_write,
+	.release	= efivarfs_file_release,
 };

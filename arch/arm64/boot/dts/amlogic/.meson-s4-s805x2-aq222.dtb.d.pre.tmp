@@ -1,0 +1,11 @@
+meson-s4-s805x2-aq222.o: \
+ arch/arm64/boot/dts/amlogic/meson-s4-s805x2-aq222.dts \
+ arch/arm64/boot/dts/amlogic/meson-s4.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/meson-s4-gpio.h \
+ scripts/dtc/include-prefixes/dt-bindings/clock/amlogic,s4-pll-clkc.h \
+ scripts/dtc/include-prefixes/dt-bindings/clock/amlogic,s4-peripherals-clkc.h \
+ scripts/dtc/include-prefixes/dt-bindings/power/meson-s4-power.h \
+ scripts/dtc/include-prefixes/dt-bindings/reset/amlogic,meson-s4-reset.h

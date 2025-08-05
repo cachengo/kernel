@@ -1,0 +1,44 @@
+# 0 "arch/arm64/boot/dts/ti/k3-am6548-iot2050-advanced-m2-bkey-usb3.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/ti/k3-am6548-iot2050-advanced-m2-bkey-usb3.dtso"
+# 11 "arch/arm64/boot/dts/ti/k3-am6548-iot2050-advanced-m2-bkey-usb3.dtso"
+/dts-v1/;
+/plugin/;
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/phy/phy.h" 1
+# 15 "arch/arm64/boot/dts/ti/k3-am6548-iot2050-advanced-m2-bkey-usb3.dtso" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h" 1
+# 16 "arch/arm64/boot/dts/ti/k3-am6548-iot2050-advanced-m2-bkey-usb3.dtso" 2
+
+&serdes0 {
+ assigned-clock-parents = <&k3_clks 153 7>, <&k3_clks 153 4>;
+};
+
+&pcie0_rc {
+ status = "disabled";
+};
+
+&pcie1_rc {
+ pinctrl-names = "default";
+ pinctrl-0 = <&minipcie_pins_default>;
+
+ num-lanes = <1>;
+ phys = <&serdes1 2 0>;
+ phy-names = "pcie-phy0";
+ reset-gpios = <&wkup_gpio0 27 0>;
+ status = "okay";
+};
+
+&dwc3_0 {
+ assigned-clock-parents = <&k3_clks 151 4>,
+     <&k3_clks 151 8>;
+ phys = <&serdes0 4 0>;
+ phy-names = "usb3-phy";
+};
+
+&usb0 {
+ maximum-speed = "super-speed";
+ snps,dis-u1-entry-quirk;
+ snps,dis-u2-entry-quirk;
+};

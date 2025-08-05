@@ -1,0 +1,26 @@
+mt8186-corsola-rusty-sku196608.o: \
+ arch/arm64/boot/dts/mediatek/mt8186-corsola-rusty-sku196608.dts \
+ arch/arm64/boot/dts/mediatek/mt8186-corsola-steelix.dtsi \
+ arch/arm64/boot/dts/mediatek/mt8186-corsola.dtsi \
+ arch/arm64/boot/dts/mediatek/mt8186.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/clock/mt8186-clk.h \
+ scripts/dtc/include-prefixes/dt-bindings/gce/mt8186-gce.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h \
+ scripts/dtc/include-prefixes/dt-bindings/memory/mt8186-memory-port.h \
+ scripts/dtc/include-prefixes/dt-bindings/memory/mtk-memory-port.h \
+ scripts/dtc/include-prefixes/dt-bindings/pinctrl/mt8186-pinfunc.h \
+ scripts/dtc/include-prefixes/dt-bindings/pinctrl/mt65xx.h \
+ scripts/dtc/include-prefixes/dt-bindings/power/mt8186-power.h \
+ scripts/dtc/include-prefixes/dt-bindings/phy/phy.h \
+ scripts/dtc/include-prefixes/dt-bindings/reset/mt8186-resets.h \
+ scripts/dtc/include-prefixes/dt-bindings/thermal/thermal.h \
+ scripts/dtc/include-prefixes/dt-bindings/thermal/mediatek,lvts-thermal.h \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ scripts/dtc/include-prefixes/dt-bindings/input/input.h \
+ scripts/dtc/include-prefixes/dt-bindings/input/linux-event-codes.h \
+ scripts/dtc/include-prefixes/dt-bindings/input/gpio-keys.h \
+ scripts/dtc/include-prefixes/dt-bindings/regulator/mediatek,mt6397-regulator.h \
+ scripts/dtc/include-prefixes/arm/cros-ec-keyboard.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/input/cros-ec-keyboard.h \
+ scripts/dtc/include-prefixes/arm/cros-ec-sbs.dtsi

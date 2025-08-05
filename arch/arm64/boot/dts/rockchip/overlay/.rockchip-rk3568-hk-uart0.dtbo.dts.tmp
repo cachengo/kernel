@@ -1,0 +1,17 @@
+# 0 "arch/arm64/boot/dts/rockchip/overlay/rockchip-rk3568-hk-uart0.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/rockchip/overlay/rockchip-rk3568-hk-uart0.dtso"
+/dts-v1/;
+/plugin/;
+
+/ {
+ fragment@0 {
+
+  target = <&uart1>;
+
+  __overlay__ {
+   status = "okay";
+  };
+ };
+};

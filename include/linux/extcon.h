@@ -37,7 +37,6 @@
 /* USB external connector */
 #define EXTCON_USB		1
 #define EXTCON_USB_HOST		2
-#define EXTCON_USB_VBUS_EN	3
 
 /*
  * Charging external connector
@@ -77,6 +76,8 @@
 #define EXTCON_DISP_VGA		43	/* Video Graphics Array */
 #define EXTCON_DISP_DP		44	/* Display Port */
 #define EXTCON_DISP_HMD		45	/* Head-Mounted Display */
+#define EXTCON_DISP_CVBS	46	/* Composite Video Broadcast Signal */
+#define EXTCON_DISP_EDP		47	/* Embedded Display Port */
 
 /* Miscellaneous external connector */
 #define EXTCON_DOCK		60
@@ -297,7 +298,7 @@ static inline void devm_extcon_unregister_notifier_all(struct device *dev,
 
 static inline struct extcon_dev *extcon_get_extcon_dev(const char *extcon_name)
 {
-	return ERR_PTR(-ENODEV);
+	return NULL;
 }
 
 static inline struct extcon_dev *extcon_find_edev_by_node(struct device_node *node)
@@ -327,16 +328,4 @@ struct extcon_specific_cable_nb {
        struct extcon_dev *edev;
        unsigned long previous_value;
 };
-
-static inline int extcon_register_interest(struct extcon_specific_cable_nb *obj,
-				const char *extcon_name, const char *cable_name,
-				struct notifier_block *nb)
-{
-	return -EINVAL;
-}
-
-static inline int extcon_unregister_interest(struct extcon_specific_cable_nb *obj)
-{
-	return -EINVAL;
-}
 #endif /* __LINUX_EXTCON_H__ */

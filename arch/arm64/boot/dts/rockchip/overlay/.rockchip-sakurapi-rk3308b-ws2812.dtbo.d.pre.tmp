@@ -1,0 +1,2 @@
+rockchip-sakurapi-rk3308b-ws2812.o: \
+ arch/arm64/boot/dts/rockchip/overlay/rockchip-sakurapi-rk3308b-ws2812.dtso

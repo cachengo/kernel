@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/amazon/dtbs-list := {   echo arch/arm64/boot/dts/amazon/alpine-v2-evp.dtb;   echo arch/arm64/boot/dts/amazon/alpine-v3-evp.dtb; :; } > arch/arm64/boot/dts/amazon/dtbs-list

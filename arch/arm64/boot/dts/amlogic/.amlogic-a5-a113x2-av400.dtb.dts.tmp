@@ -1,0 +1,182 @@
+# 0 "arch/arm64/boot/dts/amlogic/amlogic-a5-a113x2-av400.dts"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/amlogic/amlogic-a5-a113x2-av400.dts"
+
+
+
+
+
+/dts-v1/;
+
+# 1 "arch/arm64/boot/dts/amlogic/amlogic-a5.dtsi" 1
+
+
+
+
+
+# 1 "arch/arm64/boot/dts/amlogic/amlogic-a4-common.dtsi" 1
+
+
+
+
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h" 1
+# 7 "arch/arm64/boot/dts/amlogic/amlogic-a4-common.dtsi" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h" 1
+# 8 "arch/arm64/boot/dts/amlogic/amlogic-a4-common.dtsi" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h" 1
+# 9 "arch/arm64/boot/dts/amlogic/amlogic-a4-common.dtsi" 2
+/ {
+ timer {
+  compatible = "arm,armv8-timer";
+  interrupts = <1 13 ((((1 << (4)) - 1) << 8) | 8)>,
+        <1 14 ((((1 << (4)) - 1) << 8) | 8)>,
+        <1 11 ((((1 << (4)) - 1) << 8) | 8)>,
+        <1 10 ((((1 << (4)) - 1) << 8) | 8)>;
+ };
+
+ psci {
+  compatible = "arm,psci-1.0";
+  method = "smc";
+ };
+
+ xtal: xtal-clk {
+  compatible = "fixed-clock";
+  clock-frequency = <24000000>;
+  clock-output-names = "xtal";
+  #clock-cells = <0>;
+ };
+
+ soc {
+  compatible = "simple-bus";
+  #address-cells = <2>;
+  #size-cells = <2>;
+  ranges;
+
+  gic: interrupt-controller@fff01000 {
+   compatible = "arm,gic-400";
+   reg = <0x0 0xfff01000 0 0x1000>,
+         <0x0 0xfff02000 0 0x2000>,
+         <0x0 0xfff04000 0 0x2000>,
+         <0x0 0xfff06000 0 0x2000>;
+   #interrupt-cells = <3>;
+   #address-cells = <0>;
+   interrupt-controller;
+   interrupts = <1 9 ((((1 << (4)) - 1) << 8) | 4)>;
+  };
+
+  apb: bus@fe000000 {
+   compatible = "simple-bus";
+   reg = <0x0 0xfe000000 0x0 0x480000>;
+   #address-cells = <2>;
+   #size-cells = <2>;
+   ranges = <0x0 0x0 0x0 0xfe000000 0x0 0x480000>;
+
+   watchdog@2100 {
+    compatible = "amlogic,a4-wdt", "amlogic,t7-wdt";
+    reg = <0x0 0x2100 0x0 0x10>;
+    clocks = <&xtal>;
+   };
+
+   uart_b: serial@7a000 {
+    compatible = "amlogic,a4-uart",
+          "amlogic,meson-s4-uart";
+    reg = <0x0 0x7a000 0x0 0x18>;
+    interrupts = <0 169 1>;
+    clocks = <&xtal>, <&xtal>, <&xtal>;
+    clock-names = "xtal", "pclk", "baud";
+    status = "disabled";
+   };
+
+   sec_ao: ao-secure@10220 {
+    compatible = "amlogic,a4-ao-secure",
+          "amlogic,meson-gx-ao-secure",
+          "syscon";
+    reg = <0x0 0x10220 0x0 0x140>;
+    amlogic,has-chip-id;
+   };
+  };
+ };
+};
+# 7 "arch/arm64/boot/dts/amlogic/amlogic-a5.dtsi" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/power/amlogic,a5-pwrc.h" 1
+# 8 "arch/arm64/boot/dts/amlogic/amlogic-a5.dtsi" 2
+/ {
+ cpus {
+  #address-cells = <2>;
+  #size-cells = <0>;
+
+  cpu0: cpu@0 {
+   device_type = "cpu";
+   compatible = "arm,cortex-a55";
+   reg = <0x0 0x0>;
+   enable-method = "psci";
+  };
+
+  cpu1: cpu@100 {
+   device_type = "cpu";
+   compatible = "arm,cortex-a55";
+   reg = <0x0 0x100>;
+   enable-method = "psci";
+  };
+
+  cpu2: cpu@200 {
+   device_type = "cpu";
+   compatible = "arm,cortex-a55";
+   reg = <0x0 0x200>;
+   enable-method = "psci";
+  };
+
+  cpu3: cpu@300 {
+   device_type = "cpu";
+   compatible = "arm,cortex-a55";
+   reg = <0x0 0x300>;
+   enable-method = "psci";
+  };
+ };
+
+ sm: secure-monitor {
+  compatible = "amlogic,meson-gxbb-sm";
+
+  pwrc: power-controller {
+   compatible = "amlogic,a5-pwrc";
+   #power-domain-cells = <1>;
+  };
+ };
+};
+# 9 "arch/arm64/boot/dts/amlogic/amlogic-a5-a113x2-av400.dts" 2
+
+/ {
+ model = "Amlogic A113X2 av400 Development Board";
+ compatible = "amlogic,av400", "amlogic,a5";
+ interrupt-parent = <&gic>;
+ #address-cells = <2>;
+ #size-cells = <2>;
+
+ aliases {
+  serial0 = &uart_b;
+ };
+
+ memory@0 {
+  device_type = "memory";
+  reg = <0x0 0x0 0x0 0x40000000>;
+ };
+
+ reserved-memory {
+  #address-cells = <2>;
+  #size-cells = <2>;
+  ranges;
+
+
+  secmon_reserved: secmon@5000000 {
+   compatible = "shared-dma-pool";
+   reg = <0x0 0x05000000 0x0 0xa00000>;
+   no-map;
+  };
+ };
+};
+
+&uart_b {
+ status = "okay";
+};

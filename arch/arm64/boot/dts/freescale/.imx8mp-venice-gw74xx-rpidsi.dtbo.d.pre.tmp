@@ -1,0 +1,2 @@
+imx8mp-venice-gw74xx-rpidsi.o: \
+ arch/arm64/boot/dts/freescale/imx8mp-venice-gw74xx-rpidsi.dtso

@@ -1,0 +1,7 @@
+mt7981b-xiaomi-ax3000t.o: \
+ arch/arm64/boot/dts/mediatek/mt7981b-xiaomi-ax3000t.dts \
+ arch/arm64/boot/dts/mediatek/mt7981b.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/clock/mediatek,mt7981-clk.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h \
+ scripts/dtc/include-prefixes/dt-bindings/reset/mt7986-resets.h

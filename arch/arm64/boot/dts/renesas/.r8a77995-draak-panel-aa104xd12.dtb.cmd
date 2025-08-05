@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/renesas/r8a77995-draak-panel-aa104xd12.dtb := ./scripts/dtc/fdtoverlay -o arch/arm64/boot/dts/renesas/r8a77995-draak-panel-aa104xd12.dtb -i arch/arm64/boot/dts/renesas/r8a77995-draak.dtb arch/arm64/boot/dts/renesas/draak-ebisu-panel-aa104xd12.dtbo 

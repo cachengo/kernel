@@ -1,0 +1,69 @@
+# 0 "arch/arm64/boot/dts/freescale/imx8mm-phygate-tauri-l-rs232-rs485.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/freescale/imx8mm-phygate-tauri-l-rs232-rs485.dtso"
+# 11 "arch/arm64/boot/dts/freescale/imx8mm-phygate-tauri-l-rs232-rs485.dtso"
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/clock/imx8mm-clock.h" 1
+# 12 "arch/arm64/boot/dts/freescale/imx8mm-phygate-tauri-l-rs232-rs485.dtso" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h" 1
+# 13 "arch/arm64/boot/dts/freescale/imx8mm-phygate-tauri-l-rs232-rs485.dtso" 2
+# 1 "arch/arm64/boot/dts/freescale/imx8mm-pinfunc.h" 1
+# 14 "arch/arm64/boot/dts/freescale/imx8mm-phygate-tauri-l-rs232-rs485.dtso" 2
+
+/dts-v1/;
+/plugin/;
+
+&gpio3 {
+ pinctrl-names = "default";
+ pinctrl-0 = <&pinctrl_gpio3_hog>;
+
+ uart4-rs485-en-hog {
+  gpio-hog;
+  gpios = <20 0>;
+  output-high;
+  line-name = "uart4_rs485_en";
+ };
+};
+
+
+&uart2 {
+ pinctrl-names = "default";
+ pinctrl-0 = <&pinctrl_uart2>;
+ assigned-clocks = <&clk 128>;
+ assigned-clock-parents = <&clk 49>;
+ status = "okay";
+};
+
+
+&uart4 {
+ pinctrl-names = "default";
+ pinctrl-0 = <&pinctrl_uart4>;
+ assigned-clocks = <&clk 130>;
+ assigned-clock-parents = <&clk 49>;
+ rts-gpios = <&gpio3 25 0>;
+ linux,rs485-enabled-at-boot-time;
+ status = "okay";
+};
+
+&iomuxc {
+ pinctrl_gpio3_hog: gpio3hoggrp {
+  fsl,pins = <
+   0x144 0x3AC 0x000 0x5 0x0 0x49
+  >;
+ };
+
+ pinctrl_uart2: uart2grp {
+  fsl,pins = <
+   0x23C 0x4A4 0x4FC 0x0 0x0 0x00
+   0x240 0x4A8 0x000 0x0 0x0 0x00
+  >;
+ };
+
+ pinctrl_uart4: uart4grp {
+  fsl,pins = <
+   0x24C 0x4B4 0x50C 0x0 0x2 0x49
+   0x250 0x4B8 0x000 0x0 0x0 0x49
+   0x158 0x3C0 0x000 0x5 0x0 0x49
+  >;
+ };
+};

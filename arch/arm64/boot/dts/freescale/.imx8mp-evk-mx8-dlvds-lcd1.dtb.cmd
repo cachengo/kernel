@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/freescale/imx8mp-evk-mx8-dlvds-lcd1.dtb := ./scripts/dtc/fdtoverlay -o arch/arm64/boot/dts/freescale/imx8mp-evk-mx8-dlvds-lcd1.dtb -i arch/arm64/boot/dts/freescale/imx8mp-evk.dtb arch/arm64/boot/dts/freescale/imx8mp-evk-mx8-dlvds-lcd1.dtbo 

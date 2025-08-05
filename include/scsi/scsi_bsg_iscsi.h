@@ -59,7 +59,7 @@ struct iscsi_bsg_host_vendor {
  */
 struct iscsi_bsg_host_vendor_reply {
 	/* start of vendor response area */
-	uint32_t vendor_rsp[0];
+	DECLARE_FLEX_ARRAY(uint32_t, vendor_rsp);
 };
 
 
@@ -84,7 +84,7 @@ struct iscsi_bsg_reply {
 	 */
 	uint32_t result;
 
-	/* If there was reply_payload, how much was recevied ? */
+	/* If there was reply_payload, how much was received ? */
 	uint32_t reply_payload_rcv_len;
 
 	union {

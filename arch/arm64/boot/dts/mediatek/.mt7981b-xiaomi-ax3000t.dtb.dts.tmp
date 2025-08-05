@@ -1,0 +1,274 @@
+# 0 "arch/arm64/boot/dts/mediatek/mt7981b-xiaomi-ax3000t.dts"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/mediatek/mt7981b-xiaomi-ax3000t.dts"
+
+
+/dts-v1/;
+
+# 1 "arch/arm64/boot/dts/mediatek/mt7981b.dtsi" 1
+
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/clock/mediatek,mt7981-clk.h" 1
+# 4 "arch/arm64/boot/dts/mediatek/mt7981b.dtsi" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h" 1
+# 9 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h"
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h" 1
+# 10 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h" 2
+# 5 "arch/arm64/boot/dts/mediatek/mt7981b.dtsi" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/reset/mt7986-resets.h" 1
+# 6 "arch/arm64/boot/dts/mediatek/mt7981b.dtsi" 2
+
+/ {
+ compatible = "mediatek,mt7981b";
+ interrupt-parent = <&gic>;
+ #address-cells = <2>;
+ #size-cells = <2>;
+
+ cpus {
+  #address-cells = <1>;
+  #size-cells = <0>;
+
+  cpu@0 {
+   compatible = "arm,cortex-a53";
+   reg = <0x0>;
+   device_type = "cpu";
+   enable-method = "psci";
+  };
+
+  cpu@1 {
+   compatible = "arm,cortex-a53";
+   reg = <0x1>;
+   device_type = "cpu";
+   enable-method = "psci";
+  };
+ };
+
+ oscillator-40m {
+  compatible = "fixed-clock";
+  clock-frequency = <40000000>;
+  clock-output-names = "clkxtal";
+  #clock-cells = <0>;
+ };
+
+ psci {
+  compatible = "arm,psci-1.0";
+  method = "smc";
+ };
+
+ soc {
+  compatible = "simple-bus";
+  ranges;
+  #address-cells = <2>;
+  #size-cells = <2>;
+
+  gic: interrupt-controller@c000000 {
+   compatible = "arm,gic-v3";
+   reg = <0 0x0c000000 0 0x40000>,
+         <0 0x0c080000 0 0x200000>;
+   interrupt-parent = <&gic>;
+   interrupts = <1 9 4>;
+   interrupt-controller;
+   #interrupt-cells = <3>;
+  };
+
+  infracfg: clock-controller@10001000 {
+   compatible = "mediatek,mt7981-infracfg", "syscon";
+   reg = <0 0x10001000 0 0x1000>;
+   #clock-cells = <1>;
+  };
+
+  topckgen: clock-controller@1001b000 {
+   compatible = "mediatek,mt7981-topckgen", "syscon";
+   reg = <0 0x1001b000 0 0x1000>;
+   #clock-cells = <1>;
+  };
+
+  watchdog: watchdog@1001c000 {
+   compatible = "mediatek,mt7986-wdt";
+   reg = <0 0x1001c000 0 0x1000>;
+   interrupts = <0 110 4>;
+   #reset-cells = <1>;
+  };
+
+  clock-controller@1001e000 {
+   compatible = "mediatek,mt7981-apmixedsys";
+   reg = <0 0x1001e000 0 0x1000>;
+   #clock-cells = <1>;
+  };
+
+  pwm@10048000 {
+   compatible = "mediatek,mt7981-pwm";
+   reg = <0 0x10048000 0 0x1000>;
+   clocks = <&infracfg 14>,
+     <&infracfg 13>,
+     <&infracfg 15>,
+     <&infracfg 16>,
+     <&infracfg 17>;
+   clock-names = "top", "main", "pwm1", "pwm2", "pwm3";
+   #pwm-cells = <2>;
+  };
+
+  serial@11002000 {
+   compatible = "mediatek,mt7981-uart", "mediatek,mt6577-uart";
+   reg = <0 0x11002000 0 0x100>;
+   interrupts = <0 123 4>;
+   interrupt-names = "uart", "wakeup";
+   clocks = <&infracfg 1>,
+     <&infracfg 31>;
+   clock-names = "baud", "bus";
+   status = "disabled";
+  };
+
+  serial@11003000 {
+   compatible = "mediatek,mt7981-uart", "mediatek,mt6577-uart";
+   reg = <0 0x11003000 0 0x100>;
+   interrupts = <0 124 4>;
+   interrupt-names = "uart", "wakeup";
+   clocks = <&infracfg 2>,
+     <&infracfg 32>;
+   clock-names = "baud", "bus";
+   status = "disabled";
+  };
+
+  serial@11004000 {
+   compatible = "mediatek,mt7981-uart", "mediatek,mt6577-uart";
+   reg = <0 0x11004000 0 0x100>;
+   interrupts = <0 125 4>;
+   interrupt-names = "uart", "wakeup";
+   clocks = <&infracfg 3>,
+     <&infracfg 33>;
+   clock-names = "baud", "bus";
+   status = "disabled";
+  };
+
+  i2c@11007000 {
+   compatible = "mediatek,mt7981-i2c";
+   reg = <0 0x11007000 0 0x1000>,
+         <0 0x10217080 0 0x80>;
+   interrupts = <0 136 4>;
+   clocks = <&infracfg 30>,
+     <&infracfg 26>,
+     <&infracfg 51>,
+     <&infracfg 52>;
+   clock-names = "main", "dma", "arb", "pmic";
+   #address-cells = <1>;
+   #size-cells = <0>;
+   status = "disabled";
+  };
+
+  spi@11009000 {
+   compatible = "mediatek,mt7981-spi-ipm", "mediatek,spi-ipm";
+   reg = <0 0x11009000 0 0x1000>;
+   interrupts = <0 142 4>;
+   clocks = <&topckgen 2>,
+     <&topckgen 78>,
+     <&infracfg 34>,
+     <&infracfg 35>;
+   clock-names = "parent-clk", "sel-clk", "spi-clk", "hclk";
+   #address-cells = <1>;
+   #size-cells = <0>;
+   status = "disabled";
+  };
+
+  spi@1100a000 {
+   compatible = "mediatek,mt7981-spi-ipm", "mediatek,spi-ipm";
+   reg = <0 0x1100a000 0 0x1000>;
+   interrupts = <0 140 4>;
+   clocks = <&topckgen 2>,
+     <&topckgen 78>,
+     <&infracfg 39>,
+     <&infracfg 41>;
+   clock-names = "parent-clk", "sel-clk", "spi-clk", "hclk";
+   #address-cells = <1>;
+   #size-cells = <0>;
+   status = "disabled";
+  };
+
+  spi@1100b000 {
+   compatible = "mediatek,mt7981-spi-ipm", "mediatek,spi-ipm";
+   reg = <0 0x1100b000 0 0x1000>;
+   interrupts = <0 141 4>;
+   clocks = <&topckgen 2>,
+     <&topckgen 78>,
+     <&infracfg 40>,
+     <&infracfg 42>;
+   clock-names = "parent-clk", "sel-clk", "spi-clk", "hclk";
+   #address-cells = <1>;
+   #size-cells = <0>;
+   status = "disabled";
+  };
+
+  pio: pinctrl@11d00000 {
+   compatible = "mediatek,mt7981-pinctrl";
+   reg = <0 0x11d00000 0 0x1000>,
+         <0 0x11c00000 0 0x1000>,
+         <0 0x11c10000 0 0x1000>,
+         <0 0x11d20000 0 0x1000>,
+         <0 0x11e00000 0 0x1000>,
+         <0 0x11e20000 0 0x1000>,
+         <0 0x11f00000 0 0x1000>,
+         <0 0x11f10000 0 0x1000>,
+         <0 0x1000b000 0 0x1000>;
+   reg-names = "gpio", "iocfg_rt", "iocfg_rm", "iocfg_rb", "iocfg_lb",
+        "iocfg_bl", "iocfg_tm", "iocfg_tl", "eint";
+   interrupt-controller;
+   interrupts = <0 225 4>;
+   interrupt-parent = <&gic>;
+   gpio-ranges = <&pio 0 0 56>;
+   gpio-controller;
+   #gpio-cells = <2>;
+   #interrupt-cells = <2>;
+  };
+
+  efuse@11f20000 {
+   compatible = "mediatek,mt7981-efuse", "mediatek,efuse";
+   reg = <0 0x11f20000 0 0x1000>;
+   #address-cells = <1>;
+   #size-cells = <1>;
+  };
+
+  clock-controller@15000000 {
+   compatible = "mediatek,mt7981-ethsys", "syscon";
+   reg = <0 0x15000000 0 0x1000>;
+   #clock-cells = <1>;
+   #reset-cells = <1>;
+  };
+
+  wifi@18000000 {
+   compatible = "mediatek,mt7981-wmac";
+   reg = <0 0x18000000 0 0x1000000>,
+         <0 0x10003000 0 0x1000>,
+         <0 0x11d10000 0 0x1000>;
+   interrupts = <0 213 4>,
+         <0 214 4>,
+         <0 215 4>,
+         <0 216 4>;
+   clocks = <&topckgen 95>,
+     <&topckgen 92>;
+   clock-names = "mcu", "ap2conn";
+   resets = <&watchdog 23>;
+   reset-names = "consys";
+  };
+ };
+
+ timer {
+  compatible = "arm,armv8-timer";
+  interrupt-parent = <&gic>;
+  interrupts = <1 13 8>,
+        <1 14 8>,
+        <1 11 8>,
+        <1 10 8>;
+ };
+};
+# 6 "arch/arm64/boot/dts/mediatek/mt7981b-xiaomi-ax3000t.dts" 2
+
+/ {
+ compatible = "xiaomi,ax3000t", "mediatek,mt7981b";
+ model = "Xiaomi AX3000T";
+
+ memory@40000000 {
+  reg = <0 0x40000000 0 0x10000000>;
+  device_type = "memory";
+ };
+};

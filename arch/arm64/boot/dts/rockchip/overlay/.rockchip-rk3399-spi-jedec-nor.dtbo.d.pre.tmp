@@ -1,0 +1,2 @@
+rockchip-rk3399-spi-jedec-nor.o: \
+ arch/arm64/boot/dts/rockchip/overlay/rockchip-rk3399-spi-jedec-nor.dtso

@@ -1,0 +1,5 @@
+k3-am69-sk-pcie0-ep.o: arch/arm64/boot/dts/ti/k3-am69-sk-pcie0-ep.dtso \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h \
+ scripts/dtc/include-prefixes/dt-bindings/soc/ti,sci_pm_domain.h \
+ arch/arm64/boot/dts/ti/k3-pinctrl.h

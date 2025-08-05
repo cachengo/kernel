@@ -1,0 +1,7 @@
+meson-khadas-vim3-ts050.o: \
+ arch/arm64/boot/dts/amlogic/meson-khadas-vim3-ts050.dtso \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ scripts/dtc/include-prefixes/dt-bindings/clock/g12a-clkc.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/amlogic,meson-g12a-gpio-intc.h

@@ -1,0 +1,117 @@
+# 0 "arch/arm64/boot/dts/amlogic/meson-khadas-vim3-ts050.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/amlogic/meson-khadas-vim3-ts050.dtso"
+
+
+
+
+
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h" 1
+# 8 "arch/arm64/boot/dts/amlogic/meson-khadas-vim3-ts050.dtso" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/clock/g12a-clkc.h" 1
+# 9 "arch/arm64/boot/dts/amlogic/meson-khadas-vim3-ts050.dtso" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h" 1
+# 10 "arch/arm64/boot/dts/amlogic/meson-khadas-vim3-ts050.dtso" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h" 1
+# 11 "arch/arm64/boot/dts/amlogic/meson-khadas-vim3-ts050.dtso" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/amlogic,meson-g12a-gpio-intc.h" 1
+# 12 "arch/arm64/boot/dts/amlogic/meson-khadas-vim3-ts050.dtso" 2
+
+/dts-v1/;
+/plugin/;
+
+
+
+
+
+
+&{/} {
+ panel_backlight: backlight {
+  compatible = "pwm-backlight";
+  pwms = <&pwm_AO_cd 0 25000 0>;
+  brightness-levels = <0 255>;
+  num-interpolated-steps = <255>;
+  default-brightness-level = <200>;
+ };
+};
+
+&i2c3 {
+ #address-cells = <1>;
+ #size-cells = <0>;
+ pinctrl-0 = <&i2c3_sda_a_pins>, <&i2c3_sck_a_pins>;
+ pinctrl-names = "default";
+ status = "okay";
+
+ touch-controller@38 {
+  compatible = "edt,edt-ft5206";
+  reg = <0x38>;
+  interrupt-parent = <&gpio_intc>;
+  interrupts = <66 2>;
+  reset-gpios = <&gpio_expander 6 1>;
+  touchscreen-size-x = <1080>;
+  touchscreen-size-y = <1920>;
+  status = "okay";
+ };
+};
+
+&mipi_dsi {
+ #address-cells = <1>;
+ #size-cells = <0>;
+ status = "okay";
+
+ assigned-clocks = <&clkc 7>,
+     <&clkc 269>,
+     <&clkc 270>,
+     <&clkc 272>,
+     <&clkc 133>;
+ assigned-clock-parents = <0>,
+     <&clkc 7>,
+     <0>,
+     <&clkc 153>,
+     <&clkc 7>;
+ assigned-clock-rates = <960000000>,
+          <0>,
+          <960000000>,
+          <0>,
+          <0>;
+
+ panel@0 {
+  compatible = "khadas,ts050";
+  reset-gpios = <&gpio_expander 0 1>;
+  enable-gpios = <&gpio_expander 1 0>;
+  power-supply = <&vcc_3v3>;
+  backlight = <&panel_backlight>;
+  reg = <0>;
+
+  port {
+   mipi_in_panel: endpoint {
+    remote-endpoint = <&mipi_out_panel>;
+   };
+  };
+ };
+
+ ports {
+  #address-cells = <1>;
+  #size-cells = <0>;
+
+  port@1 {
+   mipi_out_panel: endpoint {
+    remote-endpoint = <&mipi_in_panel>;
+   };
+  };
+ };
+};
+
+&mipi_analog_dphy {
+ status = "okay";
+};
+
+&mipi_dphy {
+ status = "okay";
+};
+
+&pwm_AO_cd {
+ pinctrl-0 = <&pwm_ao_c_6_pins>, <&pwm_ao_d_e_pins>;
+};

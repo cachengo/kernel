@@ -1,0 +1,80 @@
+# 0 "arch/arm64/boot/dts/freescale/imx93-9x9-qsb-i3c.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/freescale/imx93-9x9-qsb-i3c.dtso"
+
+
+
+
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h" 1
+# 7 "arch/arm64/boot/dts/freescale/imx93-9x9-qsb-i3c.dtso" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/i3c/i3c.h" 1
+# 8 "arch/arm64/boot/dts/freescale/imx93-9x9-qsb-i3c.dtso" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/usb/pd.h" 1
+# 9 "arch/arm64/boot/dts/freescale/imx93-9x9-qsb-i3c.dtso" 2
+
+# 1 "arch/arm64/boot/dts/freescale/imx93-pinfunc.h" 1
+# 11 "arch/arm64/boot/dts/freescale/imx93-9x9-qsb-i3c.dtso" 2
+
+/dts-v1/;
+/plugin/;
+
+&lpi2c1 {
+ status = "disabled";
+};
+
+&i3c1 {
+ pinctrl-names = "default";
+ pinctrl-0 = <&pinctrl_i3c1>;
+ #address-cells = <3>;
+ #size-cells = <0>;
+ i2c-scl-hz = <400000>;
+ status = "okay";
+
+ tcpc@50 {
+  compatible = "nxp,ptn5110", "tcpci";
+  reg = <0x50 0x00 ((1 << 4) | (2 << 5))>;
+  interrupt-parent = <&gpio3>;
+  interrupts = <26 8>;
+
+  connector {
+   compatible = "usb-c-connector";
+   label = "USB-C";
+   power-role = "dual";
+   data-role = "dual";
+   try-power-role = "sink";
+   source-pdos = <(((0) << 30) | ((1 << 26)) | ((((5000) / 50) & 0x3ff) << 10) | ((((3000) / 10) & 0x3ff) << 0))>;
+   sink-pdos = <(((0) << 30) | ((1 << 26)) | ((((5000) / 50) & 0x3ff) << 10) | ((((3000) / 10) & 0x3ff) << 0))
+         (((2) << 30) | ((((5000) / 50) & 0x3ff) << 10) | ((((20000) / 50) & 0x3ff) << 20) | ((((3000) / 10) & 0x3ff) << 0))>;
+   op-sink-microwatt = <15000000>;
+   self-powered;
+
+   ports {
+    #address-cells = <1>;
+    #size-cells = <0>;
+
+    port@0 {
+     reg = <0>;
+
+     typec1_dr_sw: endpoint {
+      remote-endpoint = <&usb1_drd_sw>;
+     };
+    };
+   };
+  };
+ };
+};
+
+&usb1_drd_sw {
+ remote-endpoint = <&typec1_dr_sw>;
+};
+
+&iomuxc {
+ pinctrl_i3c1: i3c1grp {
+  fsl,pins = <
+   0x0170 0x0320 0x0000 0x1 0x0 0x40000186
+   0x0174 0x0324 0x0000 0x1 0x0 0x40000186
+  >;
+ };
+};

@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/nuvoton/dtbs-list := {   echo arch/arm64/boot/dts/nuvoton/ma35d1-iot-512m.dtb;   echo arch/arm64/boot/dts/nuvoton/ma35d1-som-256m.dtb;   echo arch/arm64/boot/dts/nuvoton/nuvoton-npcm845-evb.dtb; :; } > arch/arm64/boot/dts/nuvoton/dtbs-list

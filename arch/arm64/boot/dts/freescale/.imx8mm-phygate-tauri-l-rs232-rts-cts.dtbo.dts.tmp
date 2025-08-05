@@ -1,0 +1,32 @@
+# 0 "arch/arm64/boot/dts/freescale/imx8mm-phygate-tauri-l-rs232-rts-cts.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/freescale/imx8mm-phygate-tauri-l-rs232-rts-cts.dtso"
+# 11 "arch/arm64/boot/dts/freescale/imx8mm-phygate-tauri-l-rs232-rts-cts.dtso"
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/clock/imx8mm-clock.h" 1
+# 12 "arch/arm64/boot/dts/freescale/imx8mm-phygate-tauri-l-rs232-rts-cts.dtso" 2
+# 1 "arch/arm64/boot/dts/freescale/imx8mm-pinfunc.h" 1
+# 13 "arch/arm64/boot/dts/freescale/imx8mm-phygate-tauri-l-rs232-rts-cts.dtso" 2
+
+/dts-v1/;
+/plugin/;
+
+&uart2 {
+ pinctrl-names = "default";
+ pinctrl-0 = <&pinctrl_uart2>;
+ assigned-clocks = <&clk 128>;
+ assigned-clock-parents = <&clk 49>;
+ uart-has-rtscts;
+ status = "okay";
+};
+
+&iomuxc {
+ pinctrl_uart2: uart2grp {
+  fsl,pins = <
+   0x23C 0x4A4 0x4FC 0x0 0x0 0x00
+   0x240 0x4A8 0x000 0x0 0x0 0x00
+   0x24C 0x4B4 0x000 0x1 0x0 0x00
+   0x250 0x4B8 0x4F8 0x1 0x1 0x00
+  >;
+ };
+};

@@ -5,6 +5,7 @@
  */
 
 /dts-v1/;
+#include "rk3399.dtsi"
 #include "rk3399-rock-pi-4.dtsi"
 
 / {
@@ -12,17 +13,12 @@
 	compatible = "radxa,rockpi4a", "radxa,rockpi4", "rockchip,rk3399";
 };
 
-&pinctrl {
-	usb2 {
-		vcc5v0_host_en: vcc5v0-host-en {
-			rockchip,pins = <4 RK_PD1 RK_FUNC_GPIO &pcfg_pull_none>;
-		};
-	};
-};
+&spi1 {
+	status = "okay";
 
-&vcc5v0_host {
-	enable-active-high;
-	gpio = <&gpio4 RK_PD1 GPIO_ACTIVE_HIGH>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&vcc5v0_host_en>;
+	flash@0 {
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <108000000>;
+	};
 };

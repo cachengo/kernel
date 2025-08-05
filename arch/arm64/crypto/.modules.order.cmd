@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/crypto/modules.order := {   echo arch/arm64/crypto/sha512-ce.o;   echo arch/arm64/crypto/sha3-ce.o;   echo arch/arm64/crypto/sm3-ce.o;   echo arch/arm64/crypto/aes-neon-blk.o;   echo arch/arm64/crypto/sha512-arm64.o;   echo arch/arm64/crypto/aes-neon-bs.o; :; } > arch/arm64/crypto/modules.order

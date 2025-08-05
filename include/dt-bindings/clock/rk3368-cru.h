@@ -78,6 +78,7 @@
 #define SCLK_TIMER13		136
 #define SCLK_TIMER14		137
 #define SCLK_TIMER15		138
+#define SCLK_VIP_OUT		139
 
 #define DCLK_VOP		190
 #define MCLK_CRYPTO		191
@@ -101,7 +102,6 @@
 #define ACLK_VIDEO		208
 #define ACLK_BUS		209
 #define ACLK_PERI		210
-#define ACLK_CCI_PRE		211
 
 /* pclk gates */
 #define PCLK_GPIO0		320
@@ -149,6 +149,8 @@
 #define PCLK_VIP		367
 #define PCLK_WDT		368
 #define PCLK_EFUSE256		369
+#define PCLK_DPHYRX		370
+#define PCLK_DPHYTX0		371
 
 /* hclk gates */
 #define HCLK_SFC		448
@@ -179,8 +181,6 @@
 #define HCLK_VIDEO		476
 #define HCLK_BUS		477
 #define HCLK_PERI		478
-
-#define CLK_NR_CLKS		(HCLK_PERI + 1)
 
 /* soft-reset indices */
 #define SRST_CORE_B0		0

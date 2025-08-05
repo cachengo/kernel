@@ -178,7 +178,7 @@ static ssize_t perst_reloads_same_image_store(struct device *device,
 	if ((rc != 1) || !(val == 1 || val == 0))
 		return -EINVAL;
 
-	adapter->perst_same_image = (val == 1 ? true : false);
+	adapter->perst_same_image = (val == 1);
 	return count;
 }
 
@@ -444,7 +444,7 @@ static ssize_t api_version_compatible_show(struct device *device,
 }
 
 static ssize_t afu_eb_read(struct file *filp, struct kobject *kobj,
-			       struct bin_attribute *bin_attr, char *buf,
+			       const struct bin_attribute *bin_attr, char *buf,
 			       loff_t off, size_t count)
 {
 	struct cxl_afu *afu = to_cxl_afu(kobj_to_dev(kobj));
@@ -538,7 +538,7 @@ static ssize_t class_show(struct kobject *kobj,
 }
 
 static ssize_t afu_read_config(struct file *filp, struct kobject *kobj,
-			       struct bin_attribute *bin_attr, char *buf,
+			       const struct bin_attribute *bin_attr, char *buf,
 			       loff_t off, size_t count)
 {
 	struct afu_config_record *cr = to_cr(kobj);
@@ -570,6 +570,7 @@ static struct attribute *afu_cr_attrs[] = {
 	&class_attribute.attr,
 	NULL,
 };
+ATTRIBUTE_GROUPS(afu_cr);
 
 static void release_afu_config_record(struct kobject *kobj)
 {
@@ -578,10 +579,10 @@ static void release_afu_config_record(struct kobject *kobj)
 	kfree(cr);
 }
 
-static struct kobj_type afu_config_record_type = {
+static const struct kobj_type afu_config_record_type = {
 	.sysfs_ops = &kobj_sysfs_ops,
 	.release = release_afu_config_record,
-	.default_attrs = afu_cr_attrs,
+	.default_groups = afu_cr_groups,
 };
 
 static struct afu_config_record *cxl_sysfs_afu_new_cr(struct cxl_afu *afu, int cr_idx)
@@ -619,7 +620,7 @@ static struct afu_config_record *cxl_sysfs_afu_new_cr(struct cxl_afu *afu, int c
 	cr->config_attr.attr.name = "config";
 	cr->config_attr.attr.mode = S_IRUSR;
 	cr->config_attr.size = afu->crs_len;
-	cr->config_attr.read = afu_read_config;
+	cr->config_attr.read_new = afu_read_config;
 
 	rc = kobject_init_and_add(&cr->kobj, &afu_config_record_type,
 				  &afu->dev.kobj, "cr%i", cr->cr);
@@ -692,7 +693,7 @@ int cxl_sysfs_afu_add(struct cxl_afu *afu)
 		afu->attr_eb.attr.name = "afu_err_buff";
 		afu->attr_eb.attr.mode = S_IRUGO;
 		afu->attr_eb.size = afu->eb_len;
-		afu->attr_eb.read = afu_eb_read;
+		afu->attr_eb.read_new = afu_eb_read;
 
 		rc = device_create_bin_file(&afu->dev, &afu->attr_eb);
 		if (rc) {

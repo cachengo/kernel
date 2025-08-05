@@ -1,0 +1,10 @@
+rockchip-rk3588-rkvenc-overlay.o: \
+ arch/arm64/boot/dts/rockchip/overlay/rockchip-rk3588-rkvenc-overlay.dtso \
+ scripts/dtc/include-prefixes/dt-bindings/clock/rockchip,rk3588-cru.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h \
+ scripts/dtc/include-prefixes/dt-bindings/power/rk3588-power.h \
+ scripts/dtc/include-prefixes/dt-bindings/reset/rockchip,rk3588-cru.h \
+ scripts/dtc/include-prefixes/dt-bindings/phy/phy.h \
+ scripts/dtc/include-prefixes/dt-bindings/ata/ahci.h \
+ scripts/dtc/include-prefixes/dt-bindings/thermal/thermal.h

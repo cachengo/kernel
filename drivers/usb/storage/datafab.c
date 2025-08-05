@@ -54,7 +54,7 @@
 MODULE_DESCRIPTION("Driver for Datafab USB Compact Flash reader");
 MODULE_AUTHOR("Jimmie Mayfield <mayfield+datafab@sackheads.org>");
 MODULE_LICENSE("GPL");
-MODULE_IMPORT_NS(USB_STORAGE);
+MODULE_IMPORT_NS("USB_STORAGE");
 
 struct datafab_info {
 	unsigned long   sectors;	/* total sector count */
@@ -80,7 +80,7 @@ static int datafab_determine_lun(struct us_data *us,
 { USB_DEVICE_VER(id_vendor, id_product, bcdDeviceMin, bcdDeviceMax), \
   .driver_info = (flags) }
 
-static struct usb_device_id datafab_usb_ids[] = {
+static const struct usb_device_id datafab_usb_ids[] = {
 #	include "unusual_datafab.h"
 	{ }		/* Terminating entry */
 };
@@ -102,7 +102,7 @@ MODULE_DEVICE_TABLE(usb, datafab_usb_ids);
 	.initFunction = init_function,	\
 }
 
-static struct us_unusual_dev datafab_unusual_dev_list[] = {
+static const struct us_unusual_dev datafab_unusual_dev_list[] = {
 #	include "unusual_datafab.h"
 	{ }		/* Terminating entry */
 };
@@ -294,7 +294,6 @@ static int datafab_write_data(struct us_data *us,
 		if (reply[0] != 0x50 && reply[1] != 0) {
 			usb_stor_dbg(us, "Gah! write return code: %02x %02x\n",
 				     reply[0], reply[1]);
-			result = USB_STOR_TRANSPORT_ERROR;
 			goto leave;
 		}
 

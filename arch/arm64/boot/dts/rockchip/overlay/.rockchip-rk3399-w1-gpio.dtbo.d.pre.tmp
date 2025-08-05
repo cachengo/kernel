@@ -1,0 +1,2 @@
+rockchip-rk3399-w1-gpio.o: \
+ arch/arm64/boot/dts/rockchip/overlay/rockchip-rk3399-w1-gpio.dtso

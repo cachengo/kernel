@@ -1,0 +1,86 @@
+# 0 "arch/arm64/boot/dts/ti/k3-am642-phyboard-electra-pcie-usb2.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/ti/k3-am642-phyboard-electra-pcie-usb2.dtso"
+# 12 "arch/arm64/boot/dts/ti/k3-am642-phyboard-electra-pcie-usb2.dtso"
+/dts-v1/;
+/plugin/;
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h" 1
+# 16 "arch/arm64/boot/dts/ti/k3-am642-phyboard-electra-pcie-usb2.dtso" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/phy/phy.h" 1
+# 17 "arch/arm64/boot/dts/ti/k3-am642-phyboard-electra-pcie-usb2.dtso" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/phy/phy-cadence.h" 1
+# 18 "arch/arm64/boot/dts/ti/k3-am642-phyboard-electra-pcie-usb2.dtso" 2
+
+# 1 "arch/arm64/boot/dts/ti/k3-pinctrl.h" 1
+# 20 "arch/arm64/boot/dts/ti/k3-am642-phyboard-electra-pcie-usb2.dtso" 2
+# 1 "arch/arm64/boot/dts/ti/k3-serdes.h" 1
+# 21 "arch/arm64/boot/dts/ti/k3-am642-phyboard-electra-pcie-usb2.dtso" 2
+
+&{/} {
+ pcie_refclk0: pcie-refclk0 {
+  compatible = "gpio-gate-clock";
+  pinctrl-names = "default";
+  pinctrl-0 = <&pcie_usb_sel_pins_default>;
+  clocks = <&serdes_refclk>;
+  #clock-cells = <0>;
+  enable-gpios = <&main_gpio1 7 0>;
+ };
+};
+
+&main_pmx0 {
+ pcie_usb_sel_pins_default: pcie-usb-sel-default-pins {
+  pinctrl-single,pins = <
+   (((0x017c) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (7))
+  >;
+ };
+
+ pcie_pins_default: pcie-default-pins {
+  pinctrl-single,pins = <
+   (((0x0098) & 0x1fff)) ((((0 << (18)) | (1 << (16)))) | (7))
+  >;
+ };
+};
+
+&pcie0_rc {
+ pinctrl-names = "default";
+ pinctrl-0 = <&pcie_pins_default>;
+ reset-gpios = <&main_gpio0 37 0>;
+ phys = <&serdes0_pcie_usb_link>;
+ phy-names = "pcie-phy";
+ num-lanes = <1>;
+ status = "okay";
+};
+
+&serdes0_pcie_usb_link {
+ cdns,phy-type = <2>;
+};
+
+&serdes_ln_ctrl {
+ idle-states = <0x0>;
+};
+
+&serdes0 {
+ assigned-clock-parents = <&pcie_refclk0>, <&pcie_refclk0>, <&pcie_refclk0>;
+};
+
+&serdes_refclk {
+ clock-frequency = <100000000>;
+};
+
+
+
+
+
+&serdes_wiz0 {
+ clocks = <&k3_clks 162 0>, <&k3_clks 162 1>, <&pcie_refclk0>;
+};
+
+&usbss0 {
+ ti,usb2-only;
+};
+
+&usb0 {
+ maximum-speed = "high-speed";
+};

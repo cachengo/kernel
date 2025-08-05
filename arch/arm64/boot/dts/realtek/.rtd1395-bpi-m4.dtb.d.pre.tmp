@@ -1,0 +1,6 @@
+rtd1395-bpi-m4.o: arch/arm64/boot/dts/realtek/rtd1395-bpi-m4.dts \
+ arch/arm64/boot/dts/realtek/rtd1395.dtsi \
+ arch/arm64/boot/dts/realtek/rtd139x.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h \
+ scripts/dtc/include-prefixes/dt-bindings/reset/realtek,rtd1295.h

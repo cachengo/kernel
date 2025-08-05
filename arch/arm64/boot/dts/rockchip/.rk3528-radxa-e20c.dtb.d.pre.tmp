@@ -1,0 +1,4 @@
+rk3528-radxa-e20c.o: arch/arm64/boot/dts/rockchip/rk3528-radxa-e20c.dts \
+ arch/arm64/boot/dts/rockchip/rk3528.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h

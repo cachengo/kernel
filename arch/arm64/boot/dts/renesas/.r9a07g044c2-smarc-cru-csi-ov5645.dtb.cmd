@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/renesas/r9a07g044c2-smarc-cru-csi-ov5645.dtb := ./scripts/dtc/fdtoverlay -o arch/arm64/boot/dts/renesas/r9a07g044c2-smarc-cru-csi-ov5645.dtb -i arch/arm64/boot/dts/renesas/r9a07g044c2-smarc.dtb arch/arm64/boot/dts/renesas/r9a07g044c2-smarc-cru-csi-ov5645.dtbo 

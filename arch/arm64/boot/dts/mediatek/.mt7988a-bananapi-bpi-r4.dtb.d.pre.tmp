@@ -1,0 +1,11 @@
+mt7988a-bananapi-bpi-r4.o: \
+ arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4.dts \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ scripts/dtc/include-prefixes/dt-bindings/regulator/richtek,rt5190a-regulator.h \
+ arch/arm64/boot/dts/mediatek/mt7988a.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/clock/mediatek,mt7988-clk.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h \
+ scripts/dtc/include-prefixes/dt-bindings/phy/phy.h \
+ scripts/dtc/include-prefixes/dt-bindings/pinctrl/mt65xx.h \
+ scripts/dtc/include-prefixes/dt-bindings/reset/mediatek,mt7988-resets.h

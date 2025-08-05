@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/ti/k3-am6548-iot2050-advanced-m2-bkey-usb3.dtb := ./scripts/dtc/fdtoverlay -o arch/arm64/boot/dts/ti/k3-am6548-iot2050-advanced-m2-bkey-usb3.dtb -i arch/arm64/boot/dts/ti/k3-am6548-iot2050-advanced-m2.dtb arch/arm64/boot/dts/ti/k3-am6548-iot2050-advanced-m2-bkey-usb3.dtbo 

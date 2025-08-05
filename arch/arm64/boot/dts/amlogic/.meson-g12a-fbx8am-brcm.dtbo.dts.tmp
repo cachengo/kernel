@@ -1,0 +1,37 @@
+# 0 "arch/arm64/boot/dts/amlogic/meson-g12a-fbx8am-brcm.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/amlogic/meson-g12a-fbx8am-brcm.dtso"
+
+
+
+/dts-v1/;
+/plugin/;
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h" 1
+# 8 "arch/arm64/boot/dts/amlogic/meson-g12a-fbx8am-brcm.dtso" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/meson-g12a-gpio.h" 1
+# 9 "arch/arm64/boot/dts/amlogic/meson-g12a-fbx8am-brcm.dtso" 2
+
+&uart_A {
+ bluetooth {
+  compatible = "brcm,bcm43438-bt";
+  shutdown-gpios = <&gpio 82 0>;
+  max-speed = <2000000>;
+  clocks = <&wifi32k>;
+  clock-names = "lpo";
+  vbat-supply = <&vddao_3v3>;
+  vddio-supply = <&vddio_ao1v8>;
+ };
+};
+
+&sd_emmc_a {
+
+ #address-cells = <1>;
+ #size-cells = <0>;
+
+ brcmf: wifi@1 {
+  reg = <1>;
+  compatible = "brcm,bcm4329-fmac";
+ };
+};

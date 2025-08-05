@@ -1,0 +1,911 @@
+# 0 "arch/arm64/boot/dts/exynos/exynos9810-starlte.dts"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/exynos/exynos9810-starlte.dts"
+# 9 "arch/arm64/boot/dts/exynos/exynos9810-starlte.dts"
+/dts-v1/;
+# 1 "arch/arm64/boot/dts/exynos/exynos9810.dtsi" 1
+# 9 "arch/arm64/boot/dts/exynos/exynos9810.dtsi"
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h" 1
+# 9 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h"
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h" 1
+# 10 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h" 2
+# 10 "arch/arm64/boot/dts/exynos/exynos9810.dtsi" 2
+
+/ {
+ compatible = "samsung,exynos9810";
+ #address-cells = <2>;
+ #size-cells = <1>;
+
+ interrupt-parent = <&gic>;
+
+ aliases {
+  pinctrl0 = &pinctrl_alive;
+  pinctrl1 = &pinctrl_aud;
+  pinctrl2 = &pinctrl_chub;
+  pinctrl3 = &pinctrl_cmgp;
+  pinctrl4 = &pinctrl_fsys0;
+  pinctrl5 = &pinctrl_fsys1;
+  pinctrl6 = &pinctrl_peric0;
+  pinctrl7 = &pinctrl_peric1;
+  pinctrl8 = &pinctrl_vts;
+ };
+
+ cpus {
+  #address-cells = <1>;
+  #size-cells = <0>;
+
+  cpu-map {
+   cluster0 {
+    core0 {
+     cpu = <&cpu0>;
+    };
+    core1 {
+     cpu = <&cpu1>;
+    };
+    core2 {
+     cpu = <&cpu2>;
+    };
+    core3 {
+     cpu = <&cpu3>;
+    };
+   };
+
+   cluster1 {
+    core0 {
+     cpu = <&cpu4>;
+    };
+    core1 {
+     cpu = <&cpu5>;
+    };
+    core2 {
+     cpu = <&cpu6>;
+    };
+    core3 {
+     cpu = <&cpu7>;
+    };
+   };
+  };
+
+  cpu0: cpu@0 {
+   device_type = "cpu";
+   compatible = "arm,cortex-a55";
+   reg = <0x0>;
+   enable-method = "psci";
+  };
+
+  cpu1: cpu@1 {
+   device_type = "cpu";
+   compatible = "arm,cortex-a55";
+   reg = <0x1>;
+   enable-method = "psci";
+  };
+
+  cpu2: cpu@2 {
+   device_type = "cpu";
+   compatible = "arm,cortex-a55";
+   reg = <0x2>;
+   enable-method = "psci";
+  };
+
+  cpu3: cpu@3 {
+   device_type = "cpu";
+   compatible = "arm,cortex-a55";
+   reg = <0x3>;
+   enable-method = "psci";
+  };
+
+  cpu4: cpu@100 {
+   device_type = "cpu";
+   compatible = "samsung,mongoose-m3";
+   reg = <0x100>;
+   enable-method = "psci";
+  };
+
+  cpu5: cpu@101 {
+   device_type = "cpu";
+   compatible = "samsung,mongoose-m3";
+   reg = <0x101>;
+   enable-method = "psci";
+  };
+
+  cpu6: cpu@102 {
+   device_type = "cpu";
+   compatible = "samsung,mongoose-m3";
+   reg = <0x102>;
+   enable-method = "psci";
+  };
+
+  cpu7: cpu@103 {
+   device_type = "cpu";
+   compatible = "samsung,mongoose-m3";
+   reg = <0x103>;
+   enable-method = "psci";
+  };
+ };
+
+ oscclk: osc-clock {
+  compatible = "fixed-clock";
+  #clock-cells = <0>;
+  clock-output-names = "oscclk";
+ };
+
+ pmu-a55 {
+  compatible = "arm,cortex-a55-pmu";
+  interrupts = <0 144 4>,
+        <0 145 4>,
+        <0 146 4>,
+        <0 147 4>;
+  interrupt-affinity = <&cpu0>,
+         <&cpu1>,
+         <&cpu2>,
+         <&cpu3>;
+ };
+
+ pmu-mongoose-m3 {
+  compatible = "samsung,mongoose-pmu";
+  interrupts = <0 167 4>,
+        <0 168 4>,
+        <0 169 4>,
+        <0 170 4>;
+  interrupt-affinity = <&cpu4>,
+         <&cpu5>,
+         <&cpu6>,
+         <&cpu7>;
+ };
+
+ psci {
+  compatible = "arm,psci";
+  method = "smc";
+  cpu_off = <0x84000002>;
+  cpu_on = <0xc4000003>;
+  cpu_suspend = <0xc4000001>;
+ };
+
+ soc: soc@0 {
+  compatible = "simple-bus";
+  ranges = <0x0 0x0 0x0 0x20000000>;
+
+  #address-cells = <1>;
+  #size-cells = <1>;
+
+  chipid@10000000 {
+   compatible = "samsung,exynos9810-chipid",
+         "samsung,exynos850-chipid";
+   reg = <0x10000000 0x100>;
+  };
+
+  gic: interrupt-controller@10101000 {
+   compatible = "arm,gic-400";
+   reg = <0x10101000 0x1000>,
+         <0x10102000 0x1000>,
+         <0x10104000 0x2000>,
+         <0x10106000 0x2000>;
+   #interrupt-cells = <3>;
+   interrupt-controller;
+   interrupts = <1 9 ((((1 << (8)) - 1) << 8) |
+       4)>;
+   #address-cells = <0>;
+   #size-cells = <1>;
+  };
+
+  pinctrl_peric0: pinctrl@10430000 {
+   compatible = "samsung,exynos9810-pinctrl";
+   reg = <0x10430000 0x1000>;
+   interrupts = <0 396 4>;
+  };
+
+  pinctrl_peric1: pinctrl@10830000 {
+   compatible = "samsung,exynos9810-pinctrl";
+   reg = <0x10830000 0x1000>;
+   interrupts = <0 421 4>;
+  };
+
+  pinctrl_fsys0: pinctrl@11050000 {
+   compatible = "samsung,exynos9810-pinctrl";
+   reg = <0x11050000 0x1000>;
+   interrupts = <0 243 4>;
+  };
+
+  pinctrl_fsys1: pinctrl@11430000 {
+   compatible = "samsung,exynos9810-pinctrl";
+   reg = <0x11430000 0x1000>;
+   interrupts = <0 250 4>;
+  };
+
+  pinctrl_vts: pinctrl@13880000 {
+   compatible = "samsung,exynos9810-pinctrl";
+   reg = <0x13880000 0x1000>;
+  };
+
+  pinctrl_chub: pinctrl@13a80000 {
+   compatible = "samsung,exynos9810-pinctrl";
+   reg = <0x13a80000 0x1000>;
+   interrupts = <0 109 4>;
+  };
+
+  pinctrl_alive: pinctrl@14050000 {
+   compatible = "samsung,exynos9810-pinctrl";
+   reg = <0x14050000 0x1000>;
+
+   wakeup-interrupt-controller {
+    compatible = "samsung,exynos9810-wakeup-eint",
+          "samsung,exynos850-wakeup-eint",
+          "samsung,exynos7-wakeup-eint";
+   };
+  };
+
+  pmu_system_controller: system-controller@14060000 {
+   compatible = "samsung,exynos9810-pmu",
+         "samsung,exynos7-pmu", "syscon";
+   reg = <0x14060000 0x10000>;
+  };
+
+  pinctrl_cmgp: pinctrl@14220000 {
+   compatible = "samsung,exynos9810-pinctrl";
+   reg = <0x14220000 0x1000>;
+
+   wakeup-interrupt-controller {
+    compatible = "samsung,exynos9810-wakeup-eint",
+          "samsung,exynos850-wakeup-eint",
+          "samsung,exynos7-wakeup-eint";
+   };
+  };
+
+  pinctrl_aud: pinctrl@17c60000 {
+   compatible = "samsung,exynos9810-pinctrl";
+   reg = <0x17c60000 0x1000>;
+  };
+ };
+
+ timer {
+  compatible = "arm,armv8-timer";
+
+  interrupts = <1 13 ((((1 << (8)) - 1) << 8) | 8)>,
+        <1 14 ((((1 << (8)) - 1) << 8) | 8)>,
+        <1 11 ((((1 << (8)) - 1) << 8) | 8)>,
+        <1 10 ((((1 << (8)) - 1) << 8) | 8)>;
+
+
+
+
+  clock-frequency = <26000000>;
+ };
+};
+
+# 1 "arch/arm64/boot/dts/exynos/exynos9810-pinctrl.dtsi" 1
+# 9 "arch/arm64/boot/dts/exynos/exynos9810-pinctrl.dtsi"
+# 1 "arch/arm64/boot/dts/exynos/exynos-pinctrl.h" 1
+# 10 "arch/arm64/boot/dts/exynos/exynos9810-pinctrl.dtsi" 2
+
+&pinctrl_alive {
+ etc1: etc1-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpa0: gpa0-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  interrupt-parent = <&gic>;
+  interrupts = <0 36 4>,
+        <0 37 4>,
+        <0 38 4>,
+        <0 39 4>,
+        <0 40 4>,
+        <0 41 4>,
+        <0 42 4>,
+        <0 43 4>;
+  #interrupt-cells = <2>;
+ };
+
+ gpa1: gpa1-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  interrupt-parent = <&gic>;
+  interrupts = <0 44 4>,
+        <0 45 4>,
+        <0 46 4>,
+        <0 47 4>,
+        <0 48 4>,
+        <0 49 4>,
+        <0 50 4>,
+        <0 51 4>;
+  #interrupt-cells = <2>;
+ };
+
+ gpa2: gpa2-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  interrupt-parent = <&gic>;
+  interrupts = <0 52 4>,
+        <0 53 4>,
+        <0 54 4>,
+        <0 55 4>,
+        <0 56 4>,
+        <0 57 4>,
+        <0 58 4>,
+        <0 59 4>;
+  #interrupt-cells = <2>;
+ };
+
+ gpa3: gpa3-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  interrupt-parent = <&gic>;
+  interrupts = <0 60 4>,
+        <0 61 4>,
+        <0 62 4>,
+        <0 63 4>,
+        <0 64 4>,
+        <0 65 4>,
+        <0 66 4>,
+        <0 67 4>;
+  #interrupt-cells = <2>;
+ };
+
+ gpa4: gpa4-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpq0: gpq0-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+};
+
+&pinctrl_aud {
+ gpb0: gpb0-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpb1: gpb1-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpb2: gpb2-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+};
+
+&pinctrl_chub {
+ gph0: gph0-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gph1: gph1-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+};
+
+&pinctrl_cmgp {
+ gpm0: gpm0-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+
+  interrupts = <0 9 4>;
+ };
+
+ gpm1: gpm1-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+
+  interrupts = <0 10 4>;
+ };
+
+ gpm2: gpm2-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+
+  interrupts = <0 11 4>;
+ };
+
+ gpm3: gpm3-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+
+  interrupts = <0 12 4>;
+ };
+
+ gpm4: gpm4-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+
+  interrupts = <0 13 4>;
+ };
+
+ gpm5: gpm5-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+
+  interrupts = <0 14 4>;
+ };
+
+ gpm6: gpm6-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+
+  interrupts = <0 15 4>;
+ };
+
+ gpm7: gpm7-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+
+  interrupts = <0 16 4>;
+ };
+
+ gpm10: gpm10-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+
+  interrupts = <0 17 4>;
+ };
+
+ gpm11: gpm11-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+
+  interrupts = <0 18 4>;
+ };
+
+ gpm12: gpm12-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+
+  interrupts = <0 19 4>;
+ };
+
+ gpm13: gpm13-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+
+  interrupts = <0 20 4>;
+ };
+
+ gpm14: gpm14-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+
+  interrupts = <0 21 4>;
+ };
+
+ gpm15: gpm15-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+
+  interrupts = <0 22 4>;
+ };
+
+ gpm16: gpm16-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+
+  interrupts = <0 23 4>;
+ };
+
+ gpm17: gpm17-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+
+  interrupts = <0 24 4>;
+ };
+
+ gpm40: gpm40-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+
+  interrupts = <0 25 4>;
+ };
+
+ gpm41: gpm41-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+
+  interrupts = <0 26 4>;
+ };
+
+ gpm42: gpm42-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+
+  interrupts = <0 27 4>;
+ };
+
+ gpm43: gpm43-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+
+  interrupts = <0 28 4>;
+ };
+};
+
+&pinctrl_fsys0 {
+ gpf0: gpf0-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+};
+
+&pinctrl_fsys1 {
+ gpf1: gpf1-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpf2: gpf2-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+};
+
+&pinctrl_peric0 {
+ gpg0: gpg0-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpg1: gpg1-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpg2: gpg2-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp0: gpp0-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp1: gpp1-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp2: gpp2-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp3: gpp3-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+};
+
+&pinctrl_peric1 {
+ gpc0: gpc0-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpc1: gpc1-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpd0: gpd0-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpg3: gpg3-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp4: gpp4-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp5: gpp5-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+
+ gpp6: gpp6-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+};
+
+&pinctrl_vts {
+ gpt0: gpt0-gpio-bank {
+  gpio-controller;
+  #gpio-cells = <2>;
+
+  interrupt-controller;
+  #interrupt-cells = <2>;
+ };
+};
+# 273 "arch/arm64/boot/dts/exynos/exynos9810.dtsi" 2
+# 1 "./scripts/dtc/include-prefixes/arm/samsung/exynos-syscon-restart.dtsi" 1
+
+
+
+
+
+&pmu_system_controller {
+ poweroff: syscon-poweroff {
+  compatible = "syscon-poweroff";
+  regmap = <&pmu_system_controller>;
+  offset = <0x330c>;
+  mask = <0x5200>;
+ };
+
+ reboot: syscon-reboot {
+  compatible = "syscon-reboot";
+  regmap = <&pmu_system_controller>;
+  offset = <0x0400>;
+  mask = <0x1>;
+ };
+};
+# 274 "arch/arm64/boot/dts/exynos/exynos9810.dtsi" 2
+# 11 "arch/arm64/boot/dts/exynos/exynos9810-starlte.dts" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h" 1
+# 12 "arch/arm64/boot/dts/exynos/exynos9810-starlte.dts" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/input/input.h" 1
+# 13 "./scripts/dtc/include-prefixes/dt-bindings/input/input.h"
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/input/linux-event-codes.h" 1
+# 14 "./scripts/dtc/include-prefixes/dt-bindings/input/input.h" 2
+# 13 "arch/arm64/boot/dts/exynos/exynos9810-starlte.dts" 2
+
+/ {
+ model = "Samsung Galaxy S9 (SM-G960F)";
+ compatible = "samsung,starlte", "samsung,exynos9810";
+ chassis-type = "handset";
+
+ chosen {
+  #address-cells = <2>;
+  #size-cells = <1>;
+  ranges;
+
+  framebuffer@cc000000 {
+   compatible = "simple-framebuffer";
+   reg = <0x0 0xcc000000 (1440 * 2960 * 4)>;
+   width = <1440>;
+   height = <2960>;
+   stride = <(1440 * 4)>;
+   format = "a8r8g8b8";
+  };
+ };
+
+ gpio-keys {
+  compatible = "gpio-keys";
+
+  pinctrl-0 = <&key_power &key_voldown &key_volup &key_wink>;
+  pinctrl-names = "default";
+
+  power-key {
+   label = "Power";
+   linux,code = <116>;
+   gpios = <&gpa2 4 1>;
+   wakeup-source;
+  };
+
+  voldown-key {
+   label = "Volume Down";
+   linux,code = <114>;
+   gpios = <&gpa0 4 1>;
+  };
+
+  volup-key {
+   label = "Volume Up";
+   linux,code = <115>;
+   gpios = <&gpa0 3 1>;
+  };
+
+
+  wink-key {
+   label = "Camera";
+   linux,code = <212>;
+   gpios = <&gpa0 6 1>;
+  };
+ };
+
+ memory@80000000 {
+  device_type = "memory";
+  reg = <0x0 0x80000000 0x3c800000>,
+        <0x0 0xc0000000 0x20000000>,
+        <0x0 0xe1900000 0x1e700000>,
+        <0x8 0x80000000 0x80000000>;
+ };
+
+ reserved-memory {
+  #address-cells = <2>;
+  #size-cells = <1>;
+  ranges;
+
+  framebuffer@cc000000 {
+   reg = <0x0 0xcc000000 (1440 * 2960 * 4)>;
+   no-map;
+  };
+ };
+};
+
+&oscclk {
+ clock-frequency = <26000000>;
+};
+
+&pinctrl_alive {
+ key_power: key-power-pins {
+  samsung,pins = "gpa2-4";
+  samsung,pin-function = <0xf>;
+  samsung,pin-pud = <3>;
+  samsung,pin-drv = <0>;
+ };
+
+ key_voldown: key-voldown-pins {
+  samsung,pins = "gpa0-4";
+  samsung,pin-function = <0xf>;
+  samsung,pin-pud = <3>;
+  samsung,pin-drv = <0>;
+ };
+
+ key_volup: key-volup-pins {
+  samsung,pins = "gpa0-3";
+  samsung,pin-function = <0xf>;
+  samsung,pin-pud = <3>;
+  samsung,pin-drv = <0>;
+ };
+
+ key_wink: key-wink-pins {
+  samsung,pins = "gpa0-6";
+  samsung,pin-function = <0xf>;
+  samsung,pin-pud = <3>;
+  samsung,pin-drv = <0>;
+ };
+};

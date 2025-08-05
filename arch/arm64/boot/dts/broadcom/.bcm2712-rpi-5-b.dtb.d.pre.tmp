@@ -1,0 +1,5 @@
+bcm2712-rpi-5-b.o: arch/arm64/boot/dts/broadcom/bcm2712-rpi-5-b.dts \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ arch/arm64/boot/dts/broadcom/bcm2712.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h

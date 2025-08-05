@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/amd/dtbs-list := {   echo arch/arm64/boot/dts/amd/amd-overdrive-rev-b0.dtb;   echo arch/arm64/boot/dts/amd/amd-overdrive-rev-b1.dtb; :; } > arch/arm64/boot/dts/amd/dtbs-list

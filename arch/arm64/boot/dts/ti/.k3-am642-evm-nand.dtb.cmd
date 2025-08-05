@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/ti/k3-am642-evm-nand.dtb := ./scripts/dtc/fdtoverlay -o arch/arm64/boot/dts/ti/k3-am642-evm-nand.dtb -i arch/arm64/boot/dts/ti/k3-am642-evm.dtb arch/arm64/boot/dts/ti/k3-am642-evm-nand.dtbo 

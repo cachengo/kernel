@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/toshiba/dtbs-list := {   echo arch/arm64/boot/dts/toshiba/tmpv7708-rm-mbrc.dtb;   echo arch/arm64/boot/dts/toshiba/tmpv7708-visrobo-vrb.dtb; :; } > arch/arm64/boot/dts/toshiba/dtbs-list

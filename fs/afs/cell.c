@@ -64,7 +64,8 @@ static struct afs_cell *afs_find_cell_locked(struct afs_net *net,
 		return ERR_PTR(-ENAMETOOLONG);
 
 	if (!name) {
-		cell = net->ws_cell;
+		cell = rcu_dereference_protected(net->ws_cell,
+						 lockdep_is_held(&net->cells_lock));
 		if (!cell)
 			return ERR_PTR(-EDESTADDRREQ);
 		goto found;
@@ -146,21 +147,24 @@ static struct afs_cell *afs_alloc_cell(struct afs_net *net,
 		return ERR_PTR(-ENOMEM);
 	}
 
-	cell->name = kmalloc(namelen + 1, GFP_KERNEL);
+	cell->name = kmalloc(1 + namelen + 1, GFP_KERNEL);
 	if (!cell->name) {
 		kfree(cell);
 		return ERR_PTR(-ENOMEM);
 	}
 
-	cell->net = net;
+	cell->name[0] = '.';
+	cell->name++;
 	cell->name_len = namelen;
 	for (i = 0; i < namelen; i++)
 		cell->name[i] = tolower(name[i]);
 	cell->name[i] = 0;
 
-	atomic_set(&cell->ref, 1);
+	cell->net = net;
+	refcount_set(&cell->ref, 1);
 	atomic_set(&cell->active, 0);
 	INIT_WORK(&cell->manager, afs_manage_cell_work);
+	init_rwsem(&cell->vs_lock);
 	cell->volumes = RB_ROOT;
 	INIT_HLIST_HEAD(&cell->proc_volumes);
 	seqlock_init(&cell->volume_lock);
@@ -210,7 +214,7 @@ parse_failed:
 	if (ret == -EINVAL)
 		printk(KERN_ERR "kAFS: bad VL server IP address\n");
 error:
-	kfree(cell->name);
+	kfree(cell->name - 1);
 	kfree(cell);
 	_leave(" = %d", ret);
 	return ERR_PTR(ret);
@@ -285,7 +289,7 @@ struct afs_cell *afs_lookup_cell(struct afs_net *net,
 	cell = candidate;
 	candidate = NULL;
 	atomic_set(&cell->active, 2);
-	trace_afs_cell(cell->debug_id, atomic_read(&cell->ref), 2, afs_cell_trace_insert);
+	trace_afs_cell(cell->debug_id, refcount_read(&cell->ref), 2, afs_cell_trace_insert);
 	rb_link_node_rcu(&cell->net_node, parent, pp);
 	rb_insert_color(&cell->net_node, &net->cells);
 	up_write(&net->cells_lock);
@@ -293,7 +297,7 @@ struct afs_cell *afs_lookup_cell(struct afs_net *net,
 	afs_queue_cell(cell, afs_cell_trace_get_queue_new);
 
 wait_for_cell:
-	trace_afs_cell(cell->debug_id, atomic_read(&cell->ref), atomic_read(&cell->active),
+	trace_afs_cell(cell->debug_id, refcount_read(&cell->ref), atomic_read(&cell->active),
 		       afs_cell_trace_wait);
 	_debug("wait_for_cell");
 	wait_var_event(&cell->state,
@@ -364,6 +368,14 @@ int afs_cell_init(struct afs_net *net, const char *rootcell)
 		len = cp - rootcell;
 	}
 
+	if (len == 0 || !rootcell[0] || rootcell[0] == '.' || rootcell[len - 1] == '.')
+		return -EINVAL;
+	if (memchr(rootcell, '/', len))
+		return -EINVAL;
+	cp = strstr(rootcell, "..");
+	if (cp && cp < rootcell + len)
+		return -EINVAL;
+
 	/* allocate a cell record for the root cell */
 	new_root = afs_lookup_cell(net, rootcell, len, vllist, false);
 	if (IS_ERR(new_root)) {
@@ -377,8 +389,8 @@ int afs_cell_init(struct afs_net *net, const char *rootcell)
 	/* install the new cell */
 	down_write(&net->cells_lock);
 	afs_see_cell(new_root, afs_cell_trace_see_ws);
-	old_root = net->ws_cell;
-	net->ws_cell = new_root;
+	old_root = rcu_replace_pointer(net->ws_cell, new_root,
+				       lockdep_is_held(&net->cells_lock));
 	up_write(&net->cells_lock);
 
 	afs_unuse_cell(net, old_root, afs_cell_trace_unuse_ws);
@@ -407,10 +419,12 @@ static int afs_update_cell(struct afs_cell *cell)
 		if (ret == -ENOMEM)
 			goto out_wake;
 
-		ret = -ENOMEM;
 		vllist = afs_alloc_vlserver_list(0);
-		if (!vllist)
+		if (!vllist) {
+			if (ret >= 0)
+				ret = -ENOMEM;
 			goto out_wake;
+		}
 
 		switch (ret) {
 		case -ENODATA:
@@ -488,18 +502,18 @@ static void afs_cell_destroy(struct rcu_head *rcu)
 {
 	struct afs_cell *cell = container_of(rcu, struct afs_cell, rcu);
 	struct afs_net *net = cell->net;
-	int u;
+	int r;
 
 	_enter("%p{%s}", cell, cell->name);
 
-	u = atomic_read(&cell->ref);
-	ASSERTCMP(u, ==, 0);
-	trace_afs_cell(cell->debug_id, u, atomic_read(&cell->active), afs_cell_trace_free);
+	r = refcount_read(&cell->ref);
+	ASSERTCMP(r, ==, 0);
+	trace_afs_cell(cell->debug_id, r, atomic_read(&cell->active), afs_cell_trace_free);
 
 	afs_put_vlserverlist(net, rcu_access_pointer(cell->vl_servers));
 	afs_unuse_cell(net, cell->alias_of, afs_cell_trace_unuse_alias);
 	key_put(cell->anonymous_key);
-	kfree(cell->name);
+	kfree(cell->name - 1);
 	kfree(cell);
 
 	afs_dec_cells_outstanding(net);
@@ -537,13 +551,10 @@ void afs_cells_timer(struct timer_list *timer)
  */
 struct afs_cell *afs_get_cell(struct afs_cell *cell, enum afs_cell_trace reason)
 {
-	int u;
+	int r;
 
-	if (atomic_read(&cell->ref) <= 0)
-		BUG();
-
-	u = atomic_inc_return(&cell->ref);
-	trace_afs_cell(cell->debug_id, u, atomic_read(&cell->active), reason);
+	__refcount_inc(&cell->ref, &r);
+	trace_afs_cell(cell->debug_id, r + 1, atomic_read(&cell->active), reason);
 	return cell;
 }
 
@@ -554,12 +565,14 @@ void afs_put_cell(struct afs_cell *cell, enum afs_cell_trace reason)
 {
 	if (cell) {
 		unsigned int debug_id = cell->debug_id;
-		unsigned int u, a;
+		unsigned int a;
+		bool zero;
+		int r;
 
 		a = atomic_read(&cell->active);
-		u = atomic_dec_return(&cell->ref);
-		trace_afs_cell(debug_id, u, a, reason);
-		if (u == 0) {
+		zero = __refcount_dec_and_test(&cell->ref, &r);
+		trace_afs_cell(debug_id, r - 1, a, reason);
+		if (zero) {
 			a = atomic_read(&cell->active);
 			WARN(a != 0, "Cell active count %u > 0\n", a);
 			call_rcu(&cell->rcu, afs_cell_destroy);
@@ -572,14 +585,12 @@ void afs_put_cell(struct afs_cell *cell, enum afs_cell_trace reason)
  */
 struct afs_cell *afs_use_cell(struct afs_cell *cell, enum afs_cell_trace reason)
 {
-	int u, a;
+	int r, a;
 
-	if (atomic_read(&cell->ref) <= 0)
-		BUG();
-
-	u = atomic_read(&cell->ref);
+	r = refcount_read(&cell->ref);
+	WARN_ON(r == 0);
 	a = atomic_inc_return(&cell->active);
-	trace_afs_cell(cell->debug_id, u, a, reason);
+	trace_afs_cell(cell->debug_id, r, a, reason);
 	return cell;
 }
 
@@ -591,7 +602,7 @@ void afs_unuse_cell(struct afs_net *net, struct afs_cell *cell, enum afs_cell_tr
 {
 	unsigned int debug_id;
 	time64_t now, expire_delay;
-	int u, a;
+	int r, a;
 
 	if (!cell)
 		return;
@@ -605,9 +616,9 @@ void afs_unuse_cell(struct afs_net *net, struct afs_cell *cell, enum afs_cell_tr
 		expire_delay = afs_cell_gc_delay;
 
 	debug_id = cell->debug_id;
-	u = atomic_read(&cell->ref);
+	r = refcount_read(&cell->ref);
 	a = atomic_dec_return(&cell->active);
-	trace_afs_cell(debug_id, u, a, reason);
+	trace_afs_cell(debug_id, r, a, reason);
 	WARN_ON(a == 0);
 	if (a == 1)
 		/* 'cell' may now be garbage collected. */
@@ -619,11 +630,11 @@ void afs_unuse_cell(struct afs_net *net, struct afs_cell *cell, enum afs_cell_tr
  */
 void afs_see_cell(struct afs_cell *cell, enum afs_cell_trace reason)
 {
-	int u, a;
+	int r, a;
 
-	u = atomic_read(&cell->ref);
+	r = refcount_read(&cell->ref);
 	a = atomic_read(&cell->active);
-	trace_afs_cell(cell->debug_id, u, a, reason);
+	trace_afs_cell(cell->debug_id, r, a, reason);
 }
 
 /*
@@ -678,13 +689,6 @@ static int afs_activate_cell(struct afs_net *net, struct afs_cell *cell)
 			return ret;
 	}
 
-#ifdef CONFIG_AFS_FSCACHE
-	cell->cache = fscache_acquire_cookie(afs_cache_netfs.primary_index,
-					     &afs_cell_cache_index_def,
-					     cell->name, strlen(cell->name),
-					     NULL, 0,
-					     cell, 0, true);
-#endif
 	ret = afs_proc_cell_setup(cell);
 	if (ret < 0)
 		return ret;
@@ -717,14 +721,10 @@ static void afs_deactivate_cell(struct afs_net *net, struct afs_cell *cell)
 	afs_proc_cell_remove(cell);
 
 	mutex_lock(&net->proc_cells_lock);
-	hlist_del_rcu(&cell->proc_link);
+	if (!hlist_unhashed(&cell->proc_link))
+		hlist_del_rcu(&cell->proc_link);
 	afs_dynroot_rmdir(net, cell);
 	mutex_unlock(&net->proc_cells_lock);
-
-#ifdef CONFIG_AFS_FSCACHE
-	fscache_relinquish_cookie(cell->cache, NULL, false);
-	cell->cache = NULL;
-#endif
 
 	_leave("");
 }
@@ -749,7 +749,7 @@ again:
 		active = 1;
 		if (atomic_try_cmpxchg_relaxed(&cell->active, &active, 0)) {
 			rb_erase(&cell->net_node, &net->cells);
-			trace_afs_cell(cell->debug_id, atomic_read(&cell->ref), 0,
+			trace_afs_cell(cell->debug_id, refcount_read(&cell->ref), 0,
 				       afs_cell_trace_unuse_delete);
 			smp_store_release(&cell->state, AFS_CELL_REMOVED);
 		}
@@ -828,7 +828,7 @@ done:
 
 final_destruction:
 	/* The root volume is pinning the cell */
-	afs_put_volume(cell->net, cell->root_volume, afs_volume_trace_put_cell_root);
+	afs_put_volume(cell->root_volume, afs_volume_trace_put_cell_root);
 	cell->root_volume = NULL;
 	afs_put_cell(cell, afs_cell_trace_put_destroy);
 }
@@ -876,7 +876,7 @@ void afs_manage_cells(struct work_struct *work)
 		bool sched_cell = false;
 
 		active = atomic_read(&cell->active);
-		trace_afs_cell(cell->debug_id, atomic_read(&cell->ref),
+		trace_afs_cell(cell->debug_id, refcount_read(&cell->ref),
 			       active, afs_cell_trace_manage);
 
 		ASSERTCMP(active, >=, 1);
@@ -884,7 +884,7 @@ void afs_manage_cells(struct work_struct *work)
 		if (purging) {
 			if (test_and_clear_bit(AFS_CELL_FL_NO_GC, &cell->flags)) {
 				active = atomic_dec_return(&cell->active);
-				trace_afs_cell(cell->debug_id, atomic_read(&cell->ref),
+				trace_afs_cell(cell->debug_id, refcount_read(&cell->ref),
 					       active, afs_cell_trace_unuse_pin);
 			}
 		}
@@ -946,8 +946,8 @@ void afs_cell_purge(struct afs_net *net)
 	_enter("");
 
 	down_write(&net->cells_lock);
-	ws = net->ws_cell;
-	net->ws_cell = NULL;
+	ws = rcu_replace_pointer(net->ws_cell, NULL,
+				 lockdep_is_held(&net->cells_lock));
 	up_write(&net->cells_lock);
 	afs_unuse_cell(net, ws, afs_cell_trace_unuse_ws);
 

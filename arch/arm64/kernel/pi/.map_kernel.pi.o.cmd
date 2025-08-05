@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/kernel/pi/map_kernel.pi.o := objcopy --prefix-symbols=__pi_ --remove-section=.note.gnu.property  arch/arm64/kernel/pi/map_kernel.o arch/arm64/kernel/pi/map_kernel.pi.o && arch/arm64/kernel/pi/relacheck arch/arm64/kernel/pi/map_kernel.pi.o arch/arm64/kernel/pi/map_kernel.o

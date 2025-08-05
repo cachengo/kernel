@@ -1,0 +1,1 @@
+arch/arm64/boot/dts/rockchip/overlay/rockchip-rk3568-rock-3a-disable-uart2.dtbo: arch/arm64/boot/dts/rockchip/overlay/.rockchip-rk3568-rock-3a-disable-uart2.dtbo.dts.tmp

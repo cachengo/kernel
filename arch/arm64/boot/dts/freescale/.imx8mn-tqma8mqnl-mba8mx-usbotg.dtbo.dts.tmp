@@ -1,0 +1,87 @@
+# 0 "arch/arm64/boot/dts/freescale/imx8mn-tqma8mqnl-mba8mx-usbotg.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/freescale/imx8mn-tqma8mqnl-mba8mx-usbotg.dtso"
+
+
+
+
+
+
+
+/dts-v1/;
+/plugin/;
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h" 1
+# 12 "arch/arm64/boot/dts/freescale/imx8mn-tqma8mqnl-mba8mx-usbotg.dtso" 2
+
+# 1 "arch/arm64/boot/dts/freescale/imx8mn-pinfunc.h" 1
+# 14 "arch/arm64/boot/dts/freescale/imx8mn-tqma8mqnl-mba8mx-usbotg.dtso" 2
+
+&{/} {
+ connector {
+  compatible = "gpio-usb-b-connector", "usb-b-connector";
+  type = "micro";
+  label = "X19";
+  pinctrl-names = "default";
+  pinctrl-0 = <&pinctrl_usb1_connector>;
+  id-gpios = <&gpio1 10 0>;
+
+  port {
+   usb_dr_connector: endpoint {
+    remote-endpoint = <&usb1_drd_sw>;
+   };
+  };
+ };
+};
+# 40 "arch/arm64/boot/dts/freescale/imx8mn-tqma8mqnl-mba8mx-usbotg.dtso"
+&rst_usb_hub_hog {
+ status = "disabled";
+};
+
+&expander0 {
+ rst-usb-low-hub-hog {
+  gpio-hog;
+  gpios = <13 0>;
+  output-low;
+  line-name = "RST_USB_HUB#";
+ };
+};
+
+&sel_usb_hub_hog {
+ status = "disabled";
+};
+
+&gpio2 {
+ sel-usb-low-hub-hog {
+  gpio-hog;
+  gpios = <1 0>;
+  output-low;
+ };
+};
+
+&usbotg1 {
+ pinctrl-names = "default";
+ pinctrl-0 = <&pinctrl_usbotg>;
+ dr_mode = "otg";
+ srp-disable;
+ hnp-disable;
+ adp-disable;
+ power-active-high;
+ /delete-property/ disable-over-current;
+ over-current-active-low;
+ usb-role-switch;
+ status = "okay";
+
+ port {
+  usb1_drd_sw: endpoint {
+   remote-endpoint = <&usb_dr_connector>;
+  };
+ };
+};
+
+&iomuxc {
+ pinctrl_usb1_connector: usb1-connectorgrp {
+  fsl,pins = <0x050 0x2B8 0x000 0x0 0x0 0x1c0>;
+ };
+};

@@ -1,0 +1,4 @@
+k3-am642-evm-nand.o: arch/arm64/boot/dts/ti/k3-am642-evm-nand.dtso \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h \
+ arch/arm64/boot/dts/ti/k3-pinctrl.h

@@ -1,0 +1,2 @@
+rockchip-rk3588-fanctrl.o: \
+ arch/arm64/boot/dts/rockchip/overlay/rockchip-rk3588-fanctrl.dtso

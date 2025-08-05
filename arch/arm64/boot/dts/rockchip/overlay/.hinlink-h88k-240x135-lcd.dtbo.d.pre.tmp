@@ -1,0 +1,5 @@
+hinlink-h88k-240x135-lcd.o: \
+ arch/arm64/boot/dts/rockchip/overlay/hinlink-h88k-240x135-lcd.dtso \
+ scripts/dtc/include-prefixes/dt-bindings/clock/rockchip,rk3588-cru.h \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ scripts/dtc/include-prefixes/dt-bindings/pinctrl/rockchip.h

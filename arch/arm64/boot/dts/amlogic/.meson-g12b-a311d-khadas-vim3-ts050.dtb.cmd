@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/amlogic/meson-g12b-a311d-khadas-vim3-ts050.dtb := ./scripts/dtc/fdtoverlay -o arch/arm64/boot/dts/amlogic/meson-g12b-a311d-khadas-vim3-ts050.dtb -i arch/arm64/boot/dts/amlogic/meson-g12b-a311d-khadas-vim3.dtb arch/arm64/boot/dts/amlogic/meson-khadas-vim3-ts050.dtbo 

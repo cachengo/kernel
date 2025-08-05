@@ -19,7 +19,6 @@
 #include <linux/moduleparam.h>
 #include <linux/err.h>
 #include <linux/mtd/mtd.h>
-#include <linux/random.h>
 #include <linux/slab.h>
 #include <linux/sched.h>
 #include "mtd_test.h"
@@ -55,14 +54,8 @@ module_param(cycles_count, uint, S_IRUGO);
 MODULE_PARM_DESC(cycles_count, "how many erase cycles to do "
 			       "(infinite by default)");
 
-static int random_pattern;
-module_param(random_pattern, int, S_IRUGO);
-MODULE_PARM_DESC(random_pattern, "if choose random pattern to program");
-
 static struct mtd_info *mtd;
 
-/* This buffer contains random pattern */
-static unsigned char *patt_random;
 /* This buffer contains 0x555555...0xAAAAAA... pattern */
 static unsigned char *patt_5A5;
 /* This buffer contains 0xAAAAAA...0x555555... pattern */
@@ -217,13 +210,9 @@ static int __init tort_init(void)
 	}
 
 	err = -ENOMEM;
-	patt_random = kmalloc(mtd->erasesize, GFP_KERNEL);
-	if (!patt_random)
-		goto out_mtd;
-
 	patt_5A5 = kmalloc(mtd->erasesize, GFP_KERNEL);
 	if (!patt_5A5)
-		goto out_patt_random;
+		goto out_mtd;
 
 	patt_A5A = kmalloc(mtd->erasesize, GFP_KERNEL);
 	if (!patt_A5A)
@@ -241,8 +230,6 @@ static int __init tort_init(void)
 	if (!bad_ebs)
 		goto out_check_buf;
 
-	err = 0;
-
 	/* Initialize patterns */
 	memset(patt_FF, 0xFF, mtd->erasesize);
 	for (i = 0; i < mtd->erasesize / pgsize; i++) {
@@ -254,8 +241,6 @@ static int __init tort_init(void)
 			memset(patt_A5A + i * pgsize, 0x55, pgsize);
 		}
 	}
-
-	prandom_bytes(patt_random, mtd->erasesize);
 
 	err = mtdtest_scan_for_bad_eraseblocks(mtd, bad_ebs, eb, ebcnt);
 	if (err)
@@ -296,8 +281,6 @@ static int __init tort_init(void)
 				patt = patt_5A5;
 			else
 				patt = patt_A5A;
-			if (random_pattern)
-				patt = patt_random;
 			err = write_pattern(i, patt);
 			if (err)
 				goto out;
@@ -316,14 +299,8 @@ static int __init tort_init(void)
 					patt = patt_5A5;
 				else
 					patt = patt_A5A;
-				if (random_pattern)
-					patt = patt_random;
 				err = check_eraseblock(i, patt);
 				if (err) {
-					if (random_pattern) {
-						pr_info("verify failed for random pattern\n");
-						goto out;
-					}
 					pr_info("verify failed for %s"
 					       " pattern\n",
 					       ((eb + erase_cycles) & 1) ?
@@ -366,8 +343,6 @@ out_patt_A5A:
 	kfree(patt_A5A);
 out_patt_5A5:
 	kfree(patt_5A5);
-out_patt_random:
-	kfree(patt_random);
 out_mtd:
 	put_mtd_device(mtd);
 	if (err)

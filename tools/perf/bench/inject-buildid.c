@@ -12,6 +12,7 @@
 #include <linux/time64.h>
 #include <linux/list.h>
 #include <linux/err.h>
+#include <linux/zalloc.h>
 #include <internal/lib.h>
 #include <subcmd/parse-options.h>
 
@@ -19,10 +20,10 @@
 #include "util/data.h"
 #include "util/stat.h"
 #include "util/debug.h"
-#include "util/event.h"
 #include "util/symbol.h"
 #include "util/session.h"
 #include "util/build-id.h"
+#include "util/sample.h"
 #include "util/synthetic-events.h"
 
 #define MMAP_DEV_MAJOR  8
@@ -51,7 +52,7 @@ struct bench_dso {
 static int nr_dsos;
 static struct bench_dso *dsos;
 
-extern int cmd_inject(int argc, const char *argv[]);
+extern int main(int argc, const char **argv);
 
 static const struct option options[] = {
 	OPT_UINTEGER('i', "iterations", &iterations,
@@ -122,7 +123,7 @@ static void release_dso(void)
 	for (i = 0; i < nr_dsos; i++) {
 		struct bench_dso *dso = &dsos[i];
 
-		free(dso->name);
+		zfree(&dso->name);
 	}
 	free(dsos);
 }
@@ -133,7 +134,7 @@ static u64 dso_map_addr(struct bench_dso *dso)
 	return 0x400000ULL + dso->ino * 8192ULL;
 }
 
-static u32 synthesize_attr(struct bench_data *data)
+static ssize_t synthesize_attr(struct bench_data *data)
 {
 	union perf_event event;
 
@@ -151,7 +152,7 @@ static u32 synthesize_attr(struct bench_data *data)
 	return writen(data->input_pipe[1], &event, event.header.size);
 }
 
-static u32 synthesize_fork(struct bench_data *data)
+static ssize_t synthesize_fork(struct bench_data *data)
 {
 	union perf_event event;
 
@@ -169,8 +170,7 @@ static u32 synthesize_fork(struct bench_data *data)
 	return writen(data->input_pipe[1], &event, event.header.size);
 }
 
-static u32 synthesize_mmap(struct bench_data *data, struct bench_dso *dso,
-			   u64 timestamp)
+static ssize_t synthesize_mmap(struct bench_data *data, struct bench_dso *dso, u64 timestamp)
 {
 	union perf_event event;
 	size_t len = offsetof(struct perf_record_mmap2, filename);
@@ -198,23 +198,25 @@ static u32 synthesize_mmap(struct bench_data *data, struct bench_dso *dso,
 
 	if (len > sizeof(event.mmap2)) {
 		/* write mmap2 event first */
-		writen(data->input_pipe[1], &event, len - bench_id_hdr_size);
+		if (writen(data->input_pipe[1], &event, len - bench_id_hdr_size) < 0)
+			return -1;
 		/* zero-fill sample id header */
 		memset(id_hdr_ptr, 0, bench_id_hdr_size);
 		/* put timestamp in the right position */
 		ts_idx = (bench_id_hdr_size / sizeof(u64)) - 2;
 		id_hdr_ptr[ts_idx] = timestamp;
-		writen(data->input_pipe[1], id_hdr_ptr, bench_id_hdr_size);
-	} else {
-		ts_idx = (len / sizeof(u64)) - 2;
-		id_hdr_ptr[ts_idx] = timestamp;
-		writen(data->input_pipe[1], &event, len);
+		if (writen(data->input_pipe[1], id_hdr_ptr, bench_id_hdr_size) < 0)
+			return -1;
+
+		return len;
 	}
-	return len;
+
+	ts_idx = (len / sizeof(u64)) - 2;
+	id_hdr_ptr[ts_idx] = timestamp;
+	return writen(data->input_pipe[1], &event, len);
 }
 
-static u32 synthesize_sample(struct bench_data *data, struct bench_dso *dso,
-			     u64 timestamp)
+static ssize_t synthesize_sample(struct bench_data *data, struct bench_dso *dso, u64 timestamp)
 {
 	union perf_event event;
 	struct perf_sample sample = {
@@ -233,7 +235,7 @@ static u32 synthesize_sample(struct bench_data *data, struct bench_dso *dso,
 	return writen(data->input_pipe[1], &event, event.header.size);
 }
 
-static u32 synthesize_flush(struct bench_data *data)
+static ssize_t synthesize_flush(struct bench_data *data)
 {
 	struct perf_event_header header = {
 		.size = sizeof(header),
@@ -292,7 +294,7 @@ static int setup_injection(struct bench_data *data, bool build_id_all)
 
 	if (data->pid == 0) {
 		const char **inject_argv;
-		int inject_argc = 2;
+		int inject_argc = 3;
 
 		close(data->input_pipe[1]);
 		close(data->output_pipe[0]);
@@ -316,15 +318,16 @@ static int setup_injection(struct bench_data *data, bool build_id_all)
 		if (inject_argv == NULL)
 			exit(1);
 
-		inject_argv[0] = strdup("inject");
-		inject_argv[1] = strdup("-b");
+		inject_argv[0] = strdup("perf");
+		inject_argv[1] = strdup("inject");
+		inject_argv[2] = strdup("-b");
 		if (build_id_all)
-			inject_argv[2] = strdup("--buildid-all");
+			inject_argv[3] = strdup("--buildid-all");
 
 		/* signal that we're ready to go */
 		close(ready_pipe[1]);
 
-		cmd_inject(inject_argc, inject_argv);
+		main(inject_argc, inject_argv);
 
 		exit(0);
 	}
@@ -348,31 +351,38 @@ static int inject_build_id(struct bench_data *data, u64 *max_rss)
 	int status;
 	unsigned int i, k;
 	struct rusage rusage;
-	u64 len = 0;
 
 	/* this makes the child to run */
 	if (perf_header__write_pipe(data->input_pipe[1]) < 0)
 		return -1;
 
-	len += synthesize_attr(data);
-	len += synthesize_fork(data);
+	if (synthesize_attr(data) < 0)
+		return -1;
+
+	if (synthesize_fork(data) < 0)
+		return -1;
 
 	for (i = 0; i < nr_mmaps; i++) {
-		int idx = rand() % (nr_dsos - 1);
+		int idx = rand() % nr_dsos;
 		struct bench_dso *dso = &dsos[idx];
 		u64 timestamp = rand() % 1000000;
 
 		pr_debug2("   [%d] injecting: %s\n", i+1, dso->name);
-		len += synthesize_mmap(data, dso, timestamp);
+		if (synthesize_mmap(data, dso, timestamp) < 0)
+			return -1;
 
-		for (k = 0; k < nr_samples; k++)
-			len += synthesize_sample(data, dso, timestamp + k * 1000);
+		for (k = 0; k < nr_samples; k++) {
+			if (synthesize_sample(data, dso, timestamp + k * 1000) < 0)
+				return -1;
+		}
 
-		if ((i + 1) % 10 == 0)
-			len += synthesize_flush(data);
+		if ((i + 1) % 10 == 0) {
+			if (synthesize_flush(data) < 0)
+				return -1;
+		}
 	}
 
-	/* tihs makes the child to finish */
+	/* this makes the child to finish */
 	close(data->input_pipe[1]);
 
 	wait4(data->pid, &status, 0, &rusage);

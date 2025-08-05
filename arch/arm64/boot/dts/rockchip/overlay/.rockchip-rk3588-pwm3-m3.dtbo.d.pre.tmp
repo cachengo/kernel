@@ -1,0 +1,2 @@
+rockchip-rk3588-pwm3-m3.o: \
+ arch/arm64/boot/dts/rockchip/overlay/rockchip-rk3588-pwm3-m3.dtso

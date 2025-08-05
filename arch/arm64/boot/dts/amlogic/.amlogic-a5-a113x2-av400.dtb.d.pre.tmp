@@ -1,0 +1,8 @@
+amlogic-a5-a113x2-av400.o: \
+ arch/arm64/boot/dts/amlogic/amlogic-a5-a113x2-av400.dts \
+ arch/arm64/boot/dts/amlogic/amlogic-a5.dtsi \
+ arch/arm64/boot/dts/amlogic/amlogic-a4-common.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ scripts/dtc/include-prefixes/dt-bindings/power/amlogic,a5-pwrc.h

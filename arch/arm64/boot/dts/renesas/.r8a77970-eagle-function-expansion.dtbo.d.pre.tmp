@@ -1,0 +1,4 @@
+r8a77970-eagle-function-expansion.o: \
+ arch/arm64/boot/dts/renesas/r8a77970-eagle-function-expansion.dtso \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h

@@ -15,7 +15,8 @@ import gdb
 import os
 import re
 
-from linux import modules, utils
+from itertools import count
+from linux import modules, utils, constants
 
 
 if hasattr(gdb, 'Breakpoint'):
@@ -82,34 +83,42 @@ lx-symbols command."""
         self.module_files_updated = True
 
     def _get_module_file(self, module_name):
-        module_pattern = ".*/{0}\.ko(?:.debug)?$".format(
+        module_pattern = r".*/{0}\.ko(?:.debug)?$".format(
             module_name.replace("_", r"[_\-]"))
         for name in self.module_files:
             if re.match(module_pattern, name) and os.path.exists(name):
                 return name
         return None
 
-    def _section_arguments(self, module):
+    def _section_arguments(self, module, module_addr):
         try:
             sect_attrs = module['sect_attrs'].dereference()
         except gdb.error:
-            return ""
-        attrs = sect_attrs['attrs']
-        section_name_to_address = {
-            attrs[n]['battr']['attr']['name'].string(): attrs[n]['address']
-            for n in range(int(sect_attrs['nsections']))}
+            return str(module_addr)
+
+        section_name_to_address = {}
+        for i in count():
+            # this is a NULL terminated array
+            if sect_attrs['grp']['bin_attrs'][i] == 0x0:
+                break
+
+            attr = sect_attrs['grp']['bin_attrs'][i].dereference()
+            section_name_to_address[attr['attr']['name'].string()] = attr['private']
+
+        textaddr = section_name_to_address.get(".text", module_addr)
         args = []
         for section_name in [".data", ".data..read_mostly", ".rodata", ".bss",
-                             ".text", ".text.hot", ".text.unlikely"]:
+                             ".text.hot", ".text.unlikely"]:
             address = section_name_to_address.get(section_name)
             if address:
                 args.append(" -s {name} {addr}".format(
                     name=section_name, addr=str(address)))
-        return "".join(args)
+        return "{textaddr} {sections}".format(
+            textaddr=textaddr, sections="".join(args))
 
     def load_module_symbols(self, module):
         module_name = module['name'].string()
-        module_addr = str(module['core_layout']['base']).split()[0]
+        module_addr = str(module['mem'][constants.LX_MOD_TEXT]['base']).split()[0]
 
         module_file = self._get_module_file(module_name)
         if not module_file and not self.module_files_updated:
@@ -125,10 +134,9 @@ lx-symbols command."""
                 module_addr = hex(int(module_addr, 0) + plt_offset + plt_size)
             gdb.write("loading @{addr}: {filename}\n".format(
                 addr=module_addr, filename=module_file))
-            cmdline = "add-symbol-file {filename} {addr}{sections}".format(
+            cmdline = "add-symbol-file {filename} {sections}".format(
                 filename=module_file,
-                addr=module_addr,
-                sections=self._section_arguments(module))
+                sections=self._section_arguments(module, module_addr))
             gdb.execute(cmdline, to_string=True)
             if module_name not in self.loaded_modules:
                 self.loaded_modules.append(module_name)
@@ -148,7 +156,8 @@ lx-symbols command."""
         # drop all current symbols and reload vmlinux
         orig_vmlinux = 'vmlinux'
         for obj in gdb.objfiles():
-            if obj.filename.endswith('vmlinux'):
+            if (obj.filename.endswith('vmlinux') or
+                obj.filename.endswith('vmlinux.debug')):
                 orig_vmlinux = obj.filename
         gdb.execute("symbol-file", to_string=True)
         gdb.execute("symbol-file {0}".format(orig_vmlinux))
@@ -164,7 +173,8 @@ lx-symbols command."""
             saved_state['breakpoint'].enabled = saved_state['enabled']
 
     def invoke(self, arg, from_tty):
-        self.module_paths = [os.path.expanduser(p) for p in arg.split()]
+        self.module_paths = [os.path.abspath(os.path.expanduser(p))
+                             for p in arg.split()]
         self.module_paths.append(os.getcwd())
 
         # enforce update
@@ -173,12 +183,15 @@ lx-symbols command."""
 
         self.load_all_symbols()
 
+        if not modules.has_modules():
+            return
+
         if hasattr(gdb, 'Breakpoint'):
             if self.breakpoint is not None:
                 self.breakpoint.delete()
                 self.breakpoint = None
             self.breakpoint = LoadModuleBreakpoint(
-                "kernel/module.c:do_init_module", self)
+                "kernel/module/main.c:do_init_module", self)
         else:
             gdb.write("Note: symbol update on module loading not supported "
                       "with this gdb version\n")

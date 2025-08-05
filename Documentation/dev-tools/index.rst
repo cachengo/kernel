@@ -7,26 +7,36 @@ be used to work on the kernel. For now, the documents have been pulled
 together without any significant effort to integrate them into a coherent
 whole; patches welcome!
 
-.. class:: toc-title
+A brief overview of testing-specific tools can be found in
+Documentation/dev-tools/testing-overview.rst
 
-	   Table of contents
+Tools that are specific to debugging can be found in
+Documentation/process/debugging/index.rst
 
 .. toctree::
+   :caption: Table of contents
    :maxdepth: 2
 
+   testing-overview
+   checkpatch
+   clang-format
    coccinelle
    sparse
    kcov
    gcov
    kasan
+   kmsan
    ubsan
    kmemleak
    kcsan
    kfence
-   gdb-kernel-debugging
-   kgdb
    kselftest
    kunit/index
+   ktap
+   checkuapi
+   gpio-sloppy-logic-analyzer
+   autofdo
+   propeller
 
 
 .. only::  subproject and html

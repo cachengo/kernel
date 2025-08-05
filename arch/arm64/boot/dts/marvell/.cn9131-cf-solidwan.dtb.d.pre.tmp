@@ -1,0 +1,17 @@
+cn9131-cf-solidwan.o: arch/arm64/boot/dts/marvell/cn9131-cf-solidwan.dts \
+ scripts/dtc/include-prefixes/dt-bindings/input/input.h \
+ scripts/dtc/include-prefixes/dt-bindings/input/linux-event-codes.h \
+ scripts/dtc/include-prefixes/dt-bindings/leds/common.h \
+ arch/arm64/boot/dts/marvell/cn9130.dtsi \
+ arch/arm64/boot/dts/marvell/armada-ap807-quad.dtsi \
+ arch/arm64/boot/dts/marvell/armada-ap807.dtsi \
+ arch/arm64/boot/dts/marvell/armada-ap80x.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h \
+ scripts/dtc/include-prefixes/dt-bindings/thermal/thermal.h \
+ arch/arm64/boot/dts/marvell/armada-cp115.dtsi \
+ arch/arm64/boot/dts/marvell/armada-cp11x.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/mvebu-icu.h \
+ arch/arm64/boot/dts/marvell/armada-common.dtsi \
+ arch/arm64/boot/dts/marvell/cn9130-sr-som.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h

@@ -1,0 +1,2 @@
+rockchip-rk3568-rock-3a-disable-uart2.o: \
+ arch/arm64/boot/dts/rockchip/overlay/rockchip-rk3568-rock-3a-disable-uart2.dtso

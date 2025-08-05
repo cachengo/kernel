@@ -2,7 +2,7 @@
 /*
  * Rockchip PCIE3.0 phy driver
  *
- * Copyright (C) 2020 Rockchip Electronics Co., Ltd.
+ * Copyright (C) 2022 Rockchip Electronics Co., Ltd.
  */
 
 #include <linux/clk.h>
@@ -12,26 +12,42 @@
 #include <linux/kernel.h>
 #include <linux/mfd/syscon.h>
 #include <linux/module.h>
-#include <linux/of_device.h>
+#include <linux/of.h>
 #include <linux/phy/pcie.h>
 #include <linux/phy/phy.h>
+#include <linux/platform_device.h>
 #include <linux/regmap.h>
 #include <linux/reset.h>
-#include <dt-bindings/phy/phy-snps-pcie3.h>
 
 /* Register for RK3568 */
-#define GRF_PCIE30PHY_CON1 0x4
-#define GRF_PCIE30PHY_CON6 0x18
-#define GRF_PCIE30PHY_CON9 0x24
-#define GRF_PCIE30PHY_STATUS0 0x80
-#define SRAM_INIT_DONE(reg) (reg & BIT(14))
+#define GRF_PCIE30PHY_CON1			0x4
+#define GRF_PCIE30PHY_CON6			0x18
+#define GRF_PCIE30PHY_CON9			0x24
+#define GRF_PCIE30PHY_DA_OCM			(BIT(15) | BIT(31))
+#define GRF_PCIE30PHY_STATUS0			0x80
+#define GRF_PCIE30PHY_WR_EN			(0xf << 16)
+#define SRAM_INIT_DONE(reg)			(reg & BIT(14))
+
+#define RK3568_BIFURCATION_LANE_0_1		BIT(0)
 
 /* Register for RK3588 */
-#define PHP_GRF_PCIESEL_CON 0x100
-#define RK3588_PCIE3PHY_GRF_CMN_CON0 0x0
-#define RK3588_PCIE3PHY_GRF_PHY0_STATUS1 0x904
-#define RK3588_PCIE3PHY_GRF_PHY1_STATUS1 0xa04
-#define RK3588_SRAM_INIT_DONE(reg) (reg & BIT(0))
+#define PHP_GRF_PCIESEL_CON			0x100
+#define RK3588_PCIE3PHY_GRF_CMN_CON0		0x0
+#define RK3588_PCIE3PHY_GRF_PHY0_STATUS1	0x904
+#define RK3588_PCIE3PHY_GRF_PHY1_STATUS1	0xa04
+#define RK3588_PCIE3PHY_GRF_PHY0_LN0_CON1	0x1004
+#define RK3588_PCIE3PHY_GRF_PHY0_LN1_CON1	0x1104
+#define RK3588_PCIE3PHY_GRF_PHY1_LN0_CON1	0x2004
+#define RK3588_PCIE3PHY_GRF_PHY1_LN1_CON1	0x2104
+#define RK3588_SRAM_INIT_DONE(reg)		(reg & BIT(0))
+
+#define RK3588_BIFURCATION_LANE_0_1		BIT(0)
+#define RK3588_BIFURCATION_LANE_2_3		BIT(1)
+#define RK3588_LANE_AGGREGATION		BIT(2)
+#define RK3588_RX_CMN_REFCLK_MODE_EN		((BIT(7) << 16) |  BIT(7))
+#define RK3588_RX_CMN_REFCLK_MODE_DIS		(BIT(7) << 16)
+#define RK3588_PCIE1LN_SEL_EN			(GENMASK(1, 0) << 16)
+#define RK3588_PCIE30_PHY_MODE_EN		(GENMASK(2, 0) << 16)
 
 struct rockchip_p3phy_ops;
 
@@ -48,7 +64,9 @@ struct rockchip_p3phy_priv {
 	struct phy *phy;
 	struct clk_bulk_data *clks;
 	int num_clks;
-	bool is_bifurcation;
+	int num_lanes;
+	u32 lanes[4];
+	u32 rx_cmn_refclk_mode[4];
 };
 
 struct rockchip_p3phy_ops {
@@ -59,7 +77,7 @@ static int rockchip_p3phy_set_mode(struct phy *phy, enum phy_mode mode, int subm
 {
 	struct rockchip_p3phy_priv *priv = phy_get_drvdata(phy);
 
-	/* Acutally We don't care EP/RC mode, but just record it */
+	/* Actually We don't care EP/RC mode, but just record it */
 	switch (submode) {
 	case PHY_MODE_PCIE_RC:
 		priv->mode = PHY_MODE_PCIE_RC;
@@ -67,11 +85,8 @@ static int rockchip_p3phy_set_mode(struct phy *phy, enum phy_mode mode, int subm
 	case PHY_MODE_PCIE_EP:
 		priv->mode = PHY_MODE_PCIE_EP;
 		break;
-	case PHY_MODE_PCIE_BIFURCATION:
-		priv->is_bifurcation = true;
-		break;
 	default:
-		pr_info("%s, invalid mode\n", __func__);
+		dev_err(&phy->dev, "%s, invalid mode\n", __func__);
 		return -EINVAL;
 	}
 
@@ -80,34 +95,41 @@ static int rockchip_p3phy_set_mode(struct phy *phy, enum phy_mode mode, int subm
 
 static int rockchip_p3phy_rk3568_init(struct rockchip_p3phy_priv *priv)
 {
-	int ret = 0;
+	struct phy *phy = priv->phy;
+	bool bifurcation = false;
+	int ret;
 	u32 reg;
 
 	/* Deassert PCIe PMA output clamp mode */
-	regmap_write(priv->phy_grf, GRF_PCIE30PHY_CON9,
-		     (0x1 << 15) | (0x1 << 31));
+	regmap_write(priv->phy_grf, GRF_PCIE30PHY_CON9, GRF_PCIE30PHY_DA_OCM);
+
+	for (int i = 0; i < priv->num_lanes; i++) {
+		dev_info(&phy->dev, "lane number %d, val %d\n", i, priv->lanes[i]);
+		if (priv->lanes[i] > 1)
+			bifurcation = true;
+	}
+
 	/* Set bifurcation if needed, and it doesn't care RC/EP */
-	if (priv->is_bifurcation) {
+	if (bifurcation) {
+		dev_info(&phy->dev, "bifurcation enabled\n");
 		regmap_write(priv->phy_grf, GRF_PCIE30PHY_CON6,
-			     0x1 | (0xf << 16));
+			     GRF_PCIE30PHY_WR_EN | RK3568_BIFURCATION_LANE_0_1);
 		regmap_write(priv->phy_grf, GRF_PCIE30PHY_CON1,
-			     (0x1 << 15) | (0x1 << 31));
+			     GRF_PCIE30PHY_DA_OCM);
+	} else {
+		dev_dbg(&phy->dev, "bifurcation disabled\n");
+		regmap_write(priv->phy_grf, GRF_PCIE30PHY_CON6,
+			     GRF_PCIE30PHY_WR_EN & ~RK3568_BIFURCATION_LANE_0_1);
 	}
 
 	reset_control_deassert(priv->p30phy);
-
-	udelay(10);
-	/* Updata RX VCO calibration controls */
-	writel(0x2800, priv->mmio + (0x104a << 2));
-	writel(0x2800, priv->mmio + (0x114a << 2));
-	udelay(10);
 
 	ret = regmap_read_poll_timeout(priv->phy_grf,
 				       GRF_PCIE30PHY_STATUS0,
 				       reg, SRAM_INIT_DONE(reg),
 				       0, 500);
 	if (ret)
-		pr_err("%s: lock failed 0x%x, check input refclk and power supply\n",
+		dev_err(&priv->phy->dev, "%s: lock failed 0x%x, check input refclk and power supply\n",
 		       __func__, reg);
 	return ret;
 }
@@ -118,12 +140,47 @@ static const struct rockchip_p3phy_ops rk3568_ops = {
 
 static int rockchip_p3phy_rk3588_init(struct rockchip_p3phy_priv *priv)
 {
-	int ret = 0;
-	u32 reg;
+	u32 reg = 0;
+	u8 mode = RK3588_LANE_AGGREGATION; /* default */
+	int ret;
+
+	regmap_write(priv->phy_grf, RK3588_PCIE3PHY_GRF_PHY0_LN0_CON1,
+		     priv->rx_cmn_refclk_mode[0] ? RK3588_RX_CMN_REFCLK_MODE_EN :
+		     RK3588_RX_CMN_REFCLK_MODE_DIS);
+	regmap_write(priv->phy_grf, RK3588_PCIE3PHY_GRF_PHY0_LN1_CON1,
+		     priv->rx_cmn_refclk_mode[1] ? RK3588_RX_CMN_REFCLK_MODE_EN :
+		     RK3588_RX_CMN_REFCLK_MODE_DIS);
+	regmap_write(priv->phy_grf, RK3588_PCIE3PHY_GRF_PHY1_LN0_CON1,
+		     priv->rx_cmn_refclk_mode[2] ? RK3588_RX_CMN_REFCLK_MODE_EN :
+		     RK3588_RX_CMN_REFCLK_MODE_DIS);
+	regmap_write(priv->phy_grf, RK3588_PCIE3PHY_GRF_PHY1_LN1_CON1,
+		     priv->rx_cmn_refclk_mode[3] ? RK3588_RX_CMN_REFCLK_MODE_EN :
+		     RK3588_RX_CMN_REFCLK_MODE_DIS);
 
 	/* Deassert PCIe PMA output clamp mode */
+	regmap_write(priv->phy_grf, RK3588_PCIE3PHY_GRF_CMN_CON0, BIT(8) | BIT(24));
+
+	/* Set bifurcation if needed */
+	for (int i = 0; i < priv->num_lanes; i++) {
+		if (priv->lanes[i] > 1)
+			mode &= ~RK3588_LANE_AGGREGATION;
+		if (priv->lanes[i] == 3)
+			mode |= RK3588_BIFURCATION_LANE_0_1;
+		if (priv->lanes[i] == 4)
+			mode |= RK3588_BIFURCATION_LANE_2_3;
+	}
+
+	reg = mode;
 	regmap_write(priv->phy_grf, RK3588_PCIE3PHY_GRF_CMN_CON0,
-		     (0x1 << 8) | (0x1 << 24));
+		     RK3588_PCIE30_PHY_MODE_EN | reg);
+
+	/* Set pcie1ln_sel in PHP_GRF_PCIESEL_CON */
+	if (!IS_ERR(priv->pipe_grf)) {
+		reg = mode & (RK3588_BIFURCATION_LANE_0_1 | RK3588_BIFURCATION_LANE_2_3);
+		if (reg)
+			regmap_write(priv->pipe_grf, PHP_GRF_PCIESEL_CON,
+				     RK3588_PCIE1LN_SEL_EN | reg);
+	}
 
 	reset_control_deassert(priv->p30phy);
 
@@ -136,8 +193,8 @@ static int rockchip_p3phy_rk3588_init(struct rockchip_p3phy_priv *priv)
 					reg, RK3588_SRAM_INIT_DONE(reg),
 					0, 500);
 	if (ret)
-		pr_err("%s: lock failed 0x%x, check input refclk and power supply\n",
-		       __func__, reg);
+		dev_err(&priv->phy->dev, "lock failed 0x%x, check input refclk and power supply\n",
+			reg);
 	return ret;
 }
 
@@ -145,14 +202,14 @@ static const struct rockchip_p3phy_ops rk3588_ops = {
 	.phy_init = rockchip_p3phy_rk3588_init,
 };
 
-static int rochchip_p3phy_init(struct phy *phy)
+static int rockchip_p3phy_init(struct phy *phy)
 {
 	struct rockchip_p3phy_priv *priv = phy_get_drvdata(phy);
 	int ret;
 
 	ret = clk_bulk_prepare_enable(priv->num_clks, priv->clks);
 	if (ret) {
-		pr_err("failed to enable PCIe bulk clks %d\n", ret);
+		dev_err(&priv->phy->dev, "failed to enable PCIe bulk clks %d\n", ret);
 		return ret;
 	}
 
@@ -163,22 +220,23 @@ static int rochchip_p3phy_init(struct phy *phy)
 		ret = priv->ops->phy_init(priv);
 		if (ret)
 			clk_bulk_disable_unprepare(priv->num_clks, priv->clks);
-	};
+	}
 
 	return ret;
 }
 
-static int rochchip_p3phy_exit(struct phy *phy)
+static int rockchip_p3phy_exit(struct phy *phy)
 {
 	struct rockchip_p3phy_priv *priv = phy_get_drvdata(phy);
+
 	clk_bulk_disable_unprepare(priv->num_clks, priv->clks);
 	reset_control_assert(priv->p30phy);
 	return 0;
 }
 
-static const struct phy_ops rochchip_p3phy_ops = {
-	.init = rochchip_p3phy_init,
-	.exit = rochchip_p3phy_exit,
+static const struct phy_ops rockchip_p3phy_ops = {
+	.init = rockchip_p3phy_init,
+	.exit = rockchip_p3phy_exit,
 	.set_mode = rockchip_p3phy_set_mode,
 	.owner = THIS_MODULE,
 };
@@ -189,16 +247,13 @@ static int rockchip_p3phy_probe(struct platform_device *pdev)
 	struct device *dev = &pdev->dev;
 	struct rockchip_p3phy_priv *priv;
 	struct device_node *np = dev->of_node;
-	struct resource *res;
 	int ret;
-	u32 val, reg;
 
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
 
-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-	priv->mmio = devm_ioremap_resource(dev, res);
+	priv->mmio = devm_platform_get_and_ioremap_resource(pdev, 0, NULL);
 	if (IS_ERR(priv->mmio)) {
 		ret = PTR_ERR(priv->mmio);
 		return ret;
@@ -206,7 +261,7 @@ static int rockchip_p3phy_probe(struct platform_device *pdev)
 
 	priv->ops = of_device_get_match_data(&pdev->dev);
 	if (!priv->ops) {
-		dev_err(&pdev->dev, "no of match data provided\n");
+		dev_err(dev, "no of match data provided\n");
 		return -EINVAL;
 	}
 
@@ -216,43 +271,60 @@ static int rockchip_p3phy_probe(struct platform_device *pdev)
 		return PTR_ERR(priv->phy_grf);
 	}
 
-	priv->pipe_grf = syscon_regmap_lookup_by_phandle(dev->of_node,
-							 "rockchip,pipe-grf");
-	if (IS_ERR(priv->pipe_grf))
-		dev_info(dev, "failed to find rockchip,pipe_grf regmap\n");
+	if (of_device_is_compatible(np, "rockchip,rk3588-pcie3-phy")) {
+		priv->pipe_grf =
+			syscon_regmap_lookup_by_phandle(dev->of_node,
+							"rockchip,pipe-grf");
+		if (IS_ERR(priv->pipe_grf))
+			dev_info(dev, "failed to find rockchip,pipe_grf regmap\n");
+	} else {
+		priv->pipe_grf = NULL;
+	}
 
-	ret = device_property_read_u32(dev, "rockchip,pcie30-phymode", &val);
-	if (!ret)
-		priv->pcie30_phymode = val;
-	else
-		priv->pcie30_phymode = PHY_MODE_PCIE_AGGREGATION;
+	priv->num_lanes = of_property_read_variable_u32_array(dev->of_node, "data-lanes",
+							     priv->lanes, 2,
+							     ARRAY_SIZE(priv->lanes));
 
-	/* Select correct pcie30_phymode */
-	if (priv->pcie30_phymode > 4)
-		priv->pcie30_phymode = PHY_MODE_PCIE_AGGREGATION;
+	/* if no data-lanes assume aggregation */
+	if (priv->num_lanes == -EINVAL) {
+		dev_dbg(dev, "no data-lanes property found\n");
+		priv->num_lanes = 1;
+		priv->lanes[0] = 1;
+	} else if (priv->num_lanes < 0) {
+		dev_err(dev, "failed to read data-lanes property %d\n", priv->num_lanes);
+		return priv->num_lanes;
+	}
 
-	regmap_write(priv->phy_grf, RK3588_PCIE3PHY_GRF_CMN_CON0,
-		     (0x7<<16) | priv->pcie30_phymode);
+	ret = of_property_read_variable_u32_array(dev->of_node,
+						  "rockchip,rx-common-refclk-mode",
+						  priv->rx_cmn_refclk_mode, 1,
+						  ARRAY_SIZE(priv->rx_cmn_refclk_mode));
+	/*
+	 * if no rockchip,rx-common-refclk-mode, assume enabled for all lanes in
+	 * order to be DT backwards compatible. (Since HW reset val is enabled.)
+	 */
+	if (ret == -EINVAL) {
+		for (int i = 0; i < ARRAY_SIZE(priv->rx_cmn_refclk_mode); i++)
+			priv->rx_cmn_refclk_mode[i] = 1;
+	} else if (ret < 0) {
+		dev_err(dev, "failed to read rockchip,rx-common-refclk-mode property %d\n",
+			ret);
+		return ret;
+	}
 
-	/* Set pcie1ln_sel in PHP_GRF_PCIESEL_CON */
-	if (!IS_ERR(priv->pipe_grf)) {
-		reg = priv->pcie30_phymode & 3;
-		if (reg)
-			regmap_write(priv->pipe_grf, PHP_GRF_PCIESEL_CON,
-				     (reg << 16) | reg);
-	};
-
-	priv->phy = devm_phy_create(dev, NULL, &rochchip_p3phy_ops);
+	priv->phy = devm_phy_create(dev, NULL, &rockchip_p3phy_ops);
 	if (IS_ERR(priv->phy)) {
 		dev_err(dev, "failed to create combphy\n");
 		return PTR_ERR(priv->phy);
 	}
 
-	priv->p30phy = devm_reset_control_get(dev, "phy");
+	priv->p30phy = devm_reset_control_get_optional_exclusive(dev, "phy");
 	if (IS_ERR(priv->p30phy)) {
-		dev_warn(dev, "no phy reset control specified\n");
-		priv->p30phy = NULL;
+		return dev_err_probe(dev, PTR_ERR(priv->p30phy),
+				     "failed to get phy reset control\n");
 	}
+	if (!priv->p30phy)
+		dev_info(dev, "no phy reset control specified\n");
 
 	priv->num_clks = devm_clk_bulk_get_all(dev, &priv->clks);
 	if (priv->num_clks < 1)
@@ -280,4 +352,4 @@ static struct platform_driver rockchip_p3phy_driver = {
 };
 module_platform_driver(rockchip_p3phy_driver);
 MODULE_DESCRIPTION("Rockchip Synopsys PCIe 3.0 PHY driver");
-MODULE_LICENSE("GPL v2");
+MODULE_LICENSE("GPL");

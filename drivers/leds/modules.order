@@ -1,0 +1,5 @@
+drivers/leds/led-class-multicolor.o
+drivers/leds/leds-cros_ec.o
+drivers/leds/leds-lm3692x.o
+drivers/leds/leds-pca9532.o
+drivers/leds/rgb/leds-qcom-lpg.o

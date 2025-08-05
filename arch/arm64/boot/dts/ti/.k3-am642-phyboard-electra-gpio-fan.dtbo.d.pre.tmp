@@ -1,0 +1,5 @@
+k3-am642-phyboard-electra-gpio-fan.o: \
+ arch/arm64/boot/dts/ti/k3-am642-phyboard-electra-gpio-fan.dtso \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ scripts/dtc/include-prefixes/dt-bindings/thermal/thermal.h \
+ arch/arm64/boot/dts/ti/k3-pinctrl.h

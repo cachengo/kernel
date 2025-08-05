@@ -1,0 +1,17 @@
+# 0 "arch/arm64/boot/dts/rockchip/overlay/rockchip-rk3588-uart1-m1.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/rockchip/overlay/rockchip-rk3588-uart1-m1.dtso"
+/dts-v1/;
+/plugin/;
+
+/ {
+ fragment@0 {
+  target = <&uart1>;
+
+  __overlay__ {
+   status = "okay";
+   pinctrl-0 = <&uart1m1_xfer>;
+  };
+ };
+};

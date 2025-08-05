@@ -1,0 +1,14 @@
+# 0 "arch/arm64/boot/dts/rockchip/overlay/rockchip-rk3588-fanctrl.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/rockchip/overlay/rockchip-rk3588-fanctrl.dtso"
+/dts-v1/;
+/plugin/;
+/ {
+        fragment@0 {
+                target = <&fan>;
+                __overlay__ {
+                        cooling-levels = <146 146 146 146 146 146 149 149 151>;
+                };
+        };
+};

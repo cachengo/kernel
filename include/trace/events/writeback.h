@@ -20,7 +20,15 @@
 		{I_CLEAR,		"I_CLEAR"},		\
 		{I_SYNC,		"I_SYNC"},		\
 		{I_DIRTY_TIME,		"I_DIRTY_TIME"},	\
-		{I_REFERENCED,		"I_REFERENCED"}		\
+		{I_REFERENCED,		"I_REFERENCED"},	\
+		{I_LINKABLE,		"I_LINKABLE"},		\
+		{I_WB_SWITCH,		"I_WB_SWITCH"},		\
+		{I_OVL_INUSE,		"I_OVL_INUSE"},		\
+		{I_CREATING,		"I_CREATING"},		\
+		{I_DONTCACHE,		"I_DONTCACHE"},		\
+		{I_SYNC_QUEUED,		"I_SYNC_QUEUED"},	\
+		{I_PINNING_NETFS_WB,	"I_PINNING_NETFS_WB"},	\
+		{I_LRU_ISOLATING,	"I_LRU_ISOLATING"}	\
 	)
 
 /* enums need to be exported to user space */
@@ -36,7 +44,8 @@
 	EM( WB_REASON_PERIODIC,			"periodic")		\
 	EM( WB_REASON_LAPTOP_TIMER,		"laptop_timer")		\
 	EM( WB_REASON_FS_FREE_SPACE,		"fs_free_space")	\
-	EMe(WB_REASON_FORKER_THREAD,		"forker_thread")
+	EM( WB_REASON_FORKER_THREAD,		"forker_thread")	\
+	EMe(WB_REASON_FOREIGN_FLUSH,		"foreign_flush")
 
 WB_WORK_REASON
 
@@ -51,11 +60,11 @@ WB_WORK_REASON
 
 struct wb_writeback_work;
 
-DECLARE_EVENT_CLASS(writeback_page_template,
+DECLARE_EVENT_CLASS(writeback_folio_template,
 
-	TP_PROTO(struct page *page, struct address_space *mapping),
+	TP_PROTO(struct folio *folio, struct address_space *mapping),
 
-	TP_ARGS(page, mapping),
+	TP_ARGS(folio, mapping),
 
 	TP_STRUCT__entry (
 		__array(char, name, 32)
@@ -67,8 +76,8 @@ DECLARE_EVENT_CLASS(writeback_page_template,
 		strscpy_pad(__entry->name,
 			    bdi_dev_name(mapping ? inode_to_bdi(mapping->host) :
 					 NULL), 32);
-		__entry->ino = mapping ? mapping->host->i_ino : 0;
-		__entry->index = page->index;
+		__entry->ino = (mapping && mapping->host) ? mapping->host->i_ino : 0;
+		__entry->index = folio->index;
 	),
 
 	TP_printk("bdi %s: ino=%lu index=%lu",
@@ -78,18 +87,18 @@ DECLARE_EVENT_CLASS(writeback_page_template,
 	)
 );
 
-DEFINE_EVENT(writeback_page_template, writeback_dirty_page,
+DEFINE_EVENT(writeback_folio_template, writeback_dirty_folio,
 
-	TP_PROTO(struct page *page, struct address_space *mapping),
+	TP_PROTO(struct folio *folio, struct address_space *mapping),
 
-	TP_ARGS(page, mapping)
+	TP_ARGS(folio, mapping)
 );
 
-DEFINE_EVENT(writeback_page_template, wait_on_page_writeback,
+DEFINE_EVENT(writeback_folio_template, folio_wait_writeback,
 
-	TP_PROTO(struct page *page, struct address_space *mapping),
+	TP_PROTO(struct folio *folio, struct address_space *mapping),
 
-	TP_ARGS(page, mapping)
+	TP_ARGS(folio, mapping)
 );
 
 DECLARE_EVENT_CLASS(writeback_dirty_inode_template,
@@ -235,9 +244,9 @@ TRACE_EVENT(inode_switch_wbs,
 
 TRACE_EVENT(track_foreign_dirty,
 
-	TP_PROTO(struct page *page, struct bdi_writeback *wb),
+	TP_PROTO(struct folio *folio, struct bdi_writeback *wb),
 
-	TP_ARGS(page, wb),
+	TP_ARGS(folio, wb),
 
 	TP_STRUCT__entry(
 		__array(char,		name, 32)
@@ -249,7 +258,7 @@ TRACE_EVENT(track_foreign_dirty,
 	),
 
 	TP_fast_assign(
-		struct address_space *mapping = page_mapping(page);
+		struct address_space *mapping = folio_mapping(folio);
 		struct inode *inode = mapping ? mapping->host : NULL;
 
 		strscpy_pad(__entry->name, bdi_dev_name(wb->bdi), 32);
@@ -257,7 +266,7 @@ TRACE_EVENT(track_foreign_dirty,
 		__entry->ino		= inode ? inode->i_ino : 0;
 		__entry->memcg_id	= wb->memcg_css->id;
 		__entry->cgroup_ino	= __trace_wb_assign_cgroup(wb);
-		__entry->page_cgroup_ino = cgroup_ino(page->mem_cgroup->css.cgroup);
+		__entry->page_cgroup_ino = cgroup_ino(folio_memcg(folio)->css.cgroup);
 	),
 
 	TP_printk("bdi %s[%llu]: ino=%lu memcg_id=%u cgroup_ino=%lu page_cgroup_ino=%lu",
@@ -620,11 +629,7 @@ TRACE_EVENT(bdi_dirty_ratelimit,
 TRACE_EVENT(balance_dirty_pages,
 
 	TP_PROTO(struct bdi_writeback *wb,
-		 unsigned long thresh,
-		 unsigned long bg_thresh,
-		 unsigned long dirty,
-		 unsigned long bdi_thresh,
-		 unsigned long bdi_dirty,
+		 struct dirty_throttle_control *dtc,
 		 unsigned long dirty_ratelimit,
 		 unsigned long task_ratelimit,
 		 unsigned long dirtied,
@@ -632,7 +637,7 @@ TRACE_EVENT(balance_dirty_pages,
 		 long pause,
 		 unsigned long start_time),
 
-	TP_ARGS(wb, thresh, bg_thresh, dirty, bdi_thresh, bdi_dirty,
+	TP_ARGS(wb, dtc,
 		dirty_ratelimit, task_ratelimit,
 		dirtied, period, pause, start_time),
 
@@ -655,16 +660,15 @@ TRACE_EVENT(balance_dirty_pages,
 	),
 
 	TP_fast_assign(
-		unsigned long freerun = (thresh + bg_thresh) / 2;
+		unsigned long freerun = (dtc->thresh + dtc->bg_thresh) / 2;
 		strscpy_pad(__entry->bdi, bdi_dev_name(wb->bdi), 32);
 
-		__entry->limit		= global_wb_domain.dirty_limit;
-		__entry->setpoint	= (global_wb_domain.dirty_limit +
-						freerun) / 2;
-		__entry->dirty		= dirty;
+		__entry->limit		= dtc->limit;
+		__entry->setpoint	= (dtc->limit + freerun) / 2;
+		__entry->dirty		= dtc->dirty;
 		__entry->bdi_setpoint	= __entry->setpoint *
-						bdi_thresh / (thresh + 1);
-		__entry->bdi_dirty	= bdi_dirty;
+						dtc->wb_thresh / (dtc->thresh + 1);
+		__entry->bdi_dirty	= dtc->wb_dirty;
 		__entry->dirty_ratelimit = KBps(dirty_ratelimit);
 		__entry->task_ratelimit	= KBps(task_ratelimit);
 		__entry->dirtied	= dirtied;
@@ -732,41 +736,6 @@ TRACE_EVENT(writeback_sb_inodes_requeue,
 		  (jiffies - __entry->dirtied_when) / HZ,
 		  (unsigned long)__entry->cgroup_ino
 	)
-);
-
-DECLARE_EVENT_CLASS(writeback_congest_waited_template,
-
-	TP_PROTO(unsigned int usec_timeout, unsigned int usec_delayed),
-
-	TP_ARGS(usec_timeout, usec_delayed),
-
-	TP_STRUCT__entry(
-		__field(	unsigned int,	usec_timeout	)
-		__field(	unsigned int,	usec_delayed	)
-	),
-
-	TP_fast_assign(
-		__entry->usec_timeout	= usec_timeout;
-		__entry->usec_delayed	= usec_delayed;
-	),
-
-	TP_printk("usec_timeout=%u usec_delayed=%u",
-			__entry->usec_timeout,
-			__entry->usec_delayed)
-);
-
-DEFINE_EVENT(writeback_congest_waited_template, writeback_congestion_wait,
-
-	TP_PROTO(unsigned int usec_timeout, unsigned int usec_delayed),
-
-	TP_ARGS(usec_timeout, usec_delayed)
-);
-
-DEFINE_EVENT(writeback_congest_waited_template, writeback_wait_iff_congested,
-
-	TP_PROTO(unsigned int usec_timeout, unsigned int usec_delayed),
-
-	TP_ARGS(usec_timeout, usec_delayed)
 );
 
 DECLARE_EVENT_CLASS(writeback_single_inode_template,

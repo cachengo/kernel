@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/freescale/imx8mp-phyboard-pollux-rdk-no-eth.dtb := ./scripts/dtc/fdtoverlay -o arch/arm64/boot/dts/freescale/imx8mp-phyboard-pollux-rdk-no-eth.dtb -i arch/arm64/boot/dts/freescale/imx8mp-phyboard-pollux-rdk.dtb arch/arm64/boot/dts/freescale/imx8mp-phycore-no-eth.dtbo 

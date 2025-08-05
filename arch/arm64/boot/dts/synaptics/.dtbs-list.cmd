@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/synaptics/dtbs-list := {   echo arch/arm64/boot/dts/synaptics/berlin4ct-dmp.dtb;   echo arch/arm64/boot/dts/synaptics/berlin4ct-stb.dtb; :; } > arch/arm64/boot/dts/synaptics/dtbs-list

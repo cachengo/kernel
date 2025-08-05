@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/kernel/pi/built-in.a := rm -f arch/arm64/kernel/pi/built-in.a;  printf "arch/arm64/kernel/pi/%s " idreg-override.pi.o map_kernel.pi.o map_range.pi.o lib-fdt.pi.o lib-fdt_ro.pi.o relocate.pi.o kaslr_early.pi.o | xargs ar cDPrST arch/arm64/kernel/pi/built-in.a

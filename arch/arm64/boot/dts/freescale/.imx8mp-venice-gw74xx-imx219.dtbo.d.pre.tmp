@@ -1,0 +1,4 @@
+imx8mp-venice-gw74xx-imx219.o: \
+ arch/arm64/boot/dts/freescale/imx8mp-venice-gw74xx-imx219.dtso \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ arch/arm64/boot/dts/freescale/imx8mp-pinfunc.h

@@ -31,7 +31,6 @@ static struct dentry *rootdir;
 struct b43legacy_debugfs_fops {
 	ssize_t (*read)(struct b43legacy_wldev *dev, char *buf, size_t bufsize);
 	int (*write)(struct b43legacy_wldev *dev, const char *buf, size_t count);
-	struct file_operations fops;
 	/* Offset of struct b43legacy_dfs_file in struct b43legacy_dfsentry */
 	size_t file_struct_offset;
 	/* Take wl->irq_lock before calling read/write? */
@@ -188,7 +187,7 @@ static ssize_t b43legacy_debugfs_read(struct file *file, char __user *userbuf,
 				size_t count, loff_t *ppos)
 {
 	struct b43legacy_wldev *dev;
-	struct b43legacy_debugfs_fops *dfops;
+	const struct b43legacy_debugfs_fops *dfops;
 	struct b43legacy_dfs_file *dfile;
 	ssize_t ret;
 	char *buf;
@@ -208,8 +207,7 @@ static ssize_t b43legacy_debugfs_read(struct file *file, char __user *userbuf,
 		goto out_unlock;
 	}
 
-	dfops = container_of(debugfs_real_fops(file),
-			     struct b43legacy_debugfs_fops, fops);
+	dfops = debugfs_get_aux(file);
 	if (!dfops->read) {
 		err = -ENOSYS;
 		goto out_unlock;
@@ -257,7 +255,7 @@ static ssize_t b43legacy_debugfs_write(struct file *file,
 				 size_t count, loff_t *ppos)
 {
 	struct b43legacy_wldev *dev;
-	struct b43legacy_debugfs_fops *dfops;
+	const struct b43legacy_debugfs_fops *dfops;
 	char *buf;
 	int err = 0;
 
@@ -275,8 +273,7 @@ static ssize_t b43legacy_debugfs_write(struct file *file,
 		goto out_unlock;
 	}
 
-	dfops = container_of(debugfs_real_fops(file),
-			     struct b43legacy_debugfs_fops, fops);
+	dfops = debugfs_get_aux(file);
 	if (!dfops->write) {
 		err = -ENOSYS;
 		goto out_unlock;
@@ -308,17 +305,16 @@ out_unlock:
 	return err ? err : count;
 }
 
+static struct debugfs_short_fops debugfs_ops = {
+	.read	= b43legacy_debugfs_read,
+	.write	= b43legacy_debugfs_write,
+	.llseek = generic_file_llseek
+};
 
 #define B43legacy_DEBUGFS_FOPS(name, _read, _write, _take_irqlock)	\
 	static struct b43legacy_debugfs_fops fops_##name = {		\
 		.read	= _read,				\
 		.write	= _write,				\
-		.fops	= {					\
-			.open	= simple_open,				\
-			.read	= b43legacy_debugfs_read,		\
-			.write	= b43legacy_debugfs_write,		\
-			.llseek = generic_file_llseek,			\
-		},						\
 		.file_struct_offset = offsetof(struct b43legacy_dfsentry, \
 					       file_##name),	\
 		.take_irqlock	= _take_irqlock,		\
@@ -336,24 +332,14 @@ int b43legacy_debug(struct b43legacy_wldev *dev, enum b43legacy_dyndbg feature)
 	return !!(dev->dfsentry && dev->dfsentry->dyn_debug[feature]);
 }
 
-static void b43legacy_remove_dynamic_debug(struct b43legacy_wldev *dev)
-{
-	struct b43legacy_dfsentry *e = dev->dfsentry;
-	int i;
-
-	for (i = 0; i < __B43legacy_NR_DYNDBG; i++)
-		debugfs_remove(e->dyn_debug_dentries[i]);
-}
-
 static void b43legacy_add_dynamic_debug(struct b43legacy_wldev *dev)
 {
 	struct b43legacy_dfsentry *e = dev->dfsentry;
 
 #define add_dyn_dbg(name, id, initstate) do {			\
 	e->dyn_debug[id] = (initstate);				\
-	e->dyn_debug_dentries[id] =				\
-		debugfs_create_bool(name, 0600, e->subdir,	\
-				&(e->dyn_debug[id]));		\
+	debugfs_create_bool(name, 0600, e->subdir,		\
+			    &(e->dyn_debug[id]));		\
 	} while (0)
 
 	add_dyn_dbg("debug_xmitpower", B43legacy_DBG_XMITPOWER, false);
@@ -396,11 +382,9 @@ void b43legacy_debugfs_add_device(struct b43legacy_wldev *dev)
 
 #define ADD_FILE(name, mode)	\
 	do {							\
-		e->file_##name.dentry =				\
-			debugfs_create_file(__stringify(name),	\
-					mode, e->subdir, dev,	\
-					&fops_##name.fops);	\
-		e->file_##name.dentry = NULL;			\
+		debugfs_create_file_aux(__stringify(name), mode,	\
+				    e->subdir, dev,		\
+				    &fops_##name, &debugfs_ops);	\
 	} while (0)
 
 
@@ -424,13 +408,6 @@ void b43legacy_debugfs_remove_device(struct b43legacy_wldev *dev)
 	e = dev->dfsentry;
 	if (!e)
 		return;
-	b43legacy_remove_dynamic_debug(dev);
-
-	debugfs_remove(e->file_tsf.dentry);
-	debugfs_remove(e->file_ucode_regs.dentry);
-	debugfs_remove(e->file_shm.dentry);
-	debugfs_remove(e->file_txstat.dentry);
-	debugfs_remove(e->file_restart.dentry);
 
 	debugfs_remove(e->subdir);
 	kfree(e->txstatlog.log);

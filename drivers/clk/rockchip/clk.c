@@ -19,12 +19,14 @@
 #include <linux/clk-provider.h>
 #include <linux/io.h>
 #include <linux/mfd/syscon.h>
+#include <linux/platform_device.h>
 #include <linux/regmap.h>
 #include <linux/reboot.h>
-#include <linux/rational.h>
+
+#include "../clk-fractional-divider.h"
 #include "clk.h"
 
-/**
+/*
  * Register a clock branch.
  * Most clock branches have a form like
  *
@@ -172,7 +174,7 @@ static int rockchip_clk_frac_notifier_cb(struct notifier_block *nb,
 	return notifier_from_errno(ret);
 }
 
-/**
+/*
  * fractional divider must set that denominator is 20 times larger than
  * numerator to generate precise clock frequency.
  */
@@ -183,51 +185,17 @@ static void rockchip_fractional_approximation(struct clk_hw *hw,
 	struct clk_fractional_divider *fd = to_clk_fd(hw);
 	unsigned long p_rate, p_parent_rate;
 	struct clk_hw *p_parent;
-	unsigned long scale;
 
 	p_rate = clk_hw_get_rate(clk_hw_get_parent(hw));
 	if ((rate * 20 > p_rate) && (p_rate % rate != 0)) {
 		p_parent = clk_hw_get_parent(clk_hw_get_parent(hw));
-		if (!p_parent) {
-			*parent_rate = p_rate;
-		} else {
-			p_parent_rate = clk_hw_get_rate(p_parent);
-			*parent_rate = p_parent_rate;
-		}
-
-		if (*parent_rate < rate * 20) {
-			/*
-			 * Fractional frequency divider to do
-			 * integer frequency divider does not
-			 * need 20 times the limit.
-			 */
-			if (!(*parent_rate % rate)) {
-				*m = 1;
-				*n = *parent_rate / rate;
-				return;
-			} else if (!(fd->flags & CLK_FRAC_DIVIDER_NO_LIMIT)) {
-				pr_warn("%s p_rate(%ld) is low than rate(%ld)*20, use integer or half-div\n",
-					clk_hw_get_name(hw),
-					*parent_rate, rate);
-				*m = 0;
-				*n = 1;
-				return;
-			}
-		}
+		p_parent_rate = clk_hw_get_rate(p_parent);
+		*parent_rate = p_parent_rate;
 	}
 
-	/*
-	 * Get rate closer to *parent_rate to guarantee there is no overflow
-	 * for m and n. In the result it will be the nearest rate left shifted
-	 * by (scale - fd->nwidth) bits.
-	 */
-	scale = fls_long(*parent_rate / rate - 1);
-	if (scale > fd->nwidth)
-		rate <<= scale - fd->nwidth;
+	fd->flags |= CLK_FRAC_DIVIDER_POWER_OF_TWO_PS;
 
-	rational_best_approximation(rate, *parent_rate,
-			GENMASK(fd->mwidth - 1, 0), GENMASK(fd->nwidth - 1, 0),
-			m, n);
+	clk_fractional_divider_general_approximation(hw, rate, parent_rate, m, n);
 }
 
 static struct clk *rockchip_clk_register_frac_branch(
@@ -271,10 +239,8 @@ static struct clk *rockchip_clk_register_frac_branch(
 	div->reg = base + muxdiv_offset;
 	div->mshift = 16;
 	div->mwidth = 16;
-	div->mmask = GENMASK(div->mwidth - 1, 0) << div->mshift;
 	div->nshift = 0;
 	div->nwidth = 16;
-	div->nmask = GENMASK(div->nwidth - 1, 0) << div->nshift;
 	div->lock = lock;
 	div->approximation = rockchip_fractional_approximation;
 	div_ops = &clk_fractional_divider_ops;
@@ -321,7 +287,7 @@ static struct clk *rockchip_clk_register_frac_branch(
 			return mux_clk;
 		}
 
-		rockchip_clk_add_lookup(ctx, mux_clk, child->id);
+		rockchip_clk_set_lookup(ctx, mux_clk, child->id);
 
 		/* notifier on the fraction divider to catch rate changes */
 		if (frac->mux_frac_idx >= 0) {
@@ -388,13 +354,16 @@ static struct clk *rockchip_clk_register_factor_branch(const char *name,
 	return hw->clk;
 }
 
-struct rockchip_clk_provider *rockchip_clk_init(struct device_node *np,
-						void __iomem *base,
-						unsigned long nr_clks)
+static struct rockchip_clk_provider *rockchip_clk_init_base(
+		struct device_node *np, void __iomem *base,
+		unsigned long nr_clks, bool has_late_clocks)
 {
 	struct rockchip_clk_provider *ctx;
 	struct clk **clk_table;
+	struct clk *default_clk_val;
 	int i;
+
+	default_clk_val = ERR_PTR(has_late_clocks ? -EPROBE_DEFER : -ENOENT);
 
 	ctx = kzalloc(sizeof(struct rockchip_clk_provider), GFP_KERNEL);
 	if (!ctx)
@@ -405,7 +374,7 @@ struct rockchip_clk_provider *rockchip_clk_init(struct device_node *np,
 		goto err_free;
 
 	for (i = 0; i < nr_clks; ++i)
-		clk_table[i] = ERR_PTR(-ENOENT);
+		clk_table[i] = default_clk_val;
 
 	ctx->reg_base = base;
 	ctx->clk_data.clks = clk_table;
@@ -415,8 +384,6 @@ struct rockchip_clk_provider *rockchip_clk_init(struct device_node *np,
 
 	ctx->grf = syscon_regmap_lookup_by_phandle(ctx->cru_node,
 						   "rockchip,grf");
-	ctx->pmugrf = syscon_regmap_lookup_by_phandle(ctx->cru_node,
-						   "rockchip,pmugrf");
 
 	return ctx;
 
@@ -424,7 +391,32 @@ err_free:
 	kfree(ctx);
 	return ERR_PTR(-ENOMEM);
 }
+
+struct rockchip_clk_provider *rockchip_clk_init(struct device_node *np,
+						void __iomem *base,
+						unsigned long nr_clks)
+{
+	return rockchip_clk_init_base(np, base, nr_clks, false);
+}
 EXPORT_SYMBOL_GPL(rockchip_clk_init);
+
+struct rockchip_clk_provider *rockchip_clk_init_early(struct device_node *np,
+						      void __iomem *base,
+						      unsigned long nr_clks)
+{
+	return rockchip_clk_init_base(np, base, nr_clks, true);
+}
+EXPORT_SYMBOL_GPL(rockchip_clk_init_early);
+
+void rockchip_clk_finalize(struct rockchip_clk_provider *ctx)
+{
+	int i;
+
+	for (i = 0; i < ctx->clk_data.clk_num; ++i)
+		if (ctx->clk_data.clks[i] == ERR_PTR(-EPROBE_DEFER))
+			ctx->clk_data.clks[i] = ERR_PTR(-ENOENT);
+}
+EXPORT_SYMBOL_GPL(rockchip_clk_finalize);
 
 void rockchip_clk_of_add_provider(struct device_node *np,
 				  struct rockchip_clk_provider *ctx)
@@ -434,14 +426,6 @@ void rockchip_clk_of_add_provider(struct device_node *np,
 		pr_err("%s: could not register clk provider\n", __func__);
 }
 EXPORT_SYMBOL_GPL(rockchip_clk_of_add_provider);
-
-void rockchip_clk_add_lookup(struct rockchip_clk_provider *ctx,
-			     struct clk *clk, unsigned int id)
-{
-	if (ctx->clk_data.clks && id)
-		ctx->clk_data.clks[id] = clk;
-}
-EXPORT_SYMBOL_GPL(rockchip_clk_add_lookup);
 
 void rockchip_clk_register_plls(struct rockchip_clk_provider *ctx,
 				struct rockchip_pll_clock *list,
@@ -463,21 +447,62 @@ void rockchip_clk_register_plls(struct rockchip_clk_provider *ctx,
 			continue;
 		}
 
-		rockchip_clk_add_lookup(ctx, clk, list->id);
+		rockchip_clk_set_lookup(ctx, clk, list->id);
 	}
 }
 EXPORT_SYMBOL_GPL(rockchip_clk_register_plls);
+
+unsigned long rockchip_clk_find_max_clk_id(struct rockchip_clk_branch *list,
+					   unsigned int nr_clk)
+{
+	unsigned long max = 0;
+	unsigned int idx;
+
+	for (idx = 0; idx < nr_clk; idx++, list++) {
+		if (list->id > max)
+			max = list->id;
+		if (list->child && list->child->id > max)
+			max = list->child->id;
+	}
+
+	return max;
+}
+EXPORT_SYMBOL_GPL(rockchip_clk_find_max_clk_id);
+
+static struct platform_device *rockchip_clk_register_gate_link(
+		struct device *parent_dev,
+		struct rockchip_clk_provider *ctx,
+		struct rockchip_clk_branch *clkbr)
+{
+	struct rockchip_gate_link_platdata gate_link_pdata = {
+		.ctx = ctx,
+		.clkbr = clkbr,
+	};
+
+	struct platform_device_info pdevinfo = {
+		.parent = parent_dev,
+		.name = "rockchip-gate-link-clk",
+		.id = clkbr->id,
+		.fwnode = dev_fwnode(parent_dev),
+		.of_node_reused = true,
+		.data = &gate_link_pdata,
+		.size_data = sizeof(gate_link_pdata),
+	};
+
+	return platform_device_register_full(&pdevinfo);
+}
 
 void rockchip_clk_register_branches(struct rockchip_clk_provider *ctx,
 				    struct rockchip_clk_branch *list,
 				    unsigned int nr_clk)
 {
-	struct clk *clk = NULL;
+	struct clk *clk;
 	unsigned int idx;
 	unsigned long flags;
 
 	for (idx = 0; idx < nr_clk; idx++, list++) {
 		flags = list->flags;
+		clk = NULL;
 
 		/* catch simple muxes */
 		switch (list->branch_type) {
@@ -487,8 +512,7 @@ void rockchip_clk_register_branches(struct rockchip_clk_provider *ctx,
 					list->parent_names, list->num_parents,
 					flags,
 					ctx->reg_base + list->muxdiv_offset,
-					list->mux_shift,
-					BIT(list->mux_width) - 1,
+					list->mux_shift, list->mux_width,
 					list->mux_flags, list->mux_table,
 					&ctx->lock);
 			else
@@ -503,13 +527,6 @@ void rockchip_clk_register_branches(struct rockchip_clk_provider *ctx,
 			clk = rockchip_clk_register_muxgrf(list->name,
 				list->parent_names, list->num_parents,
 				flags, ctx->grf, list->muxdiv_offset,
-				list->mux_shift, list->mux_width,
-				list->mux_flags);
-			break;
-		case branch_muxpmugrf:
-			clk = rockchip_clk_register_muxgrf(list->name,
-				list->parent_names, list->num_parents,
-				flags, ctx->pmugrf, list->muxdiv_offset,
 				list->mux_shift, list->mux_width,
 				list->mux_flags);
 			break;
@@ -543,11 +560,10 @@ void rockchip_clk_register_branches(struct rockchip_clk_provider *ctx,
 				list->parent_names, list->num_parents,
 				ctx->reg_base, list->muxdiv_offset,
 				list->mux_shift, list->mux_width,
-				list->mux_flags, list->div_offset,
-				list->div_shift, list->div_width,
-				list->div_flags, list->gate_offset,
-				list->gate_shift, list->gate_flags,
-				flags, &ctx->lock);
+				list->mux_flags, list->div_shift,
+				list->div_width, list->div_flags,
+				list->gate_offset, list->gate_shift,
+				list->gate_flags, flags, &ctx->lock);
 			break;
 		case branch_gate:
 			flags |= CLK_SET_RATE_PARENT;
@@ -578,13 +594,11 @@ void rockchip_clk_register_branches(struct rockchip_clk_provider *ctx,
 			);
 			break;
 		case branch_inverter:
-#ifdef CONFIG_ROCKCHIP_CLK_INV
 			clk = rockchip_clk_register_inverter(
 				list->name, list->parent_names,
 				list->num_parents,
 				ctx->reg_base + list->muxdiv_offset,
 				list->div_shift, list->div_flags, &ctx->lock);
-#endif
 			break;
 		case branch_factor:
 			clk = rockchip_clk_register_factor_branch(
@@ -601,7 +615,10 @@ void rockchip_clk_register_branches(struct rockchip_clk_provider *ctx,
 				list->muxdiv_offset, list->mux_shift,
 				list->mux_width, list->div_shift,
 				list->div_width, list->div_flags,
-				ctx->reg_base);
+				ctx->reg_base, &ctx->lock);
+			break;
+		case branch_linked_gate:
+			/* must be registered late, fall-through for error message */
 			break;
 		}
 
@@ -618,24 +635,47 @@ void rockchip_clk_register_branches(struct rockchip_clk_provider *ctx,
 			continue;
 		}
 
-		rockchip_clk_add_lookup(ctx, clk, list->id);
+		rockchip_clk_set_lookup(ctx, clk, list->id);
 	}
 }
 EXPORT_SYMBOL_GPL(rockchip_clk_register_branches);
 
+void rockchip_clk_register_late_branches(struct device *dev,
+					 struct rockchip_clk_provider *ctx,
+					 struct rockchip_clk_branch *list,
+					 unsigned int nr_clk)
+{
+	unsigned int idx;
+
+	for (idx = 0; idx < nr_clk; idx++, list++) {
+		struct platform_device *pdev = NULL;
+
+		switch (list->branch_type) {
+		case branch_linked_gate:
+			pdev = rockchip_clk_register_gate_link(dev, ctx, list);
+			break;
+		default:
+			dev_err(dev, "unknown clock type %d\n", list->branch_type);
+			break;
+		}
+
+		if (!pdev)
+			dev_err(dev, "failed to register device for clock %s\n", list->name);
+	}
+}
+EXPORT_SYMBOL_GPL(rockchip_clk_register_late_branches);
+
 void rockchip_clk_register_armclk(struct rockchip_clk_provider *ctx,
 				  unsigned int lookup_id,
-				  const char *name,
+				  const char *name, const char *const *parent_names,
 				  u8 num_parents,
-				  struct clk *parent, struct clk *alt_parent,
 				  const struct rockchip_cpuclk_reg_data *reg_data,
 				  const struct rockchip_cpuclk_rate_table *rates,
 				  int nrates)
 {
 	struct clk *clk;
 
-	clk = rockchip_clk_register_cpuclk(name, num_parents,
-		parent, alt_parent,
+	clk = rockchip_clk_register_cpuclk(name, parent_names, num_parents,
 					   reg_data, rates, nrates,
 					   ctx->reg_base, &ctx->lock);
 	if (IS_ERR(clk)) {
@@ -644,24 +684,23 @@ void rockchip_clk_register_armclk(struct rockchip_clk_provider *ctx,
 		return;
 	}
 
-	rockchip_clk_add_lookup(ctx, clk, lookup_id);
+	rockchip_clk_set_lookup(ctx, clk, lookup_id);
 }
 EXPORT_SYMBOL_GPL(rockchip_clk_register_armclk);
 
-void (*rk_dump_cru)(void);
-EXPORT_SYMBOL(rk_dump_cru);
-
-static int rk_clk_panic(struct notifier_block *this,
-			unsigned long ev, void *ptr)
+void rockchip_clk_protect_critical(const char *const clocks[],
+				   int nclocks)
 {
-	if (rk_dump_cru)
-		rk_dump_cru();
-	return NOTIFY_DONE;
-}
+	int i;
 
-static struct notifier_block rk_clk_panic_block = {
-	.notifier_call = rk_clk_panic,
-};
+	/* Protect the clocks that needs to stay on */
+	for (i = 0; i < nclocks; i++) {
+		struct clk *clk = __clk_lookup(clocks[i]);
+
+		clk_prepare_enable(clk);
+	}
+}
+EXPORT_SYMBOL_GPL(rockchip_clk_protect_critical);
 
 static void __iomem *rst_base;
 static unsigned int reg_restart;
@@ -695,7 +734,5 @@ rockchip_register_restart_notifier(struct rockchip_clk_provider *ctx,
 	if (ret)
 		pr_err("%s: cannot register restart handler, %d\n",
 		       __func__, ret);
-	atomic_notifier_chain_register(&panic_notifier_list,
-				       &rk_clk_panic_block);
 }
 EXPORT_SYMBOL_GPL(rockchip_register_restart_notifier);

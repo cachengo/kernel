@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/renesas/r8a77970-eagle-function-expansion.dtb := ./scripts/dtc/fdtoverlay -o arch/arm64/boot/dts/renesas/r8a77970-eagle-function-expansion.dtb -i arch/arm64/boot/dts/renesas/r8a77970-eagle.dtb arch/arm64/boot/dts/renesas/r8a77970-eagle-function-expansion.dtbo 

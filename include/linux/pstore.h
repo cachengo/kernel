@@ -14,7 +14,7 @@
 #include <linux/errno.h>
 #include <linux/kmsg_dump.h>
 #include <linux/mutex.h>
-#include <linux/semaphore.h>
+#include <linux/spinlock.h>
 #include <linux/time.h>
 #include <linux/types.h>
 
@@ -38,9 +38,6 @@ enum pstore_type_id {
 	PSTORE_TYPE_PPC_COMMON	= 6,
 	PSTORE_TYPE_PMSG	= 7,
 	PSTORE_TYPE_PPC_OPAL	= 8,
-#ifdef CONFIG_PSTORE_MCU_LOG
-	PSTORE_TYPE_MCU_LOG	= 9,
-#endif
 
 	/* End of the list */
 	PSTORE_TYPE_MAX
@@ -60,6 +57,9 @@ struct pstore_info;
  * @size:	size of @buf
  * @ecc_notice_size:
  *		ECC information for @buf
+ * @priv:	pointer for backend specific use, will be
+ *		kfree()d by the pstore core if non-NULL
+ *		when the record is freed.
  *
  * Valid for PSTORE_TYPE_DMESG @type:
  *
@@ -77,6 +77,7 @@ struct pstore_record {
 	char			*buf;
 	ssize_t			size;
 	ssize_t			ecc_notice_size;
+	void			*priv;
 
 	int			count;
 	enum kmsg_dump_reason	reason;
@@ -90,7 +91,7 @@ struct pstore_record {
  * @owner:	module which is responsible for this backend driver
  * @name:	name of the backend driver
  *
- * @buf_lock:	semaphore to serialize access to @buf
+ * @buf_lock:	spinlock to serialize access to @buf
  * @buf:	preallocated crash dump buffer
  * @bufsize:	size of @buf available for crash dump bytes (must match
  *		smallest number of bytes available for writing to a
@@ -181,7 +182,7 @@ struct pstore_info {
 	struct module	*owner;
 	const char	*name;
 
-	struct semaphore buf_lock;
+	raw_spinlock_t	buf_lock;
 	char		*buf;
 	size_t		bufsize;
 
@@ -205,9 +206,6 @@ struct pstore_info {
 #define PSTORE_FLAGS_CONSOLE	BIT(1)
 #define PSTORE_FLAGS_FTRACE	BIT(2)
 #define PSTORE_FLAGS_PMSG	BIT(3)
-#ifdef CONFIG_PSTORE_MCU_LOG
-#define PSTORE_FLAGS_MCU_LOG	BIT(4)
-#endif
 
 extern int pstore_register(struct pstore_info *);
 extern void pstore_unregister(struct pstore_info *);

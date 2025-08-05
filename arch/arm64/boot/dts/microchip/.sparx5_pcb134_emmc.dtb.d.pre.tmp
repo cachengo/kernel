@@ -1,0 +1,9 @@
+sparx5_pcb134_emmc.o: \
+ arch/arm64/boot/dts/microchip/sparx5_pcb134_emmc.dts \
+ arch/arm64/boot/dts/microchip/sparx5_pcb134_board.dtsi \
+ arch/arm64/boot/dts/microchip/sparx5_pcb_common.dtsi \
+ arch/arm64/boot/dts/microchip/sparx5.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h \
+ scripts/dtc/include-prefixes/dt-bindings/clock/microchip,sparx5.h

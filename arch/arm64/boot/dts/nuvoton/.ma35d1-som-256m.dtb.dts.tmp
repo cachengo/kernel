@@ -1,0 +1,530 @@
+# 0 "arch/arm64/boot/dts/nuvoton/ma35d1-som-256m.dts"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/nuvoton/ma35d1-som-256m.dts"
+
+
+
+
+
+
+
+/dts-v1/;
+# 1 "arch/arm64/boot/dts/nuvoton/ma35d1.dtsi" 1
+
+
+
+
+
+
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h" 1
+# 9 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h"
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h" 1
+# 10 "./scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h" 2
+# 9 "arch/arm64/boot/dts/nuvoton/ma35d1.dtsi" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/input/input.h" 1
+# 13 "./scripts/dtc/include-prefixes/dt-bindings/input/input.h"
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/input/linux-event-codes.h" 1
+# 14 "./scripts/dtc/include-prefixes/dt-bindings/input/input.h" 2
+# 10 "arch/arm64/boot/dts/nuvoton/ma35d1.dtsi" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h" 1
+# 11 "arch/arm64/boot/dts/nuvoton/ma35d1.dtsi" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/clock/nuvoton,ma35d1-clk.h" 1
+# 12 "arch/arm64/boot/dts/nuvoton/ma35d1.dtsi" 2
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/reset/nuvoton,ma35d1-reset.h" 1
+# 13 "arch/arm64/boot/dts/nuvoton/ma35d1.dtsi" 2
+
+/ {
+ compatible = "nuvoton,ma35d1";
+ interrupt-parent = <&gic>;
+ #address-cells = <2>;
+ #size-cells = <2>;
+
+ cpus {
+  #address-cells = <2>;
+  #size-cells = <0>;
+
+  cpu0: cpu@0 {
+   device_type = "cpu";
+   compatible = "arm,cortex-a35";
+   reg = <0x0 0x0>;
+   enable-method = "psci";
+   next-level-cache = <&L2_0>;
+  };
+
+  cpu1: cpu@1 {
+   device_type = "cpu";
+   compatible = "arm,cortex-a35";
+   reg = <0x0 0x1>;
+   enable-method = "psci";
+   next-level-cache = <&L2_0>;
+  };
+
+  L2_0: l2-cache {
+   compatible = "cache";
+   cache-level = <2>;
+   cache-unified;
+   cache-size = <0x80000>;
+  };
+ };
+
+ psci {
+  compatible = "arm,psci-0.2";
+  method = "smc";
+ };
+
+ gic: interrupt-controller@50801000 {
+  compatible = "arm,gic-400";
+  reg = <0x0 0x50801000 0 0x1000>,
+        <0x0 0x50802000 0 0x2000>,
+        <0x0 0x50804000 0 0x2000>,
+        <0x0 0x50806000 0 0x2000>;
+  #interrupt-cells = <3>;
+  interrupt-parent = <&gic>;
+  interrupt-controller;
+  interrupts = <1 9 (((0x13) << 8) |
+         4)>;
+ };
+
+ timer {
+  compatible = "arm,armv8-timer";
+  interrupts = <1 13 ((((1 << (4)) - 1) << 8) |
+         8)>,
+        <1 14 ((((1 << (4)) - 1) << 8) |
+         8)>,
+        <1 11 ((((1 << (4)) - 1) << 8) |
+         8)>,
+        <1 10 ((((1 << (4)) - 1) << 8) |
+         8)>;
+  interrupt-parent = <&gic>;
+ };
+
+ soc {
+  compatible = "simple-bus";
+  #address-cells = <2>;
+  #size-cells = <2>;
+  ranges;
+
+  sys: system-management@40460000 {
+   compatible = "nuvoton,ma35d1-reset", "syscon";
+   reg = <0x0 0x40460000 0x0 0x200>;
+   #reset-cells = <1>;
+  };
+
+  clk: clock-controller@40460200 {
+   compatible = "nuvoton,ma35d1-clk";
+   reg = <0x00000000 0x40460200 0x0 0x100>;
+   #clock-cells = <1>;
+   clocks = <&clk_hxt>;
+  };
+
+  pinctrl: pinctrl@40040000 {
+   compatible = "nuvoton,ma35d1-pinctrl";
+   reg = <0x0 0x40040000 0x0 0xc00>;
+   #address-cells = <1>;
+   #size-cells = <1>;
+   nuvoton,sys = <&sys>;
+   ranges = <0x0 0x0 0x40040000 0x400>;
+
+   gpioa: gpio@0 {
+    reg = <0x0 0x40>;
+    interrupts = <0 14 4>;
+    clocks = <&clk 90>;
+    gpio-controller;
+    #gpio-cells = <2>;
+    interrupt-controller;
+    #interrupt-cells = <2>;
+   };
+
+   gpiob: gpio@40 {
+    reg = <0x40 0x40>;
+    interrupts = <0 15 4>;
+    clocks = <&clk 91>;
+    gpio-controller;
+    #gpio-cells = <2>;
+    interrupt-controller;
+    #interrupt-cells = <2>;
+   };
+
+   gpioc: gpio@80 {
+    reg = <0x80 0x40>;
+    interrupts = <0 16 4>;
+    clocks = <&clk 92>;
+    gpio-controller;
+    #gpio-cells = <2>;
+    interrupt-controller;
+    #interrupt-cells = <2>;
+   };
+
+   gpiod: gpio@c0 {
+    reg = <0xc0 0x40>;
+    interrupts = <0 17 4>;
+    clocks = <&clk 93>;
+    gpio-controller;
+    #gpio-cells = <2>;
+    interrupt-controller;
+    #interrupt-cells = <2>;
+   };
+
+   gpioe: gpio@100 {
+    reg = <0x100 0x40>;
+    interrupts = <0 73 4>;
+    clocks = <&clk 94>;
+    #gpio-cells = <2>;
+    gpio-controller;
+    interrupt-controller;
+    #interrupt-cells = <2>;
+   };
+
+   gpiof: gpio@140 {
+    reg = <0x140 0x40>;
+    interrupts = <0 74 4>;
+    clocks = <&clk 95>;
+    gpio-controller;
+    #gpio-cells = <2>;
+    interrupt-controller;
+    #interrupt-cells = <2>;
+   };
+
+   gpiog: gpio@180 {
+    reg = <0x180 0x40>;
+    interrupts = <0 75 4>;
+    clocks = <&clk 96>;
+    #gpio-cells = <2>;
+    gpio-controller;
+    interrupt-controller;
+    #interrupt-cells = <2>;
+   };
+
+   gpioh: gpio@1c0 {
+    reg = <0x1c0 0x40>;
+    interrupts = <0 76 4>;
+    clocks = <&clk 97>;
+    gpio-controller;
+    #gpio-cells = <2>;
+    interrupt-controller;
+    #interrupt-cells = <2>;
+   };
+
+   gpioi: gpio@200 {
+    reg = <0x200 0x40>;
+    interrupts = <0 77 4>;
+    clocks = <&clk 98>;
+    gpio-controller;
+    #gpio-cells = <2>;
+    interrupt-controller;
+    #interrupt-cells = <2>;
+   };
+
+   gpioj: gpio@240 {
+    reg = <0x240 0x40>;
+    interrupts = <0 78 4>;
+    clocks = <&clk 99>;
+    gpio-controller;
+    #gpio-cells = <2>;
+    interrupt-controller;
+    #interrupt-cells = <2>;
+   };
+
+   gpiok: gpio@280 {
+    reg = <0x280 0x40>;
+    interrupts = <0 102 4>;
+    clocks = <&clk 100>;
+    gpio-controller;
+    #gpio-cells = <2>;
+    interrupt-controller;
+    #interrupt-cells = <2>;
+   };
+
+   gpiol: gpio@2c0 {
+    reg = <0x2c0 0x40>;
+    interrupts = <0 103 4>;
+    clocks = <&clk 101>;
+    gpio-controller;
+    #gpio-cells = <2>;
+    interrupt-controller;
+    #interrupt-cells = <2>;
+   };
+
+   gpiom: gpio@300 {
+    reg = <0x300 0x40>;
+    interrupts = <0 104 4>;
+    clocks = <&clk 102>;
+    gpio-controller;
+    #gpio-cells = <2>;
+    interrupt-controller;
+    #interrupt-cells = <2>;
+   };
+
+   gpion: gpio@340 {
+    reg = <0x340 0x40>;
+    interrupts = <0 105 4>;
+    clocks = <&clk 103>;
+    gpio-controller;
+    #gpio-cells = <2>;
+    interrupt-controller;
+    #interrupt-cells = <2>;
+   };
+  };
+
+  uart0: serial@40700000 {
+   compatible = "nuvoton,ma35d1-uart";
+   reg = <0x0 0x40700000 0x0 0x100>;
+   interrupts = <0 59 4>;
+   clocks = <&clk 130>;
+   status = "disabled";
+  };
+
+  uart1: serial@40710000 {
+   compatible = "nuvoton,ma35d1-uart";
+   reg = <0x0 0x40710000 0x0 0x100>;
+   interrupts = <0 60 4>;
+   clocks = <&clk 133>;
+   status = "disabled";
+  };
+
+  uart2: serial@40720000 {
+   compatible = "nuvoton,ma35d1-uart";
+   reg = <0x0 0x40720000 0x0 0x100>;
+   interrupts = <0 61 4>;
+   clocks = <&clk 136>;
+   status = "disabled";
+  };
+
+  uart3: serial@40730000 {
+   compatible = "nuvoton,ma35d1-uart";
+   reg = <0x0 0x40730000 0x0 0x100>;
+   interrupts = <0 62 4>;
+   clocks = <&clk 139>;
+   status = "disabled";
+  };
+
+  uart4: serial@40740000 {
+   compatible = "nuvoton,ma35d1-uart";
+   reg = <0x0 0x40740000 0x0 0x100>;
+   interrupts = <0 63 4>;
+   clocks = <&clk 142>;
+   status = "disabled";
+  };
+
+  uart5: serial@40750000 {
+   compatible = "nuvoton,ma35d1-uart";
+   reg = <0x0 0x40750000 0x0 0x100>;
+   interrupts = <0 64 4>;
+   clocks = <&clk 145>;
+   status = "disabled";
+  };
+
+  uart6: serial@40760000 {
+   compatible = "nuvoton,ma35d1-uart";
+   reg = <0x0 0x40760000 0x0 0x100>;
+   interrupts = <0 91 4>;
+   clocks = <&clk 148>;
+   status = "disabled";
+  };
+
+  uart7: serial@40770000 {
+   compatible = "nuvoton,ma35d1-uart";
+   reg = <0x0 0x40770000 0x0 0x100>;
+   interrupts = <0 92 4>;
+   clocks = <&clk 151>;
+   status = "disabled";
+  };
+
+  uart8: serial@40780000 {
+   compatible = "nuvoton,ma35d1-uart";
+   reg = <0x0 0x40780000 0x0 0x100>;
+   interrupts = <0 93 4>;
+   clocks = <&clk 154>;
+   status = "disabled";
+  };
+
+  uart9: serial@40790000 {
+   compatible = "nuvoton,ma35d1-uart";
+   reg = <0x0 0x40790000 0x0 0x100>;
+   interrupts = <0 94 4>;
+   clocks = <&clk 157>;
+   status = "disabled";
+  };
+
+  uart10: serial@407a0000 {
+   compatible = "nuvoton,ma35d1-uart";
+   reg = <0x0 0x407a0000 0x0 0x100>;
+   interrupts = <0 95 4>;
+   clocks = <&clk 160>;
+   status = "disabled";
+  };
+
+  uart11: serial@407b0000 {
+   compatible = "nuvoton,ma35d1-uart";
+   reg = <0x0 0x407b0000 0x0 0x100>;
+   interrupts = <0 96 4>;
+   clocks = <&clk 163>;
+   status = "disabled";
+  };
+
+  uart12: serial@407c0000 {
+   compatible = "nuvoton,ma35d1-uart";
+   reg = <0x0 0x407c0000 0x0 0x100>;
+   interrupts = <0 118 4>;
+   clocks = <&clk 166>;
+   status = "disabled";
+  };
+
+  uart13: serial@407d0000 {
+   compatible = "nuvoton,ma35d1-uart";
+   reg = <0x0 0x407d0000 0x0 0x100>;
+   interrupts = <0 119 4>;
+   clocks = <&clk 169>;
+   status = "disabled";
+  };
+
+  uart14: serial@407e0000 {
+   compatible = "nuvoton,ma35d1-uart";
+   reg = <0x0 0x407e0000 0x0 0x100>;
+   interrupts = <0 120 4>;
+   clocks = <&clk 172>;
+   status = "disabled";
+  };
+
+  uart15: serial@407f0000 {
+   compatible = "nuvoton,ma35d1-uart";
+   reg = <0x0 0x407f0000 0x0 0x100>;
+   interrupts = <0 121 4>;
+   clocks = <&clk 175>;
+   status = "disabled";
+  };
+
+  uart16: serial@40880000 {
+   compatible = "nuvoton,ma35d1-uart";
+   reg = <0x0 0x40880000 0x0 0x100>;
+   interrupts = <0 122 4>;
+   clocks = <&clk 178>;
+   status = "disabled";
+  };
+ };
+};
+# 10 "arch/arm64/boot/dts/nuvoton/ma35d1-som-256m.dts" 2
+
+/ {
+ model = "Nuvoton MA35D1-SOM";
+ compatible = "nuvoton,ma35d1-som", "nuvoton,ma35d1";
+
+ aliases {
+  serial0 = &uart0;
+  serial11 = &uart11;
+  serial12 = &uart12;
+  serial14 = &uart14;
+  serial16 = &uart16;
+ };
+
+ chosen {
+  stdout-path = "serial0:115200n8";
+ };
+
+ mem: memory@80000000 {
+  device_type = "memory";
+  reg = <0x00000000 0x80000000 0 0x10000000>;
+ };
+
+ clk_hxt: clock-hxt {
+  compatible = "fixed-clock";
+  #clock-cells = <0>;
+  clock-frequency = <24000000>;
+  clock-output-names = "clk_hxt";
+ };
+};
+
+&clk {
+ assigned-clocks = <&clk 8>,
+     <&clk 10>,
+     <&clk 11>,
+     <&clk 12>,
+     <&clk 13>;
+ assigned-clock-rates = <800000000>,
+          <266000000>,
+          <180000000>,
+          <500000000>,
+          <102000000>;
+ nuvoton,pll-mode = "integer",
+      "fractional",
+      "integer",
+      "integer",
+      "integer";
+};
+
+&pinctrl {
+ uart-grp {
+  pinctrl_uart0: uart0-pins {
+   nuvoton,pins = <4 14 1>,
+           <4 15 1>;
+   bias-disable;
+   power-source = <1>;
+  };
+
+  pinctrl_uart11: uart11-pins {
+   nuvoton,pins = <11 0 2>,
+           <11 1 2>,
+           <11 2 2>,
+           <11 3 2>;
+   bias-disable;
+   power-source = <1>;
+  };
+
+  pinctrl_uart12: uart12-pins {
+   nuvoton,pins = <8 1 2>,
+           <8 2 2>,
+           <8 3 2>;
+   bias-disable;
+   power-source = <1>;
+  };
+
+  pinctrl_uart14: uart14-pins {
+   nuvoton,pins = <8 5 2>,
+           <8 6 2>,
+           <8 7 2>;
+   bias-disable;
+   power-source = <1>;
+  };
+
+  pinctrl_uart16: uart16-pins {
+   nuvoton,pins = <10 0 2>,
+           <10 1 2>,
+           <10 2 2>,
+           <10 3 2>;
+   bias-disable;
+   power-source = <1>;
+  };
+ };
+};
+
+&uart0 {
+ pinctrl-names = "default";
+ pinctrl-0 = <&pinctrl_uart0>;
+ status = "okay";
+};
+
+&uart11 {
+ pinctrl-names = "default";
+ pinctrl-0 = <&pinctrl_uart11>;
+ status = "okay";
+};
+
+&uart12 {
+ pinctrl-names = "default";
+ pinctrl-0 = <&pinctrl_uart12>;
+ status = "okay";
+};
+
+&uart14 {
+ pinctrl-names = "default";
+ pinctrl-0 = <&pinctrl_uart14>;
+ status = "okay";
+};
+
+&uart16 {
+ pinctrl-names = "default";
+ pinctrl-0 = <&pinctrl_uart16>;
+ status = "okay";
+};

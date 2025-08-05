@@ -1,0 +1,11 @@
+# 0 "arch/arm64/boot/dts/ti/k3-am6xx-phycore-disable-rtc.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/ti/k3-am6xx-phycore-disable-rtc.dtso"
+# 10 "arch/arm64/boot/dts/ti/k3-am6xx-phycore-disable-rtc.dtso"
+/dts-v1/;
+/plugin/;
+
+&i2c_som_rtc {
+ status = "disabled";
+};

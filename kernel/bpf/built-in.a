@@ -1,0 +1,102 @@
+!<thin>
+//                                              646       `
+core.o/
+syscall.o/
+verifier.o/
+inode.o/
+helpers.o/
+tnum.o/
+log.o/
+token.o/
+bpf_iter.o/
+map_iter.o/
+task_iter.o/
+prog_iter.o/
+link_iter.o/
+hashtab.o/
+arraymap.o/
+percpu_freelist.o/
+bpf_lru_list.o/
+lpm_trie.o/
+map_in_map.o/
+bloom_filter.o/
+local_storage.o/
+queue_stack_maps.o/
+ringbuf.o/
+bpf_local_storage.o/
+bpf_task_storage.o/
+disasm.o/
+mprog.o/
+trampoline.o/
+btf.o/
+memalloc.o/
+arena.o/
+range_tree.o/
+dispatcher.o/
+devmap.o/
+cpumap.o/
+offload.o/
+net_namespace.o/
+tcx.o/
+stackmap.o/
+cgroup_iter.o/
+bpf_cgrp_storage.o/
+cgroup.o/
+reuseport_array.o/
+bpf_struct_ops.o/
+cpumask.o/
+crypto.o/
+relo_core.o/
+btf_iter.o/
+btf_relocate.o/
+kmem_cache_iter.o/
+/0              0           0     0     644     424976    `
+/8              0           0     0     644     418152    `
+/19             0           0     0     644     747440    `
+/31             0           0     0     644     92000     `
+/40             0           0     0     644     263040    `
+/51             0           0     0     644     15472     `
+/59             0           0     0     644     65840     `
+/66             0           0     0     644     53024     `
+/75             0           0     0     644     95856     `
+/87             0           0     0     644     33704     `
+/99             0           0     0     644     82264     `
+/112            0           0     0     644     19144     `
+/125            0           0     0     644     19192     `
+/138            0           0     0     644     187456    `
+/149            0           0     0     644     121440    `
+/161            0           0     0     644     35848     `
+/180            0           0     0     644     50048     `
+/196            0           0     0     644     54288     `
+/208            0           0     0     644     22464     `
+/222            0           0     0     644     43840     `
+/238            0           0     0     644     65744     `
+/255            0           0     0     644     45480     `
+/275            0           0     0     644     71952     `
+/286            0           0     0     644     76840     `
+/307            0           0     0     644     46032     `
+/327            0           0     0     644     61240     `
+/337            0           0     0     644     40752     `
+/346            0           0     0     644     106304    `
+/360            0           0     0     644     389936    `
+/367            0           0     0     644     118976    `
+/379            0           0     0     644     71920     `
+/388            0           0     0     644     43120     `
+/402            0           0     0     644     24440     `
+/416            0           0     0     644     129968    `
+/426            0           0     0     644     110936    `
+/436            0           0     0     644     130056    `
+/447            0           0     0     644     68952     `
+/464            0           0     0     644     57992     `
+/471            0           0     0     644     75256     `
+/483            0           0     0     644     45624     `
+/498            0           0     0     644     45008     `
+/518            0           0     0     644     221912    `
+/528            0           0     0     644     34312     `
+/547            0           0     0     644     95688     `
+/565            0           0     0     644     66272     `
+/576            0           0     0     644     45520     `
+/586            0           0     0     644     70608     `
+/599            0           0     0     644     12680     `
+/611            0           0     0     644     30328     `
+/627            0           0     0     644     36736     `

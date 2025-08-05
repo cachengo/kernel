@@ -1,0 +1,3 @@
+mt7988a-bananapi-bpi-r4-sd.o: \
+ arch/arm64/boot/dts/mediatek/mt7988a-bananapi-bpi-r4-sd.dtso \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h

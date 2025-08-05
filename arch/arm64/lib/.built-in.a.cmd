@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/lib/built-in.a := rm -f arch/arm64/lib/built-in.a;  printf "arch/arm64/lib/%s " crc32.o crc32-glue.o crc-t10dif-glue.o crc-t10dif-core.o mte.o | xargs ar cDPrST arch/arm64/lib/built-in.a

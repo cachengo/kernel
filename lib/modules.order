@@ -1,0 +1,8 @@
+lib/crypto/libarc4.o
+lib/crypto/libcurve25519-generic.o
+lib/zstd/zstd_compress.o
+lib/raid6/raid6_pq.o
+lib/ts_kmp.o
+lib/ts_bm.o
+lib/ts_fsm.o
+lib/asn1_encoder.o

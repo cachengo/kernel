@@ -1,0 +1,24 @@
+mt8188-geralt-ciri-sku2.o: \
+ arch/arm64/boot/dts/mediatek/mt8188-geralt-ciri-sku2.dts \
+ arch/arm64/boot/dts/mediatek/mt8188-geralt-ciri.dtsi \
+ arch/arm64/boot/dts/mediatek/mt8188-geralt.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ arch/arm64/boot/dts/mediatek/mt8188.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/clock/mediatek,mt8188-clk.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h \
+ scripts/dtc/include-prefixes/dt-bindings/mailbox/mediatek,mt8188-gce.h \
+ scripts/dtc/include-prefixes/dt-bindings/memory/mediatek,mt8188-memory-port.h \
+ scripts/dtc/include-prefixes/dt-bindings/memory/mtk-memory-port.h \
+ scripts/dtc/include-prefixes/dt-bindings/phy/phy.h \
+ scripts/dtc/include-prefixes/dt-bindings/pinctrl/mediatek,mt8188-pinfunc.h \
+ scripts/dtc/include-prefixes/dt-bindings/pinctrl/mt65xx.h \
+ scripts/dtc/include-prefixes/dt-bindings/power/mediatek,mt8188-power.h \
+ scripts/dtc/include-prefixes/dt-bindings/reset/mt8188-resets.h \
+ scripts/dtc/include-prefixes/dt-bindings/thermal/thermal.h \
+ scripts/dtc/include-prefixes/dt-bindings/thermal/mediatek,lvts-thermal.h \
+ arch/arm64/boot/dts/mediatek/mt6359.dtsi \
+ scripts/dtc/include-prefixes/arm/cros-ec-keyboard.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/input/input.h \
+ scripts/dtc/include-prefixes/dt-bindings/input/linux-event-codes.h \
+ scripts/dtc/include-prefixes/dt-bindings/input/cros-ec-keyboard.h

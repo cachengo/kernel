@@ -11,15 +11,6 @@
 #include <linux/rcupdate.h>
 
 /*
- * Why is there no list_empty_rcu()?  Because list_empty() serves this
- * purpose.  The list_empty() function fetches the RCU-protected pointer
- * and compares it to the address of the list head, but neither dereferences
- * this pointer itself nor provides this pointer to the caller.  Therefore,
- * it is not necessary to use rcu_dereference(), so that list_empty() can
- * be used anywhere you would want to use a list_empty_rcu().
- */
-
-/*
  * INIT_LIST_HEAD_RCU - Initialize a list_head visible to RCU readers
  * @list: list to be initialized
  *
@@ -39,6 +30,17 @@ static inline void INIT_LIST_HEAD_RCU(struct list_head *list)
  * way, we must not access it directly
  */
 #define list_next_rcu(list)	(*((struct list_head __rcu **)(&(list)->next)))
+/*
+ * Return the ->prev pointer of a list_head in an rcu safe way. Don't
+ * access it directly.
+ *
+ * Any list traversed with list_bidir_prev_rcu() must never use
+ * list_del_rcu().  Doing so will poison the ->prev pointer that
+ * list_bidir_prev_rcu() relies on, which will result in segfaults.
+ * To prevent these segfaults, use list_bidir_del_rcu() instead
+ * of list_del_rcu().
+ */
+#define list_bidir_prev_rcu(list) (*((struct list_head __rcu **)(&(list)->prev)))
 
 /**
  * list_tail_rcu - returns the prev pointer of the head of the list
@@ -168,6 +170,39 @@ static inline void list_del_rcu(struct list_head *entry)
 }
 
 /**
+ * list_bidir_del_rcu - deletes entry from list without re-initialization
+ * @entry: the element to delete from the list.
+ *
+ * In contrast to list_del_rcu() doesn't poison the prev pointer thus
+ * allowing backwards traversal via list_bidir_prev_rcu().
+ *
+ * Note: list_empty() on entry does not return true after this because
+ * the entry is in a special undefined state that permits RCU-based
+ * lockfree reverse traversal. In particular this means that we can not
+ * poison the forward and backwards pointers that may still be used for
+ * walking the list.
+ *
+ * The caller must take whatever precautions are necessary (such as
+ * holding appropriate locks) to avoid racing with another list-mutation
+ * primitive, such as list_bidir_del_rcu() or list_add_rcu(), running on
+ * this same list. However, it is perfectly legal to run concurrently
+ * with the _rcu list-traversal primitives, such as
+ * list_for_each_entry_rcu().
+ *
+ * Note that list_del_rcu() and list_bidir_del_rcu() must not be used on
+ * the same list.
+ *
+ * Note that the caller is not permitted to immediately free
+ * the newly deleted entry.  Instead, either synchronize_rcu()
+ * or call_rcu() must be used to defer freeing until an RCU
+ * grace period has elapsed.
+ */
+static inline void list_bidir_del_rcu(struct list_head *entry)
+{
+	__list_del_entry(entry);
+}
+
+/**
  * hlist_del_init_rcu - deletes entry from hash list with re-initialization
  * @n: the element to delete from the hash list.
  *
@@ -200,7 +235,10 @@ static inline void hlist_del_init_rcu(struct hlist_node *n)
  * @old : the element to be replaced
  * @new : the new element to insert
  *
- * The @old entry will be replaced with the @new entry atomically.
+ * The @old entry will be replaced with the @new entry atomically from
+ * the perspective of concurrent readers.  It is the caller's responsibility
+ * to synchronize with concurrent updaters, if any.
+ *
  * Note: @old should not be empty.
  */
 static inline void list_replace_rcu(struct list_head *old,
@@ -318,21 +356,29 @@ static inline void list_splice_tail_init_rcu(struct list_head *list,
 /*
  * Where are list_empty_rcu() and list_first_entry_rcu()?
  *
- * Implementing those functions following their counterparts list_empty() and
- * list_first_entry() is not advisable because they lead to subtle race
- * conditions as the following snippet shows:
+ * They do not exist because they would lead to subtle race conditions:
  *
  * if (!list_empty_rcu(mylist)) {
  *	struct foo *bar = list_first_entry_rcu(mylist, struct foo, list_member);
  *	do_something(bar);
  * }
  *
- * The list may not be empty when list_empty_rcu checks it, but it may be when
- * list_first_entry_rcu rereads the ->next pointer.
+ * The list might be non-empty when list_empty_rcu() checks it, but it
+ * might have become empty by the time that list_first_entry_rcu() rereads
+ * the ->next pointer, which would result in a SEGV.
  *
- * Rereading the ->next pointer is not a problem for list_empty() and
- * list_first_entry() because they would be protected by a lock that blocks
- * writers.
+ * When not using RCU, it is OK for list_first_entry() to re-read that
+ * pointer because both functions should be protected by some lock that
+ * blocks writers.
+ *
+ * When using RCU, list_empty() uses READ_ONCE() to fetch the
+ * RCU-protected ->next pointer and then compares it to the address of the
+ * list head.  However, it neither dereferences this pointer nor provides
+ * this pointer to its caller.  Thus, READ_ONCE() suffices (that is,
+ * rcu_dereference() is not needed), which means that list_empty() can be
+ * used anywhere you would want to use list_empty_rcu().  Just don't
+ * expect anything useful to happen if you do a subsequent lockless
+ * call to list_first_entry_rcu()!!!
  *
  * See list_first_or_null_rcu for an alternative.
  */
@@ -356,7 +402,7 @@ static inline void list_splice_tail_init_rcu(struct list_head *list,
 })
 
 /**
- * list_next_or_null_rcu - get the first element from a list
+ * list_next_or_null_rcu - get the next element from a list
  * @head:	the head for the list.
  * @ptr:        the list head to take the next element from.
  * @type:       the type of the struct this is embedded in.
@@ -520,7 +566,9 @@ static inline void hlist_del_rcu(struct hlist_node *n)
  * @old : the element to be replaced
  * @new : the new element to insert
  *
- * The @old entry will be replaced with the @new entry atomically.
+ * The @old entry will be replaced with the @new entry atomically from
+ * the perspective of concurrent readers.  It is the caller's responsibility
+ * to synchronize with concurrent updaters, if any.
  */
 static inline void hlist_replace_rcu(struct hlist_node *old,
 					struct hlist_node *new)

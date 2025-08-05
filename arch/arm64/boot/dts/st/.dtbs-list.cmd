@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/st/dtbs-list := {   echo arch/arm64/boot/dts/st/stm32mp257f-ev1.dtb; :; } > arch/arm64/boot/dts/st/dtbs-list

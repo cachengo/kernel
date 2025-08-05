@@ -1,0 +1,50 @@
+# 0 "arch/arm64/boot/dts/freescale/imx8mm-tqma8mqml-mba8mx-lvds-tm070jvhg33.dtso"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "arch/arm64/boot/dts/freescale/imx8mm-tqma8mqml-mba8mx-lvds-tm070jvhg33.dtso"
+
+
+
+
+
+
+
+/dts-v1/;
+/plugin/;
+
+# 1 "./scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h" 1
+# 12 "arch/arm64/boot/dts/freescale/imx8mm-tqma8mqml-mba8mx-lvds-tm070jvhg33.dtso" 2
+
+&{/} {
+ compatible = "tq,imx8mm-tqma8mqml-mba8mx", "tq,imx8mm-tqma8mqml", "fsl,imx8mm";
+};
+
+&backlight_lvds {
+ status = "okay";
+};
+
+&dsi_lvds_bridge {
+ status = "okay";
+};
+
+&expander0 {
+ dsi-mux-oe-hog {
+  gpio-hog;
+  gpios = <10 1>;
+  output-high;
+  line-name = "DSI_MUX_OE#";
+ };
+};
+
+&lcdif {
+ status = "okay";
+};
+
+&mipi_dsi {
+       status = "okay";
+};
+
+&panel {
+ compatible = "tianma,tm070jvhg33";
+ status = "okay";
+};

@@ -15,10 +15,13 @@
 #include <linux/of.h>
 #include <linux/platform_device.h>
 #include <linux/regmap.h>
+#include <linux/string_choices.h>
+
+#include <linux/pinctrl/consumer.h>
+#include <linux/pinctrl/pinconf-generic.h>
+#include <linux/pinctrl/pinconf.h>
 #include <linux/pinctrl/pinctrl.h>
 #include <linux/pinctrl/pinmux.h>
-#include <linux/pinctrl/pinconf.h>
-#include <linux/pinctrl/pinconf-generic.h>
 
 #include <linux/mfd/lochnagar.h>
 #include <linux/mfd/lochnagar1_regs.h>
@@ -1066,7 +1069,7 @@ static void lochnagar_gpio_set(struct gpio_chip *chip,
 	value = !!value;
 
 	dev_dbg(priv->dev, "Set GPIO %s to %s\n",
-		pin->name, value ? "high" : "low");
+		pin->name, str_high_low(value));
 
 	switch (pin->type) {
 	case LN_PTYPE_MUX:
@@ -1096,7 +1099,7 @@ static int lochnagar_gpio_direction_out(struct gpio_chip *chip,
 {
 	lochnagar_gpio_set(chip, offset, value);
 
-	return pinctrl_gpio_direction_output(chip->base + offset);
+	return pinctrl_gpio_direction_output(chip, offset);
 }
 
 static int lochnagar_fill_func_groups(struct lochnagar_pin_priv *priv)
@@ -1161,9 +1164,6 @@ static int lochnagar_pin_probe(struct platform_device *pdev)
 	priv->gpio_chip.can_sleep = true;
 	priv->gpio_chip.parent = dev;
 	priv->gpio_chip.base = -1;
-#ifdef CONFIG_OF_GPIO
-	priv->gpio_chip.of_node = dev->of_node;
-#endif
 
 	switch (lochnagar->type) {
 	case LOCHNAGAR1:

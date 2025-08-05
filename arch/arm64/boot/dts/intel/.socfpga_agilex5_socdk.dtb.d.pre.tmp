@@ -1,0 +1,8 @@
+socfpga_agilex5_socdk.o: \
+ arch/arm64/boot/dts/intel/socfpga_agilex5_socdk.dts \
+ arch/arm64/boot/dts/intel/socfpga_agilex5.dtsi \
+ scripts/dtc/include-prefixes/dt-bindings/reset/altr,rst-mgr-s10.h \
+ scripts/dtc/include-prefixes/dt-bindings/gpio/gpio.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/arm-gic.h \
+ scripts/dtc/include-prefixes/dt-bindings/interrupt-controller/irq.h \
+ scripts/dtc/include-prefixes/dt-bindings/clock/intel,agilex5-clkmgr.h

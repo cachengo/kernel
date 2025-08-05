@@ -760,8 +760,6 @@ static const struct vb2_ops pwc_vb_queue_ops = {
 	.buf_queue		= buffer_queue,
 	.start_streaming	= start_streaming,
 	.stop_streaming		= stop_streaming,
-	.wait_prepare		= vb2_ops_wait_prepare,
-	.wait_finish		= vb2_ops_wait_finish,
 };
 
 /***************************************************************************/
@@ -861,7 +859,6 @@ static int usb_pwc_probe(struct usb_interface *intf, const struct usb_device_id 
 			break;
 		default:
 			return -ENODEV;
-			break;
 		}
 	}
 	else if (vendor_id == 0x069A) {
@@ -873,7 +870,6 @@ static int usb_pwc_probe(struct usb_interface *intf, const struct usb_device_id 
 			break;
 		default:
 			return -ENODEV;
-			break;
 		}
 	}
 	else if (vendor_id == 0x046d) {
@@ -932,7 +928,6 @@ static int usb_pwc_probe(struct usb_interface *intf, const struct usb_device_id 
 			break;
 		default:
 			return -ENODEV;
-			break;
 		}
 	}
 	else if (vendor_id == 0x055d) {
@@ -958,7 +953,6 @@ static int usb_pwc_probe(struct usb_interface *intf, const struct usb_device_id 
 			break;
 		default:
 			return -ENODEV;
-			break;
 		}
 	}
 	else if (vendor_id == 0x041e) {
@@ -977,7 +971,6 @@ static int usb_pwc_probe(struct usb_interface *intf, const struct usb_device_id 
 			break;
 		default:
 			return -ENODEV;
-			break;
 		}
 	}
 	else if (vendor_id == 0x04cc) {
@@ -989,7 +982,6 @@ static int usb_pwc_probe(struct usb_interface *intf, const struct usb_device_id 
 			break;
 		default:
 			return -ENODEV;
-			break;
 		}
 	}
 	else if (vendor_id == 0x06be) {
@@ -1002,7 +994,6 @@ static int usb_pwc_probe(struct usb_interface *intf, const struct usb_device_id 
 			break;
 		default:
 			return -ENODEV;
-			break;
 		}
 
 	}
@@ -1020,7 +1011,6 @@ static int usb_pwc_probe(struct usb_interface *intf, const struct usb_device_id 
 			break;
 		default:
 			return -ENODEV;
-			break;
 		}
 	}
 	else
@@ -1062,6 +1052,7 @@ static int usb_pwc_probe(struct usb_interface *intf, const struct usb_device_id 
 	pdev->vb_queue.ops = &pwc_vb_queue_ops;
 	pdev->vb_queue.mem_ops = &vb2_vmalloc_memops;
 	pdev->vb_queue.timestamp_flags = V4L2_BUF_FLAG_TIMESTAMP_MONOTONIC;
+	pdev->vb_queue.lock = &pdev->vb_queue_lock;
 	rc = vb2_queue_init(&pdev->vb_queue);
 	if (rc < 0) {
 		PWC_ERROR("Oops, could not initialize vb2 queue.\n");
@@ -1072,7 +1063,6 @@ static int usb_pwc_probe(struct usb_interface *intf, const struct usb_device_id 
 	pdev->vdev = pwc_template;
 	strscpy(pdev->vdev.name, name, sizeof(pdev->vdev.name));
 	pdev->vdev.queue = &pdev->vb_queue;
-	pdev->vdev.queue->lock = &pdev->vb_queue_lock;
 	video_set_drvdata(&pdev->vdev, pdev);
 
 	pdev->release = le16_to_cpu(udev->descriptor.bcdDevice);

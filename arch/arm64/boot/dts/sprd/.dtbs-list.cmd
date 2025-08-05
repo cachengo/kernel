@@ -1,0 +1,1 @@
+savedcmd_arch/arm64/boot/dts/sprd/dtbs-list := {   echo arch/arm64/boot/dts/sprd/sc9836-openphone.dtb;   echo arch/arm64/boot/dts/sprd/sp9860g-1h10.dtb;   echo arch/arm64/boot/dts/sprd/sp9863a-1h10.dtb;   echo arch/arm64/boot/dts/sprd/ums512-1h10.dtb;   echo arch/arm64/boot/dts/sprd/ums9620-2h10.dtb; :; } > arch/arm64/boot/dts/sprd/dtbs-list
