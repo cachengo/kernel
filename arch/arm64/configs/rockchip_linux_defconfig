@@ -1293,3 +1293,11 @@ CONFIG_ZLIB_DEFLATE=y
 CONFIG_BLOCK=y
 CONFIG_EFI_PARTITION=y
 CONFIG_ZFS=y
+# strictly speaking, these two are not required; in this kernel tree they are
+# handled by setting CONFIG_NFSD_V4
+CONFIG_NFSD_V4_1=y
+CONFIG_NFSD_V4_2=y
+# this layout driver cannot be built as a module, so must be 'y', cannot be 'm'
+CONFIG_NFSD_FLEXFILELAYOUT=y
+# enable filelayout (in addition to flexfilelayout) on the client
+CONFIG_PNFS_FILE_LAYOUT=y
